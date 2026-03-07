@@ -36,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
 
             // 加密密码
             user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user.setEnabled(true);
+            user.setStatus(1);
             userMapper.insert(user);
 
             result.put("code", 200);

@@ -27,5 +27,5 @@ public class User {
     @TableField("updated_at")
     private LocalDateTime updateTime;
     @TableField("status")
-    private Boolean enabled;
+    private Integer status;
 }
