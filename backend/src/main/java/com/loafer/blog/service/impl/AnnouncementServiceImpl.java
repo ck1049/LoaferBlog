@@ -22,7 +22,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         try {
             // 按发布时间倒序排列
             QueryWrapper<Announcement> wrapper = new QueryWrapper<>();
-            wrapper.orderByDesc("create_time");
+            wrapper.orderByDesc("created_at");
             List<Announcement> announcements = announcementMapper.selectList(wrapper);
             result.put("code", 200);
             result.put("message", "获取公告列表成功");

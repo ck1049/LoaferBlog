@@ -22,7 +22,7 @@ public class PostServiceImpl implements PostService {
         try {
             // 按发布时间倒序排列
             QueryWrapper<Post> wrapper = new QueryWrapper<>();
-            wrapper.orderByDesc("create_time");
+            wrapper.orderByDesc("created_at");
             List<Post> posts = postMapper.selectList(wrapper);
             result.put("code", 200);
             result.put("message", "获取技术贴列表成功");
@@ -41,7 +41,7 @@ public class PostServiceImpl implements PostService {
             // 使用PostgreSQL的全文搜索
             QueryWrapper<Post> wrapper = new QueryWrapper<>();
             wrapper.like("title", keyword).or().like("content", keyword);
-            wrapper.orderByDesc("create_time");
+            wrapper.orderByDesc("created_at");
             List<Post> posts = postMapper.selectList(wrapper);
             result.put("code", 200);
             result.put("message", "搜索技术贴成功");
