@@ -1,18 +1,18 @@
 <template>
   <div class="post-detail">
-    <div v-if="post" class="post-content">
-      <h1>{{ post.title }}</h1>
-      <p class="post-meta">发布时间: {{ post.createTime }}</p>
-      <div class="post-body">{{ post.content }}</div>
+    <div v-if="postStore.currentPost" class="post-content">
+      <h1>{{ postStore.currentPost.title }}</h1>
+      <p class="post-meta">发布时间: {{ postStore.currentPost.createdAt }}</p>
+      <div class="post-body">{{ postStore.currentPost.content }}</div>
       <div class="post-categories">
         <span>分类: </span>
-        <span v-for="category in post.categories" :key="category.id" class="category-tag">
+        <span v-for="category in postStore.currentPost.categories" :key="category.id" class="category-tag">
           {{ category.name }}
         </span>
       </div>
       <div class="post-tags">
         <span>标签: </span>
-        <span v-for="tag in post.tags" :key="tag.id" class="tag">
+        <span v-for="tag in postStore.currentPost.tags" :key="tag.id" class="tag">
           {{ tag.name }}
         </span>
       </div>
@@ -23,7 +23,7 @@
 
     <div class="comments">
       <h2>评论</h2>
-      <div v-if="isLoggedIn" class="comment-form">
+      <div v-if="userStore.isAuthenticated" class="comment-form">
         <textarea v-model="commentContent" placeholder="写下你的评论..." rows="4"></textarea>
         <button @click="submitComment">提交评论</button>
       </div>
@@ -32,15 +32,15 @@
       </div>
 
       <div class="comment-list">
-        <div v-for="comment in comments" :key="comment.id" class="comment-item">
+        <div v-for="comment in commentStore.comments" :key="comment.id" class="comment-item">
           <div class="comment-header">
-            <span class="comment-author">{{ comment.user.nickname }}</span>
-            <span class="comment-time">{{ comment.createTime }}</span>
+            <span class="comment-author">{{ comment.user?.nickname }}</span>
+            <span class="comment-time">{{ comment.createdAt }}</span>
           </div>
           <div class="comment-body">{{ comment.filteredContent }}</div>
           <div class="comment-actions">
             <button @click="replyComment(comment.id)">回复</button>
-            <button v-if="isAdmin" @click="deleteComment(comment.id)">删除</button>
+            <button v-if="userStore.isAdmin" @click="deleteComment(comment.id)">删除</button>
           </div>
           <div v-if="replyingTo === comment.id" class="reply-form">
             <textarea v-model="replyContent" placeholder="写下你的回复..." rows="3"></textarea>
@@ -50,12 +50,12 @@
           <div class="replies">
             <div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
               <div class="reply-header">
-                <span class="reply-author">{{ reply.user.nickname }}</span>
-                <span class="reply-time">{{ reply.createTime }}</span>
+                <span class="reply-author">{{ reply.user?.nickname }}</span>
+                <span class="reply-time">{{ reply.createdAt }}</span>
               </div>
               <div class="reply-body">{{ reply.filteredContent }}</div>
               <div class="reply-actions">
-                <button v-if="isAdmin" @click="deleteComment(reply.id)">删除</button>
+                <button v-if="userStore.isAdmin" @click="deleteComment(reply.id, comment.id)">删除</button>
               </div>
             </div>
           </div>
@@ -68,23 +68,22 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
+import { usePostStore } from '../stores/post'
+import { useUserStore } from '../stores/user'
+import { useCommentStore } from '../stores/comment'
 
 const route = useRoute()
-const post = ref<any>(null)
-const comments = ref<any[]>([])
+const postStore = usePostStore()
+const userStore = useUserStore()
+const commentStore = useCommentStore()
 const commentContent = ref('')
 const replyContent = ref('')
 const replyingTo = ref<number | null>(null)
 
-const isLoggedIn = !!localStorage.getItem('token')
-const isAdmin = localStorage.getItem('role') === 'ADMIN'
-
 const fetchPost = async () => {
   try {
-    const id = route.params.id
-    const response = await axios.get(`/api/posts/${id}`)
-    post.value = response.data
+    const id = Number(route.params.id)
+    await postStore.fetchPostById(id)
   } catch (error) {
     console.error('获取帖子详情失败:', error)
   }
@@ -92,9 +91,8 @@ const fetchPost = async () => {
 
 const fetchComments = async () => {
   try {
-    const id = route.params.id
-    const response = await axios.get(`/api/comments?postId=${id}`)
-    comments.value = response.data
+    const id = Number(route.params.id)
+    await commentStore.fetchCommentsByPostId(id)
   } catch (error) {
     console.error('获取评论失败:', error)
   }
@@ -104,18 +102,15 @@ const submitComment = async () => {
   if (!commentContent.value.trim()) return
 
   try {
-    const id = route.params.id
-    const response = await axios.post('/api/comments', {
+    const id = Number(route.params.id)
+    const success = await commentStore.createComment({
       postId: id,
       content: commentContent.value
-    }, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
     })
 
-    commentContent.value = ''
-    fetchComments()
+    if (success) {
+      commentContent.value = ''
+    }
   } catch (error) {
     console.error('提交评论失败:', error)
   }
@@ -134,36 +129,27 @@ const submitReply = async (commentId: number) => {
   if (!replyContent.value.trim()) return
 
   try {
-    const id = route.params.id
-    const response = await axios.post('/api/comments', {
+    const id = Number(route.params.id)
+    const success = await commentStore.createComment({
       postId: id,
-      parentId: commentId,
-      content: replyContent.value
-    }, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
+      content: replyContent.value,
+      parentId: commentId
     })
 
-    replyContent.value = ''
-    replyingTo.value = null
-    fetchComments()
+    if (success) {
+      replyContent.value = ''
+      replyingTo.value = null
+    }
   } catch (error) {
     console.error('提交回复失败:', error)
   }
 }
 
-const deleteComment = async (commentId: number) => {
+const deleteComment = async (commentId: number, parentId?: number) => {
   if (!confirm('确定要删除这个评论吗？')) return
 
   try {
-    await axios.delete(`/api/comments/${commentId}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-
-    fetchComments()
+    await commentStore.deleteComment(commentId, parentId)
   } catch (error) {
     console.error('删除评论失败:', error)
   }

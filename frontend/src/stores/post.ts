@@ -1,0 +1,112 @@
+import { defineStore } from 'pinia';
+import axios from 'axios';
+
+interface Post {
+  id: number;
+  title: string;
+  content: string;
+  author: string;
+  viewCount: number;
+  createdAt: string;
+  updatedAt: string;
+  categories?: any[];
+  tags?: any[];
+}
+
+export const usePostStore = defineStore('post', {
+  state: () => ({
+    posts: [] as Post[],
+    currentPost: null as Post | null,
+  }),
+  getters: {
+    sortedPosts: (state) => {
+      return [...state.posts].sort((a, b) => {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    },
+  },
+  actions: {
+    async fetchPosts() {
+      try {
+        const response = await axios.get('/api/posts');
+        this.posts = response.data;
+      } catch (error) {
+        console.error('Failed to fetch posts:', error);
+      }
+    },
+    async fetchPostById(id: number) {
+      try {
+        const response = await axios.get(`/api/posts/${id}`);
+        this.currentPost = response.data;
+      } catch (error) {
+        console.error(`Failed to fetch post ${id}:`, error);
+      }
+    },
+    async searchPosts(keyword: string) {
+      try {
+        const response = await axios.get(`/api/posts/search?keyword=${keyword}`);
+        this.posts = response.data;
+      } catch (error) {
+        console.error('Failed to search posts:', error);
+      }
+    },
+    async createPost(title: string, content: string, categoryIds: number[], tagIds: number[]) {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.post('/api/posts', {
+          title,
+          content,
+          categoryIds,
+          tagIds,
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        this.posts.push(response.data);
+        return true;
+      } catch (error) {
+        console.error('Failed to create post:', error);
+        return false;
+      }
+    },
+    async updatePost(id: number, title: string, content: string, categoryIds: number[], tagIds: number[]) {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.put(`/api/posts/${id}`, {
+          title,
+          content,
+          categoryIds,
+          tagIds,
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const index = this.posts.findIndex(p => p.id === id);
+        if (index !== -1) {
+          this.posts[index] = response.data;
+        }
+        return true;
+      } catch (error) {
+        console.error(`Failed to update post ${id}:`, error);
+        return false;
+      }
+    },
+    async deletePost(id: number) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete(`/api/posts/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        this.posts = this.posts.filter(p => p.id !== id);
+        return true;
+      } catch (error) {
+        console.error(`Failed to delete post ${id}:`, error);
+        return false;
+      }
+    },
+  },
+});

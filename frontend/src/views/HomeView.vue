@@ -3,11 +3,11 @@
     <h1>技术博客</h1>
     <div class="announcements">
       <h2>公告</h2>
-      <div v-if="announcements.length > 0" class="announcement-list">
-        <div v-for="announcement in announcements" :key="announcement.id" class="announcement-item">
+      <div v-if="announcementStore.announcements.length > 0" class="announcement-list">
+        <div v-for="announcement in announcementStore.sortedAnnouncements" :key="announcement.id" class="announcement-item">
           <h3>{{ announcement.title }}</h3>
           <p>{{ announcement.content }}</p>
-          <span>{{ announcement.createTime }}</span>
+          <span>{{ formatDate(announcement.createdAt) }}</span>
         </div>
       </div>
       <div v-else class="empty">
@@ -20,11 +20,11 @@
         <input type="text" v-model="searchKeyword" placeholder="搜索技术贴" />
         <button @click="searchPosts">搜索</button>
       </div>
-      <div v-if="posts.length > 0" class="post-list">
-        <div v-for="post in posts" :key="post.id" class="post-item">
+      <div v-if="postStore.posts.length > 0" class="post-list">
+        <div v-for="post in postStore.sortedPosts" :key="post.id" class="post-item">
           <h3>{{ post.title }}</h3>
           <p>{{ post.content.substring(0, 100) }}...</p>
-          <span>{{ post.createTime }}</span>
+          <span>{{ formatDate(post.createdAt) }}</span>
           <button @click="viewPost(post.id)">查看详情</button>
         </div>
       </div>
@@ -38,47 +38,29 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { useAnnouncementStore } from '../stores/announcement'
+import { usePostStore } from '../stores/post'
 
 const router = useRouter()
-const announcements = ref<any[]>([])
-const posts = ref<any[]>([])
+const announcementStore = useAnnouncementStore()
+const postStore = usePostStore()
 const searchKeyword = ref('')
 
-const fetchAnnouncements = async () => {
-  try {
-    const response = await axios.get('/api/announcements')
-    announcements.value = response.data
-  } catch (error) {
-    console.error('获取公告失败:', error)
-  }
-}
-
-const fetchPosts = async () => {
-  try {
-    const response = await axios.get('/api/posts')
-    posts.value = response.data
-  } catch (error) {
-    console.error('获取技术贴失败:', error)
-  }
-}
-
 const searchPosts = async () => {
-  try {
-    const response = await axios.get(`/api/posts/search?keyword=${searchKeyword.value}`)
-    posts.value = response.data
-  } catch (error) {
-    console.error('搜索技术贴失败:', error)
-  }
+  await postStore.searchPosts(searchKeyword.value)
 }
 
 const viewPost = (id: number) => {
   router.push(`/post/${id}`)
 }
 
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleString();
+};
+
 onMounted(() => {
-  fetchAnnouncements()
-  fetchPosts()
+  announcementStore.fetchAnnouncements()
+  postStore.fetchPosts()
 })
 </script>
 

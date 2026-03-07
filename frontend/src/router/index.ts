@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '../stores/user'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -30,17 +31,38 @@ const router = createRouter({
       meta: {
         requiresAdmin: true
       }
+    },
+    {
+      path: '/messages',
+      name: 'messages',
+      component: () => import('../views/MessageListView.vue'),
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/messages/:id',
+      name: 'message-detail',
+      component: () => import('../views/MessageDetailView.vue'),
+      meta: {
+        requiresAuth: true
+      }
     }
   ]
 })
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
-  const role = localStorage.getItem('role')
+  const userStore = useUserStore()
 
   if (to.meta.requiresAdmin) {
-    if (token && role === 'ADMIN') {
+    if (userStore.isAdmin) {
+      next()
+    } else {
+      next('/login')
+    }
+  } else if (to.meta.requiresAuth) {
+    if (userStore.isAuthenticated) {
       next()
     } else {
       next('/login')

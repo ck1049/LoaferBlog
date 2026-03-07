@@ -1,6 +1,6 @@
 # LoaferBlog - 技术博客项目 - 实现计划
 
-## [ ] 任务 1: 后端项目初始化与基础配置
+## [x] 任务 1: 后端项目初始化与基础配置
 - **Priority**: P0
 - **Depends On**: None
 - **Description**: 
@@ -13,7 +13,7 @@
   - `human-judgement` TR-1.2: 项目结构清晰，依赖配置合理
 - **Notes**: 使用Spring Initializr快速创建项目，配置必要的依赖项
 
-## [ ] 任务 2: 数据库设计与初始化
+## [x] 任务 2: 数据库设计与初始化
 - **Priority**: P0
 - **Depends On**: 任务 1
 - **Description**: 
@@ -26,7 +26,7 @@
   - `programmatic` TR-2.2: 实体类与数据库表映射正确
 - **Notes**: 考虑表之间的关联关系，使用MyBatis Plus的代码生成器
 
-## [ ] 任务 3: 后端API实现 - 用户认证
+## [x] 任务 3: 后端API实现 - 用户认证
 - **Priority**: P0
 - **Depends On**: 任务 2
 - **Description**: 
@@ -40,7 +40,7 @@
   - `programmatic` TR-3.3: 注销接口正常工作
 - **Notes**: 使用Spring Security和JWT实现认证功能
 
-## [ ] 任务 4: 后端API实现 - 权限管理
+## [x] 任务 4: 后端API实现 - 权限管理
 - **Priority**: P0
 - **Depends On**: 任务 3
 - **Description**: 
@@ -53,7 +53,7 @@
   - `programmatic` TR-4.2: 管理员可以访问所有接口
 - **Notes**: 使用Spring Security的权限控制功能
 
-## [ ] 任务 5: 后端API实现 - 公告管理
+## [x] 任务 5: 后端API实现 - 公告管理
 - **Priority**: P1
 - **Depends On**: 任务 4
 - **Description**: 
@@ -65,7 +65,7 @@
   - `programmatic` TR-5.2: 所有用户可以查看公告列表
 - **Notes**: 公告按发布时间倒序排列
 
-## [ ] 任务 6: 后端API实现 - 技术贴管理
+## [x] 任务 6: 后端API实现 - 技术贴管理
 - **Priority**: P1
 - **Depends On**: 任务 4
 - **Description**: 
@@ -80,7 +80,7 @@
   - `programmatic` TR-6.4: 普通用户无法发布技术贴
 - **Notes**: 搜索功能使用PostgreSQL的全文搜索
 
-## [ ] 任务 7: 后端API实现 - 评论系统
+## [x] 任务 7: 后端API实现 - 评论系统
 - **Priority**: P1
 - **Depends On**: 任务 6
 - **Description**: 
@@ -94,7 +94,7 @@
   - `programmatic` TR-7.3: 管理员可以删除评论
 - **Notes**: 评论按时间顺序排列
 
-## [ ] 任务 8: 后端API实现 - 消息系统
+## [x] 任务 8: 后端API实现 - 消息系统
 - **Priority**: P1
 - **Depends On**: 任务 4
 - **Description**: 
@@ -107,7 +107,7 @@
   - `programmatic` TR-8.2: 管理员可以查看和回复消息
 - **Notes**: 消息按时间顺序排列
 
-## [ ] 任务 9: 后端API实现 - 分类管理
+## [x] 任务 9: 后端API实现 - 分类管理
 - **Priority**: P1
 - **Depends On**: 任务 4
 - **Description**: 
@@ -120,7 +120,7 @@
   - `programmatic` TR-9.2: 删除分类时自动移除帖子的分类信息
 - **Notes**: 使用多对多关系管理分类和帖子
 
-## [ ] 任务 10: 后端API实现 - 标签管理
+## [x] 任务 10: 后端API实现 - 标签管理
 - **Priority**: P1
 - **Depends On**: 任务 4
 - **Description**: 
@@ -133,7 +133,7 @@
   - `programmatic` TR-10.2: 删除标签时自动移除帖子的标签信息
 - **Notes**: 使用多对多关系管理标签和帖子
 
-## [ ] 任务 11: 后端API实现 - 敏感词过滤
+## [x] 任务 11: 后端API实现 - 敏感词过滤
 - **Priority**: P1
 - **Depends On**: 任务 4
 - **Description**: 
@@ -146,7 +146,7 @@
   - `programmatic` TR-11.2: 数据库存储原文和过滤后结果
 - **Notes**: 使用高效的敏感词匹配算法
 
-## [ ] 任务 12: 前端项目初始化与基础配置
+## [x] 任务 12: 前端项目初始化与基础配置
 - **Priority**: P0
 - **Depends On**: None
 - **Description**: 
@@ -159,7 +159,7 @@
   - `human-judgement` TR-12.2: 项目结构清晰，依赖配置合理
 - **Notes**: 使用Vite创建项目，配置必要的依赖项
 
-## [ ] 任务 13: 前端实现 - 用户认证
+## [x] 任务 13: 前端实现 - 用户认证
 - **Priority**: P0
 - **Depends On**: 任务 3, 任务 12
 - **Description**: 
@@ -173,7 +173,7 @@
   - `programmatic` TR-13.3: 注销功能正常工作
 - **Notes**: 使用Pinia管理用户状态
 
-## [ ] 任务 14: 前端实现 - 权限管理
+## [x] 任务 14: 前端实现 - 权限管理
 - **Priority**: P0
 - **Depends On**: 任务 4, 任务 13
 - **Description**: 
@@ -186,7 +186,7 @@
   - `programmatic` TR-14.2: 管理员可以访问所有页面
 - **Notes**: 使用Vue Router的导航守卫实现权限控制
 
-## [ ] 任务 15: 前端实现 - 公告管理
+## [x] 任务 15: 前端实现 - 公告管理
 - **Priority**: P1
 - **Depends On**: 任务 5, 任务 14
 - **Description**: 
@@ -199,7 +199,7 @@
   - `programmatic` TR-15.2: 管理员可以发布、编辑、删除公告
 - **Notes**: 公告按发布时间倒序排列
 
-## [ ] 任务 16: 前端实现 - 技术贴管理
+## [x] 任务 16: 前端实现 - 技术贴管理
 - **Priority**: P1
 - **Depends On**: 任务 6, 任务 14
 - **Description**: 
@@ -215,7 +215,7 @@
   - `programmatic` TR-16.4: 普通用户无法看到发布和编辑按钮
 - **Notes**: 搜索功能支持关键词高亮
 
-## [ ] 任务 17: 前端实现 - 评论系统
+## [x] 任务 17: 前端实现 - 评论系统
 - **Priority**: P1
 - **Depends On**: 任务 7, 任务 14
 - **Description**: 
@@ -229,7 +229,7 @@
   - `programmatic` TR-17.3: 管理员可以删除评论
 - **Notes**: 评论按时间顺序排列
 
-## [ ] 任务 18: 前端实现 - 消息系统
+## [x] 任务 18: 前端实现 - 消息系统
 - **Priority**: P1
 - **Depends On**: 任务 8, 任务 14
 - **Description**: 
@@ -242,7 +242,7 @@
   - `programmatic` TR-18.2: 管理员可以查看和回复消息
 - **Notes**: 消息按时间顺序排列
 
-## [ ] 任务 19: 前端实现 - 分类管理
+## [x] 任务 19: 前端实现 - 分类管理
 - **Priority**: P1
 - **Depends On**: 任务 9, 任务 14
 - **Description**: 
@@ -255,7 +255,7 @@
   - `programmatic` TR-19.2: 帖子可以选择多个分类
 - **Notes**: 分类管理页面仅对管理员开放
 
-## [ ] 任务 20: 前端实现 - 标签管理
+## [x] 任务 20: 前端实现 - 标签管理
 - **Priority**: P1
 - **Depends On**: 任务 10, 任务 14
 - **Description**: 
@@ -268,10 +268,10 @@
   - `programmatic` TR-20.2: 帖子可以选择多个标签
 - **Notes**: 标签管理页面仅对管理员开放
 
-## [ ] 任务 21: 前端实现 - 敏感词过滤
+## [x] 任务 21: 前端实现 - 敏感词过滤
 - **Priority**: P1
 - **Depends On**: 任务 11, 任务 14
-- **Description**: 
+- **Description**:
   - 实现评论和消息输入组件
   - 实现敏感词过滤结果展示
 - **Acceptance Criteria Addressed**: AC-9
@@ -279,7 +279,7 @@
   - `programmatic` TR-21.1: 包含敏感词的评论能正确显示过滤后结果
 - **Notes**: 敏感词过滤在前端和后端都要实现，前端作为辅助过滤
 
-## [ ] 任务 22: 系统集成与测试
+## [x] 任务 22: 系统集成与测试
 - **Priority**: P0
 - **Depends On**: 所有任务
 - **Description**: 

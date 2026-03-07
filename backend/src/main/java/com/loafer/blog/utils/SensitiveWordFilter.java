@@ -3,6 +3,7 @@ package com.loafer.blog.utils;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Component
@@ -34,5 +35,10 @@ public class SensitiveWordFilter {
 
     public Set<String> getSensitiveWords() {
         return sensitiveWords;
+    }
+
+    public void reloadWords(List<String> words) {
+        sensitiveWords.clear();
+        sensitiveWords.addAll(words);
     }
 }

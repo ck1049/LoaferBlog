@@ -19,7 +19,7 @@
         <button @click="addAnnouncement">添加</button>
       </div>
       <div class="list">
-        <div v-for="announcement in announcements" :key="announcement.id" class="item">
+        <div v-for="announcement in announcementStore.announcements" :key="announcement.id" class="item">
           <h3>{{ announcement.title }}</h3>
           <p>{{ announcement.content }}</p>
           <div class="actions">
@@ -40,7 +40,7 @@
         <div class="categories-select">
           <label>分类：</label>
           <select v-model="newPost.categoryIds" multiple>
-            <option v-for="category in categories" :key="category.id" :value="category.id">
+            <option v-for="category in categoryStore.sortedCategories" :key="category.id" :value="category.id">
               {{ category.name }}
             </option>
           </select>
@@ -48,7 +48,7 @@
         <div class="tags-select">
           <label>标签：</label>
           <select v-model="newPost.tagIds" multiple>
-            <option v-for="tag in tags" :key="tag.id" :value="tag.id">
+            <option v-for="tag in tagStore.sortedTags" :key="tag.id" :value="tag.id">
               {{ tag.name }}
             </option>
           </select>
@@ -77,7 +77,7 @@
         <button @click="addCategory">添加</button>
       </div>
       <div class="list">
-        <div v-for="category in categories" :key="category.id" class="item">
+        <div v-for="category in categoryStore.sortedCategories" :key="category.id" class="item">
           <h3>{{ category.name }}</h3>
           <p>{{ category.description }}</p>
           <div class="actions">
@@ -97,7 +97,7 @@
         <button @click="addTag">添加</button>
       </div>
       <div class="list">
-        <div v-for="tag in tags" :key="tag.id" class="item">
+        <div v-for="tag in tagStore.sortedTags" :key="tag.id" class="item">
           <h3>{{ tag.name }}</h3>
           <div class="actions">
             <button @click="editTag(tag)">编辑</button>
@@ -114,9 +114,10 @@
         <h3>添加敏感词</h3>
         <input type="text" v-model="newSensitiveWord" placeholder="敏感词" />
         <button @click="addSensitiveWord">添加</button>
+        <button @click="reloadSensitiveWords" style="margin-left: 10px; background-color: #2196F3;">重新加载敏感词库</button>
       </div>
       <div class="list">
-        <div v-for="word in sensitiveWords" :key="word.id" class="item">
+        <div v-for="word in sensitiveWordStore.sortedSensitiveWords" :key="word.id" class="item">
           <h3>{{ word.word }}</h3>
           <div class="actions">
             <button @click="deleteSensitiveWord(word.id)">删除</button>
@@ -130,11 +131,18 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import { useAnnouncementStore } from '../stores/announcement'
+import { useCategoryStore } from '../stores/category'
+import { useTagStore } from '../stores/tag'
+import { useSensitiveWordStore } from '../stores/sensitiveWord'
 
 const activeTab = ref('announcements')
+const announcementStore = useAnnouncementStore()
+const categoryStore = useCategoryStore()
+const tagStore = useTagStore()
+const sensitiveWordStore = useSensitiveWordStore()
 
 // 公告
-const announcements = ref<any[]>([])
 const newAnnouncement = ref({ title: '', content: '' })
 const editingAnnouncement = ref<any>(null)
 
@@ -144,39 +152,32 @@ const newPost = ref({ title: '', content: '', categoryIds: [] as number[], tagId
 const editingPost = ref<any>(null)
 
 // 分类
-const categories = ref<any[]>([])
 const newCategory = ref({ name: '', description: '' })
 const editingCategory = ref<any>(null)
 
 // 标签
-const tags = ref<any[]>([])
 const newTag = ref({ name: '' })
 const editingTag = ref<any>(null)
 
 // 敏感词
-const sensitiveWords = ref<any[]>([])
 const newSensitiveWord = ref('')
 
-// 获取公告
-const fetchAnnouncements = async () => {
+// 获取敏感词
+const fetchSensitiveWords = async () => {
   try {
-    const response = await axios.get('/api/announcements')
-    announcements.value = response.data
+    await sensitiveWordStore.fetchSensitiveWords()
   } catch (error) {
-    console.error('获取公告失败:', error)
+    console.error('获取敏感词失败:', error)
   }
 }
 
 // 添加公告
 const addAnnouncement = async () => {
   try {
-    await axios.post('/api/announcements', newAnnouncement.value, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-    newAnnouncement.value = { title: '', content: '' }
-    fetchAnnouncements()
+    const success = await announcementStore.createAnnouncement(newAnnouncement.value.title, newAnnouncement.value.content)
+    if (success) {
+      newAnnouncement.value = { title: '', content: '' }
+    }
   } catch (error) {
     console.error('添加公告失败:', error)
   }
@@ -192,12 +193,7 @@ const editAnnouncement = (announcement: any) => {
 const deleteAnnouncement = async (id: number) => {
   if (!confirm('确定要删除这个公告吗？')) return
   try {
-    await axios.delete(`/api/announcements/${id}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-    fetchAnnouncements()
+    await announcementStore.deleteAnnouncement(id)
   } catch (error) {
     console.error('删除公告失败:', error)
   }
@@ -249,26 +245,13 @@ const deletePost = async (id: number) => {
   }
 }
 
-// 获取分类
-const fetchCategories = async () => {
-  try {
-    const response = await axios.get('/api/categories')
-    categories.value = response.data
-  } catch (error) {
-    console.error('获取分类失败:', error)
-  }
-}
-
 // 添加分类
 const addCategory = async () => {
   try {
-    await axios.post('/api/categories', newCategory.value, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-    newCategory.value = { name: '', description: '' }
-    fetchCategories()
+    const success = await categoryStore.createCategory(newCategory.value)
+    if (success) {
+      newCategory.value = { name: '', description: '' }
+    }
   } catch (error) {
     console.error('添加分类失败:', error)
   }
@@ -284,37 +267,19 @@ const editCategory = (category: any) => {
 const deleteCategory = async (id: number) => {
   if (!confirm('确定要删除这个分类吗？')) return
   try {
-    await axios.delete(`/api/categories/${id}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-    fetchCategories()
+    await categoryStore.deleteCategory(id)
   } catch (error) {
     console.error('删除分类失败:', error)
-  }
-}
-
-// 获取标签
-const fetchTags = async () => {
-  try {
-    const response = await axios.get('/api/tags')
-    tags.value = response.data
-  } catch (error) {
-    console.error('获取标签失败:', error)
   }
 }
 
 // 添加标签
 const addTag = async () => {
   try {
-    await axios.post('/api/tags', { name: newTag.value.name }, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-    newTag.value = { name: '' }
-    fetchTags()
+    const success = await tagStore.createTag({ name: newTag.value.name })
+    if (success) {
+      newTag.value = { name: '' }
+    }
   } catch (error) {
     console.error('添加标签失败:', error)
   }
@@ -330,37 +295,19 @@ const editTag = (tag: any) => {
 const deleteTag = async (id: number) => {
   if (!confirm('确定要删除这个标签吗？')) return
   try {
-    await axios.delete(`/api/tags/${id}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-    fetchTags()
+    await tagStore.deleteTag(id)
   } catch (error) {
     console.error('删除标签失败:', error)
-  }
-}
-
-// 获取敏感词
-const fetchSensitiveWords = async () => {
-  try {
-    const response = await axios.get('/api/sensitive-words')
-    sensitiveWords.value = response.data
-  } catch (error) {
-    console.error('获取敏感词失败:', error)
   }
 }
 
 // 添加敏感词
 const addSensitiveWord = async () => {
   try {
-    await axios.post('/api/sensitive-words', { word: newSensitiveWord.value }, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-    newSensitiveWord.value = ''
-    fetchSensitiveWords()
+    const success = await sensitiveWordStore.createSensitiveWord(newSensitiveWord.value)
+    if (success) {
+      newSensitiveWord.value = ''
+    }
   } catch (error) {
     console.error('添加敏感词失败:', error)
   }
@@ -370,22 +317,27 @@ const addSensitiveWord = async () => {
 const deleteSensitiveWord = async (id: number) => {
   if (!confirm('确定要删除这个敏感词吗？')) return
   try {
-    await axios.delete(`/api/sensitive-words/${id}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-    fetchSensitiveWords()
+    await sensitiveWordStore.deleteSensitiveWord(id)
   } catch (error) {
     console.error('删除敏感词失败:', error)
   }
 }
 
+// 重新加载敏感词
+const reloadSensitiveWords = async () => {
+  try {
+    await sensitiveWordStore.reloadSensitiveWords()
+    alert('敏感词库已重新加载')
+  } catch (error) {
+    console.error('重新加载敏感词失败:', error)
+  }
+}
+
 onMounted(() => {
-  fetchAnnouncements()
+  announcementStore.fetchAnnouncements()
   fetchPosts()
-  fetchCategories()
-  fetchTags()
+  categoryStore.fetchCategories()
+  tagStore.fetchTags()
   fetchSensitiveWords()
 })
 </script>

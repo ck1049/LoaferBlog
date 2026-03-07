@@ -19,27 +19,18 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { useUserStore } from '../stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 const username = ref('')
 const password = ref('')
 
 const login = async () => {
-  try {
-    const response = await axios.post('/api/auth/login', {
-      username: username.value,
-      password: password.value
-    })
-    
-    const { token, user } = response.data
-    localStorage.setItem('token', token)
-    localStorage.setItem('role', user.role)
-    localStorage.setItem('userId', user.id.toString())
-    
+  const success = await userStore.login(username.value, password.value)
+  if (success) {
     router.push('/')
-  } catch (error) {
-    console.error('登录失败:', error)
+  } else {
     alert('登录失败，请检查用户名和密码')
   }
 }
