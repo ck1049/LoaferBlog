@@ -1,6 +1,6 @@
 package com.loafer.blog.service;
 
-import com.loafer.blog.entity.Announcement;
+import com.loafer.blog.model.entity.Announcement;
 
 import java.util.Map;
 

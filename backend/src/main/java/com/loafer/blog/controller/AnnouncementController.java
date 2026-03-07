@@ -1,6 +1,6 @@
 package com.loafer.blog.controller;
 
-import com.loafer.blog.entity.Announcement;
+import com.loafer.blog.model.entity.Announcement;
 import com.loafer.blog.service.AnnouncementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

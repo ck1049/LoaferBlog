@@ -1,6 +1,6 @@
 package com.loafer.blog.controller;
 
-import com.loafer.blog.entity.Tag;
+import com.loafer.blog.model.entity.Tag;
 import com.loafer.blog.service.TagService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

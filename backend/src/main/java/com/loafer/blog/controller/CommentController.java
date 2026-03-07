@@ -1,6 +1,6 @@
 package com.loafer.blog.controller;
 
-import com.loafer.blog.entity.Comment;
+import com.loafer.blog.model.entity.Comment;
 import com.loafer.blog.service.CommentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

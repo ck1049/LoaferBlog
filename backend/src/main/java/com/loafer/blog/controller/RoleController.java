@@ -1,6 +1,6 @@
 package com.loafer.blog.controller;
 
-import com.loafer.blog.entity.Role;
+import com.loafer.blog.model.entity.Role;
 import com.loafer.blog.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

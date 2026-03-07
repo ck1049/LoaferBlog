@@ -1,6 +1,6 @@
 package com.loafer.blog.controller;
 
-import com.loafer.blog.entity.SensitiveWord;
+import com.loafer.blog.model.entity.SensitiveWord;
 import com.loafer.blog.service.SensitiveWordService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,6 +1,6 @@
 package com.loafer.blog.controller;
 
-import com.loafer.blog.entity.User;
+import com.loafer.blog.model.entity.User;
 import com.loafer.blog.service.AuthService;
 import com.loafer.blog.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;

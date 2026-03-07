@@ -1,7 +1,7 @@
 package com.loafer.blog.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.loafer.blog.entity.Comment;
+import com.loafer.blog.model.entity.Comment;
 
 import java.util.List;
 

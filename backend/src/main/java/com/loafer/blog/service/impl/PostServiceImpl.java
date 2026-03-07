@@ -1,7 +1,7 @@
 package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.loafer.blog.entity.Post;
+import com.loafer.blog.model.entity.Post;
 import com.loafer.blog.mapper.PostMapper;
 import com.loafer.blog.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,7 +81,7 @@ public class PostServiceImpl implements PostService {
         Map<String, Object> result = new HashMap<>();
         try {
             post.setViewCount(0);
-            post.setStatus(true);
+            post.setStatus(1);
             postMapper.insert(post);
             result.put("code", 200);
             result.put("message", "创建技术贴成功");

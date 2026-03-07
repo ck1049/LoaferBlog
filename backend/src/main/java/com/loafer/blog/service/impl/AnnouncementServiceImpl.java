@@ -1,7 +1,7 @@
 package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.loafer.blog.entity.Announcement;
+import com.loafer.blog.model.entity.Announcement;
 import com.loafer.blog.mapper.AnnouncementMapper;
 import com.loafer.blog.service.AnnouncementService;
 import org.springframework.beans.factory.annotation.Autowired;

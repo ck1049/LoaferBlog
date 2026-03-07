@@ -17,132 +17,245 @@ DROP TABLE IF EXISTS "user";
 DROP TABLE IF EXISTS sensitive_word;
 
 -- 创建角色表
-CREATE TABLE role (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE,
-    description VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS role (
+    id SERIAL PRIMARY KEY,              -- 角色ID
+    name VARCHAR(50) NOT NULL UNIQUE,   -- 角色名称
+    description VARCHAR(255),           -- 角色描述
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
 );
+
+-- 表注释
+COMMENT ON TABLE role IS '角色表';
+COMMENT ON COLUMN role.id IS '角色ID';
+COMMENT ON COLUMN role.name IS '角色名称';
+COMMENT ON COLUMN role.description IS '角色描述';
+COMMENT ON COLUMN role.created_at IS '创建时间';
+COMMENT ON COLUMN role.updated_at IS '更新时间';
 
 -- 创建用户表
-CREATE TABLE "user" (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(100) NOT NULL,
-    nickname VARCHAR(50),
-    email VARCHAR(100),
-    avatar VARCHAR(255),
-    status INTEGER DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS "user" (
+    id SERIAL PRIMARY KEY,              -- 用户ID
+    username VARCHAR(50) NOT NULL UNIQUE, -- 用户名
+    password VARCHAR(100) NOT NULL,     -- 密码（加密存储）
+    nickname VARCHAR(50),               -- 昵称
+    email VARCHAR(100),                 -- 邮箱
+    avatar VARCHAR(255),                -- 头像URL
+    status INTEGER DEFAULT 1,           -- 状态：1-正常，0-禁用
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
 );
+
+-- 表注释
+COMMENT ON TABLE "user" IS '用户表';
+COMMENT ON COLUMN "user".id IS '用户ID';
+COMMENT ON COLUMN "user".username IS '用户名';
+COMMENT ON COLUMN "user".password IS '密码（加密存储）';
+COMMENT ON COLUMN "user".nickname IS '昵称';
+COMMENT ON COLUMN "user".email IS '邮箱';
+COMMENT ON COLUMN "user".avatar IS '头像URL';
+COMMENT ON COLUMN "user".status IS '状态：1-正常，0-禁用';
+COMMENT ON COLUMN "user".created_at IS '创建时间';
+COMMENT ON COLUMN "user".updated_at IS '更新时间';
 
 -- 创建用户角色关联表
-CREATE TABLE user_role (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-    role_id INTEGER NOT NULL REFERENCES role(id) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id, role_id)
+CREATE TABLE IF NOT EXISTS user_role (
+    id SERIAL PRIMARY KEY,              -- 关联ID
+    user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE, -- 用户ID
+    role_id INTEGER NOT NULL REFERENCES role(id) ON DELETE CASCADE, -- 角色ID
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    UNIQUE(user_id, role_id)            -- 唯一约束：用户与角色的组合
 );
+
+-- 表注释
+COMMENT ON TABLE user_role IS '用户角色关联表';
+COMMENT ON COLUMN user_role.id IS '关联ID';
+COMMENT ON COLUMN user_role.user_id IS '用户ID';
+COMMENT ON COLUMN user_role.role_id IS '角色ID';
+COMMENT ON COLUMN user_role.created_at IS '创建时间';
 
 -- 创建公告表
-CREATE TABLE announcement (
-    id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    content TEXT NOT NULL,
-    author_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-    status INTEGER DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS announcement (
+    id SERIAL PRIMARY KEY,              -- 公告ID
+    title VARCHAR(255) NOT NULL,        -- 公告标题
+    content TEXT NOT NULL,              -- 公告内容
+    author_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE, -- 作者ID
+    status INTEGER DEFAULT 1,           -- 状态：1-发布，0-草稿
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
 );
+
+-- 表注释
+COMMENT ON TABLE announcement IS '公告表';
+COMMENT ON COLUMN announcement.id IS '公告ID';
+COMMENT ON COLUMN announcement.title IS '公告标题';
+COMMENT ON COLUMN announcement.content IS '公告内容';
+COMMENT ON COLUMN announcement.author_id IS '作者ID';
+COMMENT ON COLUMN announcement.status IS '状态：1-发布，0-草稿';
+COMMENT ON COLUMN announcement.created_at IS '创建时间';
+COMMENT ON COLUMN announcement.updated_at IS '更新时间';
 
 -- 创建分类表
-CREATE TABLE category (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE,
-    description VARCHAR(255),
-    status INTEGER DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS category (
+    id SERIAL PRIMARY KEY,              -- 分类ID
+    name VARCHAR(50) NOT NULL UNIQUE,   -- 分类名称
+    description VARCHAR(255),           -- 分类描述
+    status INTEGER DEFAULT 1,           -- 状态：1-启用，0-禁用
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
 );
+
+-- 表注释
+COMMENT ON TABLE category IS '分类表';
+COMMENT ON COLUMN category.id IS '分类ID';
+COMMENT ON COLUMN category.name IS '分类名称';
+COMMENT ON COLUMN category.description IS '分类描述';
+COMMENT ON COLUMN category.status IS '状态：1-启用，0-禁用';
+COMMENT ON COLUMN category.created_at IS '创建时间';
+COMMENT ON COLUMN category.updated_at IS '更新时间';
 
 -- 创建标签表
-CREATE TABLE tag (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE,
-    description VARCHAR(255),
-    status INTEGER DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS tag (
+    id SERIAL PRIMARY KEY,              -- 标签ID
+    name VARCHAR(50) NOT NULL UNIQUE,   -- 标签名称
+    description VARCHAR(255),           -- 标签描述
+    status INTEGER DEFAULT 1,           -- 状态：1-启用，0-禁用
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
 );
+
+-- 表注释
+COMMENT ON TABLE tag IS '标签表';
+COMMENT ON COLUMN tag.id IS '标签ID';
+COMMENT ON COLUMN tag.name IS '标签名称';
+COMMENT ON COLUMN tag.description IS '标签描述';
+COMMENT ON COLUMN tag.status IS '状态：1-启用，0-禁用';
+COMMENT ON COLUMN tag.created_at IS '创建时间';
+COMMENT ON COLUMN tag.updated_at IS '更新时间';
 
 -- 创建技术贴表
-CREATE TABLE post (
-    id SERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    content TEXT NOT NULL,
-    author_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-    summary VARCHAR(255),
-    view_count INTEGER DEFAULT 0,
-    comment_count INTEGER DEFAULT 0,
-    status INTEGER DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS post (
+    id SERIAL PRIMARY KEY,              -- 帖子ID
+    title VARCHAR(255) NOT NULL,        -- 帖子标题
+    content TEXT NOT NULL,              -- 帖子内容
+    author_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE, -- 作者ID
+    summary VARCHAR(255),               -- 帖子摘要
+    view_count INTEGER DEFAULT 0,       -- 浏览次数
+    comment_count INTEGER DEFAULT 0,    -- 评论次数
+    status INTEGER DEFAULT 1,           -- 状态：1-发布，0-草稿
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
 );
+
+-- 表注释
+COMMENT ON TABLE post IS '技术贴表';
+COMMENT ON COLUMN post.id IS '帖子ID';
+COMMENT ON COLUMN post.title IS '帖子标题';
+COMMENT ON COLUMN post.content IS '帖子内容';
+COMMENT ON COLUMN post.author_id IS '作者ID';
+COMMENT ON COLUMN post.summary IS '帖子摘要';
+COMMENT ON COLUMN post.view_count IS '浏览次数';
+COMMENT ON COLUMN post.comment_count IS '评论次数';
+COMMENT ON COLUMN post.status IS '状态：1-发布，0-草稿';
+COMMENT ON COLUMN post.created_at IS '创建时间';
+COMMENT ON COLUMN post.updated_at IS '更新时间';
 
 -- 创建帖子分类关联表
-CREATE TABLE post_category (
-    id SERIAL PRIMARY KEY,
-    post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE,
-    category_id INTEGER NOT NULL REFERENCES category(id) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(post_id, category_id)
+CREATE TABLE IF NOT EXISTS post_category (
+    id SERIAL PRIMARY KEY,              -- 关联ID
+    post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE, -- 帖子ID
+    category_id INTEGER NOT NULL REFERENCES category(id) ON DELETE CASCADE, -- 分类ID
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    UNIQUE(post_id, category_id)        -- 唯一约束：帖子与分类的组合
 );
+
+-- 表注释
+COMMENT ON TABLE post_category IS '帖子分类关联表';
+COMMENT ON COLUMN post_category.id IS '关联ID';
+COMMENT ON COLUMN post_category.post_id IS '帖子ID';
+COMMENT ON COLUMN post_category.category_id IS '分类ID';
+COMMENT ON COLUMN post_category.created_at IS '创建时间';
 
 -- 创建帖子标签关联表
-CREATE TABLE post_tag (
-    id SERIAL PRIMARY KEY,
-    post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE,
-    tag_id INTEGER NOT NULL REFERENCES tag(id) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(post_id, tag_id)
+CREATE TABLE IF NOT EXISTS post_tag (
+    id SERIAL PRIMARY KEY,              -- 关联ID
+    post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE, -- 帖子ID
+    tag_id INTEGER NOT NULL REFERENCES tag(id) ON DELETE CASCADE, -- 标签ID
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    UNIQUE(post_id, tag_id)             -- 唯一约束：帖子与标签的组合
 );
+
+-- 表注释
+COMMENT ON TABLE post_tag IS '帖子标签关联表';
+COMMENT ON COLUMN post_tag.id IS '关联ID';
+COMMENT ON COLUMN post_tag.post_id IS '帖子ID';
+COMMENT ON COLUMN post_tag.tag_id IS '标签ID';
+COMMENT ON COLUMN post_tag.created_at IS '创建时间';
 
 -- 创建评论表
-CREATE TABLE comment (
-    id SERIAL PRIMARY KEY,
-    post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE,
-    user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-    parent_id INTEGER REFERENCES comment(id) ON DELETE CASCADE,
-    content TEXT NOT NULL,
-    original_content TEXT,
-    status INTEGER DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS comment (
+    id SERIAL PRIMARY KEY,              -- 评论ID
+    post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE, -- 帖子ID
+    user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE, -- 用户ID
+    parent_id INTEGER REFERENCES comment(id) ON DELETE CASCADE, -- 父评论ID（用于回复）
+    content TEXT NOT NULL,              -- 过滤后的评论内容
+    original_content TEXT,              -- 原始评论内容
+    status INTEGER DEFAULT 1,           -- 状态：1-正常，0-禁用
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
 );
+
+-- 表注释
+COMMENT ON TABLE comment IS '评论表';
+COMMENT ON COLUMN comment.id IS '评论ID';
+COMMENT ON COLUMN comment.post_id IS '帖子ID';
+COMMENT ON COLUMN comment.user_id IS '用户ID';
+COMMENT ON COLUMN comment.parent_id IS '父评论ID（用于回复）';
+COMMENT ON COLUMN comment.content IS '过滤后的评论内容';
+COMMENT ON COLUMN comment.original_content IS '原始评论内容';
+COMMENT ON COLUMN comment.status IS '状态：1-正常，0-禁用';
+COMMENT ON COLUMN comment.created_at IS '创建时间';
+COMMENT ON COLUMN comment.updated_at IS '更新时间';
 
 -- 创建消息表
-CREATE TABLE message (
-    id SERIAL PRIMARY KEY,
-    sender_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-    receiver_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-    content TEXT NOT NULL,
-    original_content TEXT,
-    status INTEGER DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS message (
+    id SERIAL PRIMARY KEY,              -- 消息ID
+    sender_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE, -- 发送者ID
+    receiver_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE, -- 接收者ID
+    content TEXT NOT NULL,              -- 过滤后的消息内容
+    original_content TEXT,              -- 原始消息内容
+    status INTEGER DEFAULT 1,           -- 状态：1-正常，0-禁用
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
 );
 
+-- 表注释
+COMMENT ON TABLE message IS '消息表';
+COMMENT ON COLUMN message.id IS '消息ID';
+COMMENT ON COLUMN message.sender_id IS '发送者ID';
+COMMENT ON COLUMN message.receiver_id IS '接收者ID';
+COMMENT ON COLUMN message.content IS '过滤后的消息内容';
+COMMENT ON COLUMN message.original_content IS '原始消息内容';
+COMMENT ON COLUMN message.status IS '状态：1-正常，0-禁用';
+COMMENT ON COLUMN message.created_at IS '创建时间';
+COMMENT ON COLUMN message.updated_at IS '更新时间';
+
 -- 创建敏感词表
-CREATE TABLE sensitive_word (
-    id SERIAL PRIMARY KEY,
-    word VARCHAR(50) NOT NULL UNIQUE,
-    status INTEGER DEFAULT 1,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS sensitive_word (
+    id SERIAL PRIMARY KEY,              -- 敏感词ID
+    word VARCHAR(50) NOT NULL UNIQUE,   -- 敏感词
+    status INTEGER DEFAULT 1,           -- 状态：1-启用，0-禁用
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
 );
+
+-- 表注释
+COMMENT ON TABLE sensitive_word IS '敏感词表';
+COMMENT ON COLUMN sensitive_word.id IS '敏感词ID';
+COMMENT ON COLUMN sensitive_word.word IS '敏感词';
+COMMENT ON COLUMN sensitive_word.status IS '状态：1-启用，0-禁用';
+COMMENT ON COLUMN sensitive_word.created_at IS '创建时间';
+COMMENT ON COLUMN sensitive_word.updated_at IS '更新时间';
 
 -- 插入初始数据
 
@@ -214,16 +327,6 @@ INSERT INTO post_tag (post_id, tag_id) VALUES
 (1, 3), -- Spring Boot 关联微服务标签
 (2, 4), -- Vue 关联Vue标签
 (2, 5); -- Vue 关联React标签（示例）
-
--- 插入初始评论
-INSERT INTO comment (post_id, user_id, parent_id, content, status) VALUES
-(1, 2, NULL, '这篇文章写得很详细，谢谢分享！', 1),
-(1, 1, 1, '不客气，很高兴对你有帮助。', 1),
-(2, 2, NULL, 'Composition API 确实比 Options API 更灵活。', 1);
-
--- 插入初始消息
-INSERT INTO message (sender_id, receiver_id, content, status) VALUES
-(2, 1, '您好，我有一个关于Spring Boot的问题想请教您。', 1);
 
 -- 提交事务
 COMMIT;

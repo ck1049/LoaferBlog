@@ -2,10 +2,10 @@ package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.loafer.blog.entity.Message;
+import com.loafer.blog.model.entity.Message;
 import com.loafer.blog.mapper.MessageMapper;
 import com.loafer.blog.service.MessageService;
-import com.loafer.blog.utils.SensitiveWordFilter;
+import com.loafer.blog.common.SensitiveWordFilter;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,7 +32,8 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         // 敏感词过滤
         String originalContent = message.getContent();
         String filteredContent = sensitiveWordFilter.filter(originalContent);
-        message.setFilteredContent(filteredContent);
+        message.setOriginalContent(originalContent);
+        message.setContent(filteredContent);
 
         baseMapper.insert(message);
         return message;
@@ -43,7 +44,8 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         // 敏感词过滤
         String originalContent = message.getContent();
         String filteredContent = sensitiveWordFilter.filter(originalContent);
-        message.setFilteredContent(filteredContent);
+        message.setOriginalContent(originalContent);
+        message.setContent(filteredContent);
 
         baseMapper.insert(message);
         return message;

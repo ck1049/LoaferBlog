@@ -1,4 +1,4 @@
-package com.loafer.blog.entity;
+package com.loafer.blog.model.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -8,16 +8,14 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("comment")
-public class Comment {
+@TableName("announcement")
+public class Announcement {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private Long postId;
-    private Long parentId;
-    private Long userId;
+    private String title;
     private String content;
-    private String filteredContent;
+    private Long authorId;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
-    private Boolean status;
+    private Integer status;
 }

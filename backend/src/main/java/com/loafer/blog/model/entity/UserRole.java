@@ -1,4 +1,4 @@
-package com.loafer.blog.entity;
+package com.loafer.blog.model.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -8,15 +8,11 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("user")
-public class User {
+@TableName("user_role")
+public class UserRole {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String username;
-    private String password;
-    private String email;
-    private String nickname;
+    private Long userId;
+    private Long roleId;
     private LocalDateTime createTime;
-    private LocalDateTime updateTime;
-    private Boolean enabled;
 }

@@ -2,10 +2,10 @@ package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.loafer.blog.entity.Comment;
+import com.loafer.blog.model.entity.Comment;
 import com.loafer.blog.mapper.CommentMapper;
 import com.loafer.blog.service.CommentService;
-import com.loafer.blog.utils.SensitiveWordFilter;
+import com.loafer.blog.common.SensitiveWordFilter;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,7 +33,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         // 敏感词过滤
         String originalContent = comment.getContent();
         String filteredContent = sensitiveWordFilter.filter(originalContent);
-        comment.setFilteredContent(filteredContent);
+        comment.setOriginalContent(originalContent);
+        comment.setContent(filteredContent);
 
         baseMapper.insert(comment);
         return comment;

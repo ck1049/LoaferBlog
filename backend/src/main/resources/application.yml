@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/loafer_blog
     username: postgres
-    password: 123456
+    password: postgres
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -11,7 +11,7 @@ spring:
 
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*.xml
-  type-aliases-package: com.loafer.blog.entity
+  type-aliases-package: com.loafer.blog.model.entity
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 

@@ -1,7 +1,7 @@
 package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.loafer.blog.entity.Role;
+import com.loafer.blog.model.entity.Role;
 import com.loafer.blog.mapper.RoleMapper;
 import com.loafer.blog.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;

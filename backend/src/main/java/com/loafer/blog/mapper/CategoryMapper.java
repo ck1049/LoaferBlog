@@ -1,7 +1,7 @@
 package com.loafer.blog.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.loafer.blog.entity.Category;
+import com.loafer.blog.model.entity.Category;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

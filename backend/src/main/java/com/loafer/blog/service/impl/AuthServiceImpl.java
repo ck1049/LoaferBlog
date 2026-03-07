@@ -1,7 +1,7 @@
 package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.loafer.blog.entity.User;
+import com.loafer.blog.model.entity.User;
 import com.loafer.blog.mapper.UserMapper;
 import com.loafer.blog.service.AuthService;
 import com.loafer.blog.utils.JwtUtils;

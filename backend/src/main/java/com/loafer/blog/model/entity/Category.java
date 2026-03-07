@@ -1,4 +1,4 @@
-package com.loafer.blog.entity;
+package com.loafer.blog.model.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -16,4 +16,5 @@ public class Category {
     private String description;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+    private Integer status;
 }

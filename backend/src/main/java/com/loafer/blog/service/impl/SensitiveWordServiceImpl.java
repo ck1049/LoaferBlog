@@ -1,10 +1,11 @@
 package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.loafer.blog.entity.SensitiveWord;
+import com.loafer.blog.model.entity.SensitiveWord;
 import com.loafer.blog.mapper.SensitiveWordMapper;
 import com.loafer.blog.service.SensitiveWordService;
-import com.loafer.blog.utils.SensitiveWordFilter;
+import com.loafer.blog.common.SensitiveWordFilter;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,7 +16,7 @@ public class SensitiveWordServiceImpl extends ServiceImpl<SensitiveWordMapper, S
 
     private final SensitiveWordFilter sensitiveWordFilter;
 
-    public SensitiveWordServiceImpl(SensitiveWordFilter sensitiveWordFilter) {
+    public SensitiveWordServiceImpl(@Lazy SensitiveWordFilter sensitiveWordFilter) {
         this.sensitiveWordFilter = sensitiveWordFilter;
     }
 

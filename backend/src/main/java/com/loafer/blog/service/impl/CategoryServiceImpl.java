@@ -2,8 +2,8 @@ package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.loafer.blog.entity.Category;
-import com.loafer.blog.entity.PostCategory;
+import com.loafer.blog.model.entity.Category;
+import com.loafer.blog.model.entity.PostCategory;
 import com.loafer.blog.mapper.CategoryMapper;
 import com.loafer.blog.mapper.PostCategoryMapper;
 import com.loafer.blog.service.CategoryService;
