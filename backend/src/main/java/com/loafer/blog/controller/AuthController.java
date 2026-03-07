@@ -52,14 +52,23 @@ public class AuthController {
             String username = request.get("username");
             String encryptedPassword = request.get("password");
             
+            System.out.println("登录请求，用户名：" + username);
+            System.out.println("加密密码长度：" + encryptedPassword.length());
+            
             String password = rsaUtils.decrypt(encryptedPassword);
+            System.out.println("解密后密码：" + password);
             
             User user = new User();
             user.setUsername(username);
             user.setPassword(password);
             
-            return authService.login(user);
+            Map<String, Object> result = authService.login(user);
+            System.out.println("登录结果：" + result);
+            
+            return result;
         } catch (Exception e) {
+            System.out.println("登录失败：" + e.getMessage());
+            e.printStackTrace();
             Map<String, Object> result = new java.util.HashMap<>();
             result.put("code", 500);
             result.put("message", "登录失败: " + e.getMessage());

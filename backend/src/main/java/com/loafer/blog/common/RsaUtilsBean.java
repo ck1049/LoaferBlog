@@ -46,10 +46,22 @@ public class RsaUtilsBean {
      */
     public String decrypt(String encryptedData) {
         try {
+            System.out.println("开始解密，加密数据长度：" + encryptedData.length());
+            System.out.println("加密数据前100个字符：" + encryptedData.substring(0, Math.min(100, encryptedData.length())));
+            
             byte[] encryptedBytes = RSAUtils.base64Decode(encryptedData);
+            System.out.println("Base64解码后字节长度：" + encryptedBytes.length);
+            
             byte[] decryptedBytes = RSAUtils.decrypt(encryptedBytes, privateKey);
-            return new String(decryptedBytes);
+            System.out.println("解密后字节长度：" + decryptedBytes.length);
+            
+            String decryptedData = new String(decryptedBytes);
+            System.out.println("解密后数据：" + decryptedData);
+            
+            return decryptedData;
         } catch (Exception e) {
+            System.out.println("解密失败：" + e.getMessage());
+            e.printStackTrace();
             throw new RuntimeException("解密失败", e);
         }
     }

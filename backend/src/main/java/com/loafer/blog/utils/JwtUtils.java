@@ -3,9 +3,12 @@ package com.loafer.blog.utils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
@@ -24,13 +27,14 @@ public class JwtUtils {
                 .setSubject(userId.toString())
                 .setIssuedAt(now)
                 .setExpiration(expireDate)
-                .signWith(SignatureAlgorithm.HS512, secret)
+                .signWith(getSecretKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public Claims getClaimsFromToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(secret)
+        return Jwts.parserBuilder()
+                .setSigningKey(getSecretKey())
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
@@ -53,5 +57,14 @@ public class JwtUtils {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    /**
+     * 获取加密密钥（JJWT 0.12+要求密钥符合算法规范，此处转换为SecretKey）
+     * @return SecretKey
+     */
+    private SecretKey getSecretKey() {
+        // 使用HS256算法，密钥需至少256位（32字节）
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 }
