@@ -27,11 +27,11 @@ const username = ref('')
 const password = ref('')
 
 const login = async () => {
-  const success = await userStore.login(username.value, password.value)
-  if (success) {
+  const result = await userStore.login(username.value, password.value)
+  if (result.success) {
     router.push('/')
   } else {
-    alert('登录失败，请检查用户名和密码')
+    alert(`登录失败: ${result.message}`)
   }
 }
 </script>

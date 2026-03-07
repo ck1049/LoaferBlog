@@ -37,12 +37,12 @@ const email = ref('')
 const nickname = ref('')
 
 const register = async () => {
-  const success = await userStore.register(username.value, email.value, password.value)
-  if (success) {
+  const result = await userStore.register(username.value, email.value, password.value)
+  if (result.success) {
     alert('注册成功，请登录')
     router.push('/login')
   } else {
-    alert('注册失败，请稍后重试')
+    alert(`注册失败: ${result.message}`)
   }
 }
 </script>

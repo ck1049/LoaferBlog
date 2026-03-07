@@ -25,14 +25,19 @@ export const useUserStore = defineStore('user', {
           username,
           password,
         });
-        const { token, user } = response.data;
-        this.token = token;
-        this.user = user;
-        localStorage.setItem('token', token);
-        return true;
-      } catch (error) {
+        const { code, token, user, message } = response.data;
+        if (code === 200) {
+          this.token = token;
+          this.user = user;
+          localStorage.setItem('token', token);
+          return { success: true, message: '登录成功' };
+        } else {
+          console.error('Login failed:', message);
+          return { success: false, message };
+        }
+      } catch (error: any) {
         console.error('Login failed:', error);
-        return false;
+        return { success: false, message: '网络错误，请稍后重试' };
       }
     },
     async register(username: string, email: string, password: string) {
@@ -42,10 +47,16 @@ export const useUserStore = defineStore('user', {
           email,
           password,
         });
-        return true;
-      } catch (error) {
+        const { code, message } = response.data;
+        if (code === 200) {
+          return { success: true, message: '注册成功' };
+        } else {
+          console.error('Registration failed:', message);
+          return { success: false, message };
+        }
+      } catch (error: any) {
         console.error('Registration failed:', error);
-        return false;
+        return { success: false, message: '网络错误，请稍后重试' };
       }
     },
     logout() {
