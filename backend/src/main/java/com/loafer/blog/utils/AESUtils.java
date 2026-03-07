@@ -1,4 +1,4 @@
-package com.loafer.common.util;
+package com.loafer.blog.utils;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
