@@ -267,11 +267,11 @@ INSERT INTO role (name, description) VALUES
 
 -- 插入管理员用户（密码：admin123，已加密）
 INSERT INTO "user" (username, password, nickname, email, status) VALUES
-('admin', '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', '管理员', 'admin@example.com', 1);
+('admin', '$2a$10$S3KxRABwzmaePrPwJjYMKuU92zhuxeMOdHO8VU5lvMV3iW.3UUvQC', '管理员', 'admin@example.com', 1);
 
 -- 插入普通用户（密码：user123，已加密）
 INSERT INTO "user" (username, password, nickname, email, status) VALUES
-('user', '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', '普通用户', 'user@example.com', 1);
+('user', '$2a$10$AnaUbNUfR9X8k0f8V7gUPeJSaxkehkwefgwdpbTs6S9lnrnAidjf6', '普通用户', 'user@example.com', 1);
 
 -- 关联用户角色
 INSERT INTO user_role (user_id, role_id) VALUES
