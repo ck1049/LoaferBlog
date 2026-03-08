@@ -1,6 +1,6 @@
 # Loafer Blog 功能增强与修复 - 实现计划
 
-## [ ] Task 1: 优化导航栏按钮
+## [x] Task 1: 优化导航栏按钮
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -13,7 +13,7 @@
   - `human-judgment` TR-1.2: 在小屏幕设备上只显示图标
 - **Notes**: 使用适当的图标，确保响应式设计正常工作
 
-## [ ] Task 2: 优化右上方按钮排版
+## [x] Task 2: 优化右上方按钮排版
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -26,7 +26,7 @@
   - `human-judgment` TR-2.2: 用户名没有背景色和边框
 - **Notes**: 选择合适的颜色，确保排版美观
 
-## [ ] Task 3: 优化首页布局，采用极简风格
+## [x] Task 3: 优化首页布局，采用极简风格
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -41,7 +41,7 @@
   - `human-judgment` TR-3.3: 搜索框和按钮融合
 - **Notes**: 确保极简风格美观大方，布局合理
 
-## [ ] Task 4: 实现帖子卡片点击功能
+## [x] Task 4: 实现帖子卡片点击功能
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -54,7 +54,7 @@
   - `human-judgment` TR-4.2: 点击体验良好
 - **Notes**: 确保卡片有适当的hover效果，提升用户体验
 
-## [ ] Task 5: 调整帖子详情页的发布时间格式
+## [x] Task 5: 调整帖子详情页的发布时间格式
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -65,7 +65,7 @@
   - `programmatic` TR-5.1: 发布时间格式为"yyyy-MM-dd HH:mm:ss"
 - **Notes**: 确保时间格式正确显示
 
-## [ ] Task 6: 修复评论功能
+## [x] Task 6: 修复评论功能
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -77,7 +77,7 @@
   - `programmatic` TR-6.1: 评论功能正常，无用户ID为空错误
 - **Notes**: 检查前端和后端的用户ID传递逻辑
 
-## [ ] Task 7: 实现管理员帖子管理功能
+## [x] Task 7: 实现管理员帖子管理功能
 - **Priority**: P1
 - **Depends On**: None
 - **Description**:
@@ -88,7 +88,7 @@
   - `programmatic` TR-7.1: 管理员可以发布、编辑、删除帖子
 - **Notes**: 确保权限控制正确，只有管理员可以访问
 
-## [ ] Task 8: 实现用户个人设置功能
+## [x] Task 8: 实现用户个人设置功能
 - **Priority**: P1
 - **Depends On**: None
 - **Description**:
@@ -100,7 +100,7 @@
   - `programmatic` TR-8.2: 用户可以注销账号
 - **Notes**: 确保密码修改和注销功能安全可靠
 
-## [ ] Task 9: 实现用户功能增强
+## [x] Task 9: 实现用户功能增强
 - **Priority**: P1
 - **Depends On**: None
 - **Description**:
@@ -132,7 +132,7 @@
   - `programmatic` TR-10.4: 显示发送失败原因
 - **Notes**: 这是一个较复杂的功能，需要详细设计
 
-## [ ] Task 11: 实现管理员文件大小限制管理功能
+## [x] Task 11: 实现管理员文件大小限制管理功能
 - **Priority**: P1
 - **Depends On**: None
 - **Description**:

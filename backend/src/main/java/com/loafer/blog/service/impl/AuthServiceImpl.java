@@ -91,6 +91,11 @@ public class AuthServiceImpl implements AuthService {
                 return ResponseVO.error(400, "用户名或密码错误");
             }
 
+            // 检查用户状态，只有状态为1的用户才能登录
+            if (existingUser.getStatus() != 1) {
+                return ResponseVO.error(400, "用户名或密码错误");
+            }
+
             // 生成JWT token
             String token = jwtUtils.generateToken(existingUser.getId());
 

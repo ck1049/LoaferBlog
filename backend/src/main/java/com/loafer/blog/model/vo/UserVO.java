@@ -3,6 +3,7 @@ package com.loafer.blog.model.vo;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class UserVO {
@@ -14,5 +15,5 @@ public class UserVO {
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private Integer status;
-    private String[] roles;
+    private List<String> roles;
 }

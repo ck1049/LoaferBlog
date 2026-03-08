@@ -3,6 +3,9 @@
 -- 日期: 2026-03-07
 
 -- 删除已存在的表（如果存在）
+DROP TABLE IF EXISTS post_view_history;
+DROP TABLE IF EXISTS post_like;
+DROP TABLE IF EXISTS post_favorite;
 DROP TABLE IF EXISTS post_tag;
 DROP TABLE IF EXISTS post_category;
 DROP TABLE IF EXISTS tag;
@@ -144,6 +147,7 @@ CREATE TABLE IF NOT EXISTS post (
     summary VARCHAR(255),               -- 帖子摘要
     view_count INTEGER DEFAULT 0,       -- 浏览次数
     comment_count INTEGER DEFAULT 0,    -- 评论次数
+    like_count INTEGER DEFAULT 0,       -- 点赞次数
     status INTEGER DEFAULT 1,           -- 状态：1-发布，0-草稿
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
@@ -158,6 +162,7 @@ COMMENT ON COLUMN post.author_id IS '作者ID';
 COMMENT ON COLUMN post.summary IS '帖子摘要';
 COMMENT ON COLUMN post.view_count IS '浏览次数';
 COMMENT ON COLUMN post.comment_count IS '评论次数';
+COMMENT ON COLUMN post.like_count IS '点赞次数';
 COMMENT ON COLUMN post.status IS '状态：1-发布，0-草稿';
 COMMENT ON COLUMN post.created_at IS '创建时间';
 COMMENT ON COLUMN post.updated_at IS '更新时间';
@@ -241,6 +246,54 @@ COMMENT ON COLUMN message.original_content IS '原始消息内容';
 COMMENT ON COLUMN message.status IS '状态：1-正常，0-禁用';
 COMMENT ON COLUMN message.created_at IS '创建时间';
 COMMENT ON COLUMN message.updated_at IS '更新时间';
+
+-- 创建帖子点赞表
+CREATE TABLE IF NOT EXISTS post_like (
+    id SERIAL PRIMARY KEY,              -- 点赞ID
+    post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE, -- 帖子ID
+    user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE, -- 用户ID
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    UNIQUE(post_id, user_id)            -- 唯一约束：一个用户对一个帖子只能点赞一次
+);
+
+-- 表注释
+COMMENT ON TABLE post_like IS '帖子点赞表';
+COMMENT ON COLUMN post_like.id IS '点赞ID';
+COMMENT ON COLUMN post_like.post_id IS '帖子ID';
+COMMENT ON COLUMN post_like.user_id IS '用户ID';
+COMMENT ON COLUMN post_like.created_at IS '创建时间';
+
+-- 创建帖子收藏表
+CREATE TABLE IF NOT EXISTS post_favorite (
+    id SERIAL PRIMARY KEY,              -- 收藏ID
+    post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE, -- 帖子ID
+    user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE, -- 用户ID
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    UNIQUE(post_id, user_id)            -- 唯一约束：一个用户对一个帖子只能收藏一次
+);
+
+-- 表注释
+COMMENT ON TABLE post_favorite IS '帖子收藏表';
+COMMENT ON COLUMN post_favorite.id IS '收藏ID';
+COMMENT ON COLUMN post_favorite.post_id IS '帖子ID';
+COMMENT ON COLUMN post_favorite.user_id IS '用户ID';
+COMMENT ON COLUMN post_favorite.created_at IS '创建时间';
+
+-- 创建帖子浏览历史表
+CREATE TABLE IF NOT EXISTS post_view_history (
+    id SERIAL PRIMARY KEY,              -- 历史ID
+    post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE, -- 帖子ID
+    user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE, -- 用户ID
+    viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 浏览时间
+    UNIQUE(post_id, user_id)            -- 唯一约束：一个用户对一个帖子只记录一次浏览
+);
+
+-- 表注释
+COMMENT ON TABLE post_view_history IS '帖子浏览历史表';
+COMMENT ON COLUMN post_view_history.id IS '历史ID';
+COMMENT ON COLUMN post_view_history.post_id IS '帖子ID';
+COMMENT ON COLUMN post_view_history.user_id IS '用户ID';
+COMMENT ON COLUMN post_view_history.viewed_at IS '浏览时间';
 
 -- 创建敏感词表
 CREATE TABLE IF NOT EXISTS sensitive_word (

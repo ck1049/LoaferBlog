@@ -1,11 +1,15 @@
 package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.loafer.blog.model.entity.Comment;
+import com.loafer.blog.model.entity.Post;
 import com.loafer.blog.mapper.CommentMapper;
+import com.loafer.blog.mapper.PostMapper;
 import com.loafer.blog.service.CommentService;
 import com.loafer.blog.common.SensitiveWordFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,6 +18,9 @@ import java.util.List;
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {
 
     private final SensitiveWordFilter sensitiveWordFilter;
+    
+    @Autowired
+    private PostMapper postMapper;
 
     public CommentServiceImpl(SensitiveWordFilter sensitiveWordFilter) {
         this.sensitiveWordFilter = sensitiveWordFilter;
@@ -37,17 +44,49 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         comment.setContent(filteredContent);
 
         baseMapper.insert(comment);
+        
+        // 更新帖子评论数
+        if (comment.getParentId() == 0) { // 只统计顶级评论
+            Post post = postMapper.selectById(comment.getPostId());
+            if (post != null) {
+                UpdateWrapper<Post> wrapper = new UpdateWrapper<>();
+                wrapper.eq("id", comment.getPostId())
+                        .set("comment_count", post.getCommentCount() != null ? post.getCommentCount() + 1 : 1);
+                postMapper.update(null, wrapper);
+            }
+        }
+        
         return comment;
     }
 
     @Override
     public boolean deleteComment(Long id) {
+        // 获取评论信息
+        Comment comment = baseMapper.selectById(id);
+        if (comment == null) {
+            return false;
+        }
+        
         // 先删除回复
         QueryWrapper<Comment> replyWrapper = new QueryWrapper<>();
         replyWrapper.eq("parent_id", id);
         baseMapper.delete(replyWrapper);
+        
         // 再删除评论
-        return baseMapper.deleteById(id) > 0;
+        boolean result = baseMapper.deleteById(id) > 0;
+        
+        // 更新帖子评论数
+        if (result && comment.getParentId() == 0) { // 只统计顶级评论
+            Post post = postMapper.selectById(comment.getPostId());
+            if (post != null) {
+                UpdateWrapper<Post> wrapper = new UpdateWrapper<>();
+                wrapper.eq("id", comment.getPostId())
+                        .set("comment_count", Math.max(0, post.getCommentCount() != null ? post.getCommentCount() - 1 : 0));
+                postMapper.update(null, wrapper);
+            }
+        }
+        
+        return result;
     }
 
     @Override

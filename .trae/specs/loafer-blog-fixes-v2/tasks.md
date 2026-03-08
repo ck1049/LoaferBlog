@@ -1,6 +1,6 @@
 # Loafer Blog 功能修复与优化 - 实现计划
 
-## [ ] Task 1: 调整UI颜色方案为蓝色系
+## [x] Task 1: 调整UI颜色方案为蓝色系
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -13,7 +13,7 @@
   - `human-judgment` TR-1.2: 颜色方案适合男女用户，不刺眼
 - **Notes**: 可参考现代网站的蓝色系配色方案，如#165DFF等专业蓝色
 
-## [ ] Task 2: 优化公告按钮布局
+## [x] Task 2: 优化公告按钮布局
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -28,7 +28,7 @@
   - `human-judgment` TR-2.3: 在小屏幕设备上自动隐藏文字，仅显示图标
 - **Notes**: 使用媒体查询和flex布局实现响应式设计
 
-## [ ] Task 3: 修复公告和帖子显示问题
+## [x] Task 3: 修复公告和帖子显示问题
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -43,7 +43,7 @@
   - `programmatic` TR-3.3: 内容显示与查询数据一致
 - **Notes**: 检查前端组件的data属性和computed属性，确保数据正确绑定
 
-## [ ] Task 4: 修复登录功能
+## [x] Task 4: 修复登录功能
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:

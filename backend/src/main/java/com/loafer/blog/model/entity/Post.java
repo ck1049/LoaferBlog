@@ -22,6 +22,8 @@ public class Post {
     private Integer viewCount;
     @TableField("comment_count")
     private Integer commentCount;
+    @TableField("like_count")
+    private Integer likeCount;
     @TableField("created_at")
     private LocalDateTime createTime;
     @TableField("updated_at")

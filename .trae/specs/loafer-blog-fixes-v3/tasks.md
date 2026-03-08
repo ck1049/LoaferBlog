@@ -1,6 +1,6 @@
 # Loafer Blog 功能增强与修复 - 实现计划 (v3)
 
-## [ ] Task 1: 优化按钮布局和图标
+## [x] Task 1: 优化按钮布局和图标
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -13,7 +13,7 @@
   - `human-judgment` TR-1.2: 图标生动可爱
 - **Notes**: 使用SVG图标提高视觉效果
 
-## [ ] Task 2: 修复评论保存成功但未渲染到页面的问题
+## [x] Task 2: 修复评论保存成功但未渲染到页面的问题
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -24,7 +24,7 @@
   - `programmatic` TR-2.1: 评论提交成功后立即渲染到页面
 - **Notes**: 检查CommentStore中的createComment方法
 
-## [ ] Task 3: 调整设置功能入口
+## [x] Task 3: 调整设置功能入口
 - **Priority**: P0
 - **Depends On**: None
 - **Description**:
@@ -37,7 +37,7 @@
   - `programmatic` TR-3.2: 用户详情页包含修改密码、注销账号功能
 - **Notes**: 整合UserSettingsView的功能到用户详情页
 
-## [ ] Task 4: 实现用户功能增强
+## [x] Task 4: 实现用户功能增强
 - **Priority**: P1
 - **Depends On**: Task 3
 - **Description**:

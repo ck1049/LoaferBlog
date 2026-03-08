@@ -15,6 +15,9 @@ public class PostVO {
     private LocalDateTime updatedAt;
     private List<CategoryVO> categories;
     private List<TagVO> tags;
+    private Integer viewCount;
+    private Integer commentCount;
+    private Integer likeCount;
 
     public PostVO(Post post) {
         this.id = post.getId();
@@ -22,5 +25,8 @@ public class PostVO {
         this.content = post.getContent();
         this.createdAt = post.getCreateTime();
         this.updatedAt = post.getUpdateTime();
+        this.viewCount = post.getViewCount();
+        this.commentCount = post.getCommentCount();
+        this.likeCount = post.getLikeCount();
     }
 }

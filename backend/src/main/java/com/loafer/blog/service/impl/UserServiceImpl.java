@@ -1,9 +1,14 @@
 package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.loafer.blog.mapper.UserMapper;
+import com.loafer.blog.mapper.UserRoleMapper;
+import com.loafer.blog.mapper.RoleMapper;
 import com.loafer.blog.model.dto.UserDTO;
 import com.loafer.blog.model.entity.User;
+import com.loafer.blog.model.entity.UserRole;
+import com.loafer.blog.model.entity.Role;
 import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.model.vo.UserVO;
 import com.loafer.blog.service.UserService;
@@ -11,9 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.ArrayList;
+import java.util.List;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +32,10 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private UserRoleMapper userRoleMapper;
+    @Autowired
+    private RoleMapper roleMapper;
     
     // 文件上传路径配置
     @Value("${file.upload.avatar-dir}")
@@ -53,7 +63,19 @@ public class UserServiceImpl implements UserService {
             userVO.setAvatar(ACCESS_DOMAIN + userVO.getAvatar());
         }
         
-        // 这里可以添加角色信息的查询和设置
+        // 添加角色信息的查询和设置
+        List<String> roles = new ArrayList<>();
+        QueryWrapper<UserRole> userRoleWrapper = new QueryWrapper<>();
+        userRoleWrapper.eq("user_id", userId);
+        List<UserRole> userRoles = userRoleMapper.selectList(userRoleWrapper);
+        for (UserRole userRole : userRoles) {
+            Role role = roleMapper.selectById(userRole.getRoleId());
+            if (role != null) {
+                roles.add(role.getName());
+            }
+        }
+        userVO.setRoles(roles);
+        
         return ResponseVO.success(userVO);
     }
 
@@ -88,6 +110,19 @@ public class UserServiceImpl implements UserService {
             userVO.setAvatar(ACCESS_DOMAIN + userVO.getAvatar());
         }
         
+        // 添加角色信息的查询和设置
+        List<String> roles = new ArrayList<>();
+        QueryWrapper<UserRole> userRoleWrapper = new QueryWrapper<>();
+        userRoleWrapper.eq("user_id", userId);
+        List<UserRole> userRoles = userRoleMapper.selectList(userRoleWrapper);
+        for (UserRole userRole : userRoles) {
+            Role role = roleMapper.selectById(userRole.getRoleId());
+            if (role != null) {
+                roles.add(role.getName());
+            }
+        }
+        userVO.setRoles(roles);
+        
         return ResponseVO.success(userVO);
     }
 
@@ -96,6 +131,17 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.selectById(userId);
         if (user == null) {
             return ResponseVO.error("用户不存在");
+        }
+
+        // 检查用户是否为管理员
+        QueryWrapper<UserRole> userRoleWrapper = new QueryWrapper<>();
+        userRoleWrapper.eq("user_id", userId);
+        List<UserRole> userRoles = userRoleMapper.selectList(userRoleWrapper);
+        for (UserRole userRole : userRoles) {
+            Role role = roleMapper.selectById(userRole.getRoleId());
+            if (role != null && "ADMIN".equals(role.getName())) {
+                return ResponseVO.error("管理员账号禁止注销");
+            }
         }
 
         // 软删除，将状态设置为0
@@ -140,6 +186,20 @@ public class UserServiceImpl implements UserService {
             // 返回更新后的用户信息
             UserVO userVO = new UserVO();
             BeanUtils.copyProperties(user, userVO);
+            
+            // 添加角色信息的查询和设置
+            List<String> roles = new ArrayList<>();
+            QueryWrapper<UserRole> userRoleWrapper = new QueryWrapper<>();
+            userRoleWrapper.eq("user_id", userId);
+            List<UserRole> userRoles = userRoleMapper.selectList(userRoleWrapper);
+            for (UserRole userRole : userRoles) {
+                Role role = roleMapper.selectById(userRole.getRoleId());
+                if (role != null) {
+                    roles.add(role.getName());
+                }
+            }
+            userVO.setRoles(roles);
+            
             return ResponseVO.success(userVO);
         } catch (IOException e) {
             log.error(e.getMessage());
