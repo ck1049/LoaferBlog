@@ -1,11 +1,9 @@
 <template>
   <div class="home">
-    <h1>技术博客</h1>
     <div class="posts">
-      <h2>技术贴</h2>
       <div class="filter-box">
         <div class="search-box">
-          <input type="text" v-model="searchKeyword" placeholder="搜索技术贴" />
+          <input type="text" v-model="searchKeyword" placeholder="搜索帖子" />
           <button @click="searchPosts">搜索</button>
         </div>
         <div class="category-filter">
@@ -19,7 +17,7 @@
         </div>
       </div>
       <div v-if="filteredPosts.length > 0" class="post-list">
-        <div v-for="post in filteredPosts" :key="post.id" class="post-item">
+        <div v-for="post in filteredPosts" :key="post.id" class="post-item" @click="viewPost(post.id)">
           <h3>{{ post.title }}</h3>
           <p>{{ post.content.substring(0, 100) }}...</p>
           <div class="post-meta">
@@ -30,7 +28,7 @@
               </span>
             </div>
           </div>
-          <button @click="viewPost(post.id)">查看详情</button>
+          <div class="view-detail">查看详情 →</div>
         </div>
       </div>
       <div v-else class="empty">
@@ -109,11 +107,25 @@ onMounted(() => {
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .post-item:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
+  background-color: #f8f9fa;
+}
+
+.view-detail {
+  margin-top: 15px;
+  color: #3498db;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.post-item:hover .view-detail {
+  color: #2980b9;
+  transform: translateX(5px);
 }
 
 .filter-box {
@@ -126,23 +138,25 @@ onMounted(() => {
 
 .search-box {
   display: flex;
-  gap: 10px;
+  max-width: 400px;
+  width: 100%;
+  border: 2px solid #e0e0e0;
+  border-radius: 25px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.search-box:focus-within {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 .search-box input {
   flex: 1;
-  max-width: 400px;
-  padding: 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 25px;
+  padding: 12px 16px;
+  border: none;
   font-size: 1rem;
-  transition: all 0.3s ease;
-}
-
-.search-box input:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 .search-box button {
@@ -150,15 +164,14 @@ onMounted(() => {
   background: linear-gradient(135deg, #3498db, #2980b9);
   color: white;
   border: none;
-  border-radius: 25px;
   cursor: pointer;
   font-weight: 500;
   transition: all 0.3s ease;
 }
 
 .search-box button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+  background: linear-gradient(135deg, #2980b9, #1f618d);
+  transform: translateY(-1px);
 }
 
 .category-filter {

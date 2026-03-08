@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS "user" (
     nickname VARCHAR(50),               -- 昵称
     email VARCHAR(100),                 -- 邮箱
     avatar VARCHAR(255),                -- 头像URL
+    bio TEXT,                           -- 个性签名
     status INTEGER DEFAULT 1,           -- 状态：1-正常，0-禁用
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
@@ -54,6 +55,7 @@ COMMENT ON COLUMN "user".password IS '密码（加密存储）';
 COMMENT ON COLUMN "user".nickname IS '昵称';
 COMMENT ON COLUMN "user".email IS '邮箱';
 COMMENT ON COLUMN "user".avatar IS '头像URL';
+COMMENT ON COLUMN "user".bio IS '个性签名';
 COMMENT ON COLUMN "user".status IS '状态：1-正常，0-禁用';
 COMMENT ON COLUMN "user".created_at IS '创建时间';
 COMMENT ON COLUMN "user".updated_at IS '更新时间';

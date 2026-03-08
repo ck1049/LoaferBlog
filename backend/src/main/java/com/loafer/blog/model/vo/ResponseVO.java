@@ -14,6 +14,10 @@ public class ResponseVO<T> {
         this.data = data;
     }
 
+    public static <T> ResponseVO<T> success() {
+        return new ResponseVO<>(200, "success", null);
+    }
+
     public static <T> ResponseVO<T> success(T data) {
         return new ResponseVO<>(200, "success", data);
     }

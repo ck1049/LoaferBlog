@@ -5,6 +5,9 @@ interface User {
   id: number;
   username: string;
   email: string;
+  nickname: string;
+  avatar: string;
+  bio: string;
   roles: string[];
 }
 
@@ -157,7 +160,7 @@ export const useUserStore = defineStore('user', {
     async fetchUserInfo() {
       if (!this.token) return;
       try {
-        const response = await axios.get('/api/auth/me', {
+        const response = await axios.get('/api/users/me', {
           headers: {
             Authorization: `Bearer ${this.token}`,
           },

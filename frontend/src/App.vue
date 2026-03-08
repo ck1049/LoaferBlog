@@ -4,20 +4,42 @@
       <div class="navbar-container">
         <router-link to="/" class="logo">LoaferBlog</router-link>
         <div class="nav-links">
-          <router-link to="/" class="nav-link">首页</router-link>
+          <router-link to="/" class="nav-link home-btn">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">首页</span>
+          </router-link>
           <button @click="toggleAnnouncements" class="nav-link announcement-btn">
-            <span class="announcement-icon">📢</span>
-            <span class="announcement-text">公告</span>
+            <span class="nav-icon">📢</span>
+            <span class="nav-text">公告</span>
           </button>
-          <div v-if="userStore.isAuthenticated">
-            <router-link v-if="userStore.isAdmin" to="/admin" class="nav-link">管理</router-link>
-            <router-link to="/messages" class="nav-link">消息</router-link>
-            <span class="user-info">{{ userStore.user?.username }}</span>
-            <button @click="logout" class="logout-btn">退出</button>
+          <div v-if="userStore.isAuthenticated" class="auth-nav">
+            <router-link v-if="userStore.isAdmin" to="/admin" class="nav-link admin-btn">
+              <span class="nav-icon">⚙️</span>
+              <span class="nav-text">管理</span>
+            </router-link>
+            <router-link to="/messages" class="nav-link message-btn">
+              <span class="nav-icon">💬</span>
+              <span class="nav-text">消息</span>
+            </router-link>
+            <div class="user-section">
+              <router-link to="/user" class="nav-link user-btn">
+                <span class="user-avatar" :style="{ backgroundImage: `url(${userStore.user?.avatar || 'https://via.placeholder.com/30'})` }"></span>
+                <span class="username">{{ userStore.user?.username }}</span>
+              </router-link>
+              <button @click="logout" class="nav-link logout-btn">
+                <span class="nav-text">退出</span>
+              </button>
+            </div>
           </div>
-          <div v-else>
-            <router-link to="/login" class="nav-link">登录</router-link>
-            <router-link to="/register" class="nav-link">注册</router-link>
+          <div v-else class="guest-nav">
+            <router-link to="/login" class="nav-link login-btn">
+              <span class="nav-icon">🔑</span>
+              <span class="nav-text">登录</span>
+            </router-link>
+            <router-link to="/register" class="nav-link register-btn">
+              <span class="nav-icon">📝</span>
+              <span class="nav-text">注册</span>
+            </router-link>
           </div>
         </div>
       </div>
@@ -123,11 +145,14 @@ body {
 .nav-link {
   color: white;
   text-decoration: none;
-  padding: 0.6rem 1.2rem;
+  padding: 0.6rem 1rem;
   border-radius: 20px;
   background-color: rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .nav-link:hover {
@@ -136,29 +161,88 @@ body {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.user-info {
-  margin-right: 1rem;
-  font-weight: 500;
-  background-color: rgba(255, 255, 255, 0.2);
-  padding: 0.4rem 1rem;
-  border-radius: 15px;
+.nav-icon {
+  font-size: 1.1rem;
 }
 
+.nav-text {
+  display: inline;
+  font-size: 0.9rem;
+}
+
+/* 认证用户导航 */
+.auth-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* 访客导航 */
+.guest-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* 用户区域 */
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 0.3rem 0.5rem;
+  border-radius: 25px;
+}
+
+.user-btn {
+  background-color: transparent !important;
+  padding: 0.3rem 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 20px;
+}
+
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-color: #f0f0f0;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.username {
+  font-weight: 500;
+  color: #ffd700;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* 退出按钮样式 */
 .logout-btn {
-  background-color: #ff4757;
+  background-color: transparent !important;
   color: white;
   border: none;
-  padding: 0.6rem 1.2rem;
+  padding: 0.3rem 0.6rem;
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: underline;
 }
 
 .logout-btn:hover {
-  background-color: #ff3742;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(255, 71, 87, 0.3);
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  transform: none;
+  box-shadow: none;
+  text-decoration: none;
 }
 
 .content {
@@ -230,12 +314,13 @@ body {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .announcement-text {
+  .nav-text {
     display: none;
   }
   
-  .announcement-btn {
-    padding: 0.6rem;
+  .nav-link {
+    padding: 0.5rem;
+    border-radius: 15px;
   }
   
   .navbar-container {
@@ -246,12 +331,44 @@ body {
     gap: 0.5rem;
   }
   
-  .nav-link {
-    padding: 0.5rem 0.8rem;
+  .auth-nav {
+    gap: 0.5rem;
   }
   
-  .user-info {
+  .guest-nav {
+    gap: 0.5rem;
+  }
+  
+  .user-section {
+    padding: 0.2rem 0.3rem;
+    border-radius: 20px;
+  }
+  
+  .user-btn {
+    padding: 0.2rem 0.4rem;
+  }
+  
+  .username {
     display: none;
+  }
+  
+  .user-avatar {
+    display: block;
+    width: 25px;
+    height: 25px;
+  }
+  
+  .logout-btn {
+    padding: 0.2rem 0.4rem;
+  }
+  
+  .logout-btn .nav-text {
+    display: none;
+  }
+  
+  .logout-btn::after {
+    content: '🚪';
+    font-size: 1rem;
   }
 }
 

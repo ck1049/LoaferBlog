@@ -1,8 +1,10 @@
 package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+
 import com.loafer.blog.dto.LoginDTO;
 import com.loafer.blog.dto.RegisterDTO;
+import com.loafer.blog.model.dto.ChangePasswordDTO;
 import com.loafer.blog.model.entity.User;
 import com.loafer.blog.model.entity.UserRole;
 import com.loafer.blog.model.entity.Role;
@@ -15,9 +17,11 @@ import com.loafer.blog.vo.LoginResponseVO;
 import com.loafer.blog.vo.ResponseVO;
 import com.loafer.blog.vo.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -33,6 +37,16 @@ public class AuthServiceImpl implements AuthService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JwtUtils jwtUtils;
+    
+    // 文件上传路径配置
+    @Value("${file.upload.avatar-dir}")
+    private String AVATAR_DIR;
+    
+    @Value("${file.access.prefix}")
+    private String ACCESS_PREFIX;
+    
+    @Value("${file.access.domain}")
+    private String ACCESS_DOMAIN;
 
     @Override
     public ResponseVO<Void> register(RegisterDTO registerDTO) {
@@ -97,7 +111,17 @@ public class AuthServiceImpl implements AuthService {
             userVO.setId(existingUser.getId());
             userVO.setUsername(existingUser.getUsername());
             userVO.setEmail(existingUser.getEmail());
+            userVO.setNickname(existingUser.getNickname());
+            userVO.setAvatar(existingUser.getAvatar());
+            userVO.setBio(existingUser.getBio());
             userVO.setRoles(roles);
+            
+            // 添加默认头像功能
+            if (userVO.getAvatar() == null || userVO.getAvatar().isEmpty()) {
+                userVO.setAvatar(ACCESS_DOMAIN + ACCESS_PREFIX + "/avatars/default-avatar.png");
+            } else {
+                userVO.setAvatar(ACCESS_DOMAIN + userVO.getAvatar());
+            }
 
             // 构建登录响应
             LoginResponseVO loginResponseVO = new LoginResponseVO();
@@ -116,36 +140,23 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public ResponseVO<UserVO> getCurrentUser(Long userId) {
-        try {
-            // 查找用户
-            User existingUser = userMapper.selectById(userId);
-            if (existingUser == null) {
-                return ResponseVO.error(404, "用户不存在");
-            }
-
-            // 获取用户角色
-            List<String> roles = new ArrayList<>();
-            QueryWrapper<UserRole> userRoleWrapper = new QueryWrapper<>();
-            userRoleWrapper.eq("user_id", existingUser.getId());
-            List<UserRole> userRoles = userRoleMapper.selectList(userRoleWrapper);
-            for (UserRole userRole : userRoles) {
-                Role role = roleMapper.selectById(userRole.getRoleId());
-                if (role != null) {
-                    roles.add(role.getName());
-                }
-            }
-
-            // 构建用户信息
-            UserVO userVO = new UserVO();
-            userVO.setId(existingUser.getId());
-            userVO.setUsername(existingUser.getUsername());
-            userVO.setEmail(existingUser.getEmail());
-            userVO.setRoles(roles);
-
-            return ResponseVO.success("获取用户信息成功", userVO);
-        } catch (Exception e) {
-            return ResponseVO.error("获取用户信息失败: " + e.getMessage());
+    public ResponseVO<Void> changePassword(Long userId, ChangePasswordDTO changePasswordDTO) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return ResponseVO.error("用户不存在");
         }
+
+        // 验证旧密码
+        if (!passwordEncoder.matches(changePasswordDTO.getOldPassword(), user.getPassword())) {
+            return ResponseVO.error("旧密码错误");
+        }
+
+        // 更新新密码
+        String encodedPassword = passwordEncoder.encode(changePasswordDTO.getNewPassword());
+        user.setPassword(encodedPassword);
+        user.setUpdateTime(LocalDateTime.now());
+        userMapper.updateById(user);
+
+        return ResponseVO.success();
     }
 }

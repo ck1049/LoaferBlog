@@ -1,12 +1,14 @@
 package com.loafer.blog.common;
 
 import com.loafer.blog.utils.RSAUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
+@Slf4j
 @Component
 public class RsaUtilsBean {
 
@@ -60,8 +62,7 @@ public class RsaUtilsBean {
             
             return decryptedData;
         } catch (Exception e) {
-            System.out.println("解密失败：" + e.getMessage());
-            e.printStackTrace();
+            log.error("解密失败：{}", e.getMessage());
             throw new RuntimeException("解密失败", e);
         }
     }

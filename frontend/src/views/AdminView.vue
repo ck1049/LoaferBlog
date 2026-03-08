@@ -239,7 +239,7 @@ const deleteAnnouncement = async (id: number) => {
 const fetchPosts = async () => {
   try {
     const response = await axios.get('/api/posts')
-    posts.value = response.data
+    posts.value = response.data.data
   } catch (error) {
     console.error('获取技术贴失败:', error)
   }

@@ -32,7 +32,7 @@ export const useCommentStore = defineStore('comment', {
     async fetchCommentsByPostId(postId: number) {
       try {
         const response = await axios.get(`/api/comments/post/${postId}`);
-        this.comments = response.data;
+        this.comments = response.data.data;
         // 为每个评论获取回复
         for (const comment of this.comments) {
           await this.fetchRepliesByCommentId(comment.id, comment);
@@ -44,7 +44,7 @@ export const useCommentStore = defineStore('comment', {
     async fetchRepliesByCommentId(commentId: number, parentComment?: Comment) {
       try {
         const response = await axios.get(`/api/comments/replies/${commentId}`);
-        const replies = response.data;
+        const replies = response.data.data;
         if (parentComment) {
           parentComment.replies = replies;
         } else {
@@ -77,11 +77,11 @@ export const useCommentStore = defineStore('comment', {
             if (!parentComment.replies) {
               parentComment.replies = [];
             }
-            parentComment.replies.push(response.data);
+            parentComment.replies.push(response.data.data);
           }
         } else {
           // 如果是新评论，添加到评论列表
-          this.comments.push(response.data);
+          this.comments.push(response.data.data);
         }
         return true;
       } catch (error) {

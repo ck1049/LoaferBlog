@@ -2,7 +2,7 @@
   <div class="post-detail">
     <div v-if="postStore.currentPost" class="post-content">
       <h1>{{ postStore.currentPost.title }}</h1>
-      <p class="post-meta">发布时间: {{ postStore.currentPost.createdAt }}</p>
+      <p class="post-meta">发布时间: {{ formatDate(postStore.currentPost.createdAt) }}</p>
       <div class="post-body">
         <MarkdownRenderer :content="postStore.currentPost.content" />
       </div>
@@ -156,6 +156,17 @@ const deleteComment = async (commentId: number, parentId?: number) => {
   } catch (error) {
     console.error('删除评论失败:', error)
   }
+}
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
 onMounted(() => {

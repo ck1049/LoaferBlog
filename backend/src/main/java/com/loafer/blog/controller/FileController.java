@@ -1,5 +1,7 @@
 package com.loafer.blog.controller;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,16 +14,21 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/files")
 public class FileController {
 
     // 文件存储路径
-    private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads";
+    @Value("${file.upload.dir}")
+    private String UPLOAD_DIR;
+    
+    @Value("${file.access.prefix}")
+    private String ACCESS_PREFIX;
 
     // 确保上传目录存在
-    static {
-        File dir = new File(UPLOAD_DIR);
+    private void ensureDirExists(String dirPath) {
+        File dir = new File(dirPath);
         if (!dir.exists()) {
             dir.mkdirs();
         }
@@ -38,6 +45,9 @@ public class FileController {
                 return ResponseEntity.badRequest().body("文件不能为空");
             }
 
+            // 确保上传目录存在
+            ensureDirExists(UPLOAD_DIR);
+
             // 生成唯一文件名
             String originalFilename = file.getOriginalFilename();
             String extension = originalFilename != null ? originalFilename.substring(originalFilename.lastIndexOf(".")) : "";
@@ -48,13 +58,13 @@ public class FileController {
             Files.write(path, file.getBytes());
 
             // 生成访问URL
-            String fileUrl = "/uploads/" + filename;
+            String fileUrl = ACCESS_PREFIX + "/" + filename;
 
             // 返回文件信息
             return ResponseEntity.ok()
-                    .body("{\"code\": 200, \"message\": \"上传成功\", \"data\": {\"url\": \"" + fileUrl + "\"}}");
+                    .body("{\"code\": 200, \"message\": \"上传成功\", \"data\": {\"url\": \"" + fileUrl + "\"}}" );
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("{\"code\": 500, \"message\": \"上传失败: " + e.getMessage() + "\"}");
         }
@@ -84,7 +94,7 @@ public class FileController {
             return ResponseEntity.ok()
                     .body("{\"code\": 200, \"message\": \"上传成功\", \"data\": {\"content\": \"" + content.replace("\"", "\\\"") + "\"}}" );
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("{\"code\": 500, \"message\": \"上传失败: " + e.getMessage() + "\"}");
         }

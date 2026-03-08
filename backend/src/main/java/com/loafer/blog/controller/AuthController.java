@@ -3,6 +3,7 @@ package com.loafer.blog.controller;
 import com.loafer.blog.common.RsaUtilsBean;
 import com.loafer.blog.dto.LoginDTO;
 import com.loafer.blog.dto.RegisterDTO;
+import com.loafer.blog.model.dto.ChangePasswordDTO;
 import com.loafer.blog.service.AuthService;
 import com.loafer.blog.vo.LoginResponseVO;
 import com.loafer.blog.vo.ResponseVO;
@@ -47,21 +48,15 @@ public class AuthController {
             // 解密敏感信息
             String username = request.getUsername();
             String encryptedPassword = request.getPassword();
-            
-            System.out.println("登录请求，用户名：" + username);
-            System.out.println("加密密码长度：" + encryptedPassword.length());
-            
             String password = rsaUtils.decrypt(encryptedPassword);
-            System.out.println("解密后密码：" + password);
-            
+
             LoginDTO loginDTO = new LoginDTO();
             loginDTO.setUsername(username);
             loginDTO.setPassword(password);
             
             return authService.login(loginDTO);
         } catch (Exception e) {
-            System.out.println("登录失败：" + e.getMessage());
-            e.printStackTrace();
+            log.error("登录失败：{}", e.getMessage());
             return ResponseVO.error("登录失败: " + e.getMessage());
         }
     }
@@ -71,9 +66,24 @@ public class AuthController {
         return authService.logout();
     }
 
-    @GetMapping("/me")
-    public ResponseVO<UserVO> getCurrentUser(@RequestAttribute("userId") Long userId) {
-        return authService.getCurrentUser(userId);
+
+    
+    @PutMapping("/password")
+    public ResponseVO<Void> changePassword(@RequestAttribute("userId") Long userId, @RequestBody ChangePasswordDTO changePasswordDTO) {
+        try {
+            // 解密敏感信息
+            String oldPassword = rsaUtils.decrypt(changePasswordDTO.getOldPassword());
+            String newPassword = rsaUtils.decrypt(changePasswordDTO.getNewPassword());
+            
+            ChangePasswordDTO dto = new ChangePasswordDTO();
+            dto.setOldPassword(oldPassword);
+            dto.setNewPassword(newPassword);
+            
+            return authService.changePassword(userId, dto);
+        } catch (Exception e) {
+            log.error("密码修改失败\n", e);
+            return ResponseVO.error("密码修改失败: " + e.getMessage());
+        }
     }
 
     // 测试RSA加密解密功能

@@ -22,6 +22,10 @@ public class User {
     private String email;
     @TableField("nickname")
     private String nickname;
+    @TableField("avatar")
+    private String avatar;
+    @TableField("bio")
+    private String bio;
     @TableField("created_at")
     private LocalDateTime createTime;
     @TableField("updated_at")
