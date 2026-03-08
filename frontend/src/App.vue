@@ -5,6 +5,10 @@
         <router-link to="/" class="logo">LoaferBlog</router-link>
         <div class="nav-links">
           <router-link to="/" class="nav-link">首页</router-link>
+          <button @click="toggleAnnouncements" class="nav-link announcement-btn">
+            <span class="announcement-icon">📢</span>
+            <span class="announcement-text">公告</span>
+          </button>
           <div v-if="userStore.isAuthenticated">
             <router-link v-if="userStore.isAdmin" to="/admin" class="nav-link">管理</router-link>
             <router-link to="/messages" class="nav-link">消息</router-link>
@@ -19,19 +23,42 @@
       </div>
     </nav>
     <div class="content">
+      <div v-if="showAnnouncements" class="announcements-dropdown">
+        <h3>公告</h3>
+        <div v-if="announcementStore.announcements.length > 0" class="announcement-list">
+          <div v-for="announcement in announcementStore.announcements" :key="announcement.id" class="announcement-item">
+            <h4>{{ announcement.title }}</h4>
+            <p>{{ announcement.content }}</p>
+            <span>{{ new Date(announcement.createdAt).toLocaleString() }}</span>
+          </div>
+        </div>
+        <div v-else class="empty">
+          暂无公告
+        </div>
+      </div>
       <router-view />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useUserStore } from './stores/user';
+import { useAnnouncementStore } from './stores/announcement';
 
 const userStore = useUserStore();
+const announcementStore = useAnnouncementStore();
+const showAnnouncements = ref(false);
 
 const logout = () => {
   userStore.logout();
+};
+
+const toggleAnnouncements = () => {
+  showAnnouncements.value = !showAnnouncements.value;
+  if (showAnnouncements.value) {
+    announcementStore.fetchAnnouncements();
+  }
 };
 
 onMounted(() => {
@@ -50,8 +77,8 @@ onMounted(() => {
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f8f0ff;
-  background-image: linear-gradient(135deg, #f8f0ff 0%, #e6f7ff 100%);
+  background-color: #f0f8ff;
+  background-image: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
   color: #333;
 }
 
@@ -62,11 +89,11 @@ body {
 }
 
 .navbar {
-  background: linear-gradient(135deg, #ff6b9d, #c44569);
+  background: linear-gradient(135deg, #3498db, #2980b9);
   color: white;
   padding: 1rem 0;
   margin-bottom: 2rem;
-  box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
 }
 
 .navbar-container {
@@ -138,6 +165,96 @@ body {
   padding: 0 1rem 2rem;
 }
 
+/* 公告按钮样式 */
+.announcement-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.announcement-icon {
+  font-size: 1.1rem;
+}
+
+.announcement-text {
+  display: inline;
+}
+
+/* 公告下拉列表 */
+.announcements-dropdown {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.announcement-list {
+  margin-top: 1rem;
+}
+
+.announcement-item {
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 1rem;
+}
+
+.announcement-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.announcement-item h4 {
+  margin-bottom: 0.5rem;
+  color: #3498db;
+}
+
+.announcement-item p {
+  margin-bottom: 0.5rem;
+  color: #555;
+}
+
+.announcement-item span {
+  font-size: 0.9rem;
+  color: #999;
+}
+
+.empty {
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .announcement-text {
+    display: none;
+  }
+  
+  .announcement-btn {
+    padding: 0.6rem;
+  }
+  
+  .navbar-container {
+    padding: 0 0.5rem;
+  }
+  
+  .nav-links {
+    gap: 0.5rem;
+  }
+  
+  .nav-link {
+    padding: 0.5rem 0.8rem;
+  }
+  
+  .user-info {
+    display: none;
+  }
+}
+
 /* 卡片样式 */
 .card {
   background: white;
@@ -164,13 +281,13 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #ff6b9d, #c44569);
+  background: linear-gradient(135deg, #3498db, #2980b9);
   color: white;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(255, 107, 157, 0.3);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
 }
 
 /* 输入框样式 */
@@ -185,8 +302,8 @@ body {
 
 .input:focus {
   outline: none;
-  border-color: #ff6b9d;
-  box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 /* 标题样式 */
@@ -198,13 +315,13 @@ h1, h2, h3, h4, h5, h6 {
 
 /* 链接样式 */
 a {
-  color: #ff6b9d;
+  color: #3498db;
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
 a:hover {
-  color: #c44569;
+  color: #2980b9;
   text-decoration: underline;
 }
 

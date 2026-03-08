@@ -26,7 +26,7 @@ export const useAnnouncementStore = defineStore('announcement', {
     async fetchAnnouncements() {
       try {
         const response = await axios.get('/api/announcements');
-        this.announcements = response.data;
+        this.announcements = response.data.data;
       } catch (error) {
         console.error('Failed to fetch announcements:', error);
       }
@@ -34,7 +34,7 @@ export const useAnnouncementStore = defineStore('announcement', {
     async fetchAnnouncementById(id: number) {
       try {
         const response = await axios.get(`/api/announcements/${id}`);
-        this.currentAnnouncement = response.data;
+        this.currentAnnouncement = response.data.data;
       } catch (error) {
         console.error(`Failed to fetch announcement ${id}:`, error);
       }
@@ -50,7 +50,7 @@ export const useAnnouncementStore = defineStore('announcement', {
             Authorization: `Bearer ${token}`,
           },
         });
-        this.announcements.push(response.data);
+        this.announcements.push(response.data.data);
         return true;
       } catch (error) {
         console.error('Failed to create announcement:', error);
@@ -70,7 +70,7 @@ export const useAnnouncementStore = defineStore('announcement', {
         });
         const index = this.announcements.findIndex(a => a.id === id);
         if (index !== -1) {
-          this.announcements[index] = response.data;
+          this.announcements[index] = response.data.data;
         }
         return true;
       } catch (error) {

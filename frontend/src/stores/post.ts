@@ -29,7 +29,7 @@ export const usePostStore = defineStore('post', {
     async fetchPosts() {
       try {
         const response = await axios.get('/api/posts');
-        this.posts = response.data;
+        this.posts = response.data.data;
       } catch (error) {
         console.error('Failed to fetch posts:', error);
       }
@@ -37,7 +37,7 @@ export const usePostStore = defineStore('post', {
     async fetchPostById(id: number) {
       try {
         const response = await axios.get(`/api/posts/${id}`);
-        this.currentPost = response.data;
+        this.currentPost = response.data.data;
       } catch (error) {
         console.error(`Failed to fetch post ${id}:`, error);
       }
@@ -45,7 +45,7 @@ export const usePostStore = defineStore('post', {
     async searchPosts(keyword: string) {
       try {
         const response = await axios.get(`/api/posts/search?keyword=${keyword}`);
-        this.posts = response.data;
+        this.posts = response.data.data;
       } catch (error) {
         console.error('Failed to search posts:', error);
       }
@@ -63,7 +63,7 @@ export const usePostStore = defineStore('post', {
             Authorization: `Bearer ${token}`,
           },
         });
-        this.posts.push(response.data);
+        this.posts.push(response.data.data);
         return true;
       } catch (error) {
         console.error('Failed to create post:', error);
@@ -85,7 +85,7 @@ export const usePostStore = defineStore('post', {
         });
         const index = this.posts.findIndex(p => p.id === id);
         if (index !== -1) {
-          this.posts[index] = response.data;
+          this.posts[index] = response.data.data;
         }
         return true;
       } catch (error) {

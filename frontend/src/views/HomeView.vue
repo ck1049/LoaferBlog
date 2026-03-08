@@ -1,27 +1,6 @@
 <template>
   <div class="home">
     <h1>技术博客</h1>
-    <div class="announcement-toggle">
-      <button @click="toggleAnnouncements" class="announcement-btn">
-        <span class="announcement-icon">📢</span>
-        <span v-if="unreadAnnouncements > 0" class="unread-badge">{{ unreadAnnouncements }}</span>
-        公告
-      </button>
-    </div>
-    <div v-if="showAnnouncements" class="announcements">
-      <h2>公告</h2>
-      <div v-if="announcementStore.announcements.length > 0" class="announcement-list">
-        <div v-for="announcement in announcementStore.sortedAnnouncements" :key="announcement.id" class="announcement-item" @click="markAsRead(announcement.id)">
-          <h3>{{ announcement.title }}</h3>
-          <p>{{ announcement.content }}</p>
-          <span>{{ formatDate(announcement.createdAt) }}</span>
-          <span v-if="!isRead(announcement.id)" class="unread-indicator">未读</span>
-        </div>
-      </div>
-      <div v-else class="empty">
-        暂无公告
-      </div>
-    </div>
     <div class="posts">
       <h2>技术贴</h2>
       <div class="filter-box">
@@ -64,28 +43,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAnnouncementStore } from '../stores/announcement'
 import { usePostStore } from '../stores/post'
 import { useCategoryStore } from '../stores/category'
 
 const router = useRouter()
-const announcementStore = useAnnouncementStore()
 const postStore = usePostStore()
 const categoryStore = useCategoryStore()
 const searchKeyword = ref('')
-const showAnnouncements = ref(false)
 const selectedCategoryId = ref(0)
 
-// 已读公告ID列表
-const readAnnouncements = ref<number[]>(() => {
-  const stored = localStorage.getItem('readAnnouncements');
-  return stored ? JSON.parse(stored) : [];
-});
 
-// 计算未读公告数量
-const unreadAnnouncements = computed(() => {
-  return announcementStore.announcements.filter(ann => !readAnnouncements.value.includes(ann.id)).length;
-});
 
 // 计算过滤后的帖子
 const filteredPosts = computed(() => {
@@ -101,23 +68,7 @@ const filteredPosts = computed(() => {
   return posts;
 });
 
-// 切换公告显示/隐藏
-const toggleAnnouncements = () => {
-  showAnnouncements.value = !showAnnouncements.value;
-};
 
-// 标记公告为已读
-const markAsRead = (id: number) => {
-  if (!readAnnouncements.value.includes(id)) {
-    readAnnouncements.value.push(id);
-    localStorage.setItem('readAnnouncements', JSON.stringify(readAnnouncements.value));
-  }
-};
-
-// 检查公告是否已读
-const isRead = (id: number) => {
-  return readAnnouncements.value.includes(id);
-};
 
 const searchPosts = async () => {
   await postStore.searchPosts(searchKeyword.value)
@@ -136,7 +87,6 @@ const formatDate = (dateString: string) => {
 };
 
 onMounted(() => {
-  announcementStore.fetchAnnouncements()
   postStore.fetchPosts()
   categoryStore.fetchCategories()
 })
@@ -148,12 +98,10 @@ onMounted(() => {
   animation: fadeIn 0.6s ease-out;
 }
 
-.announcements,
 .posts {
   margin-bottom: 40px;
 }
 
-.announcement-item,
 .post-item {
   background-color: white;
   padding: 20px;
@@ -163,7 +111,6 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
-.announcement-item:hover,
 .post-item:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
@@ -194,13 +141,13 @@ onMounted(() => {
 
 .search-box input:focus {
   outline: none;
-  border-color: #ff6b9d;
-  box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 .search-box button {
   padding: 12px 24px;
-  background: linear-gradient(135deg, #ff6b9d, #c44569);
+  background: linear-gradient(135deg, #3498db, #2980b9);
   color: white;
   border: none;
   border-radius: 25px;
@@ -211,7 +158,7 @@ onMounted(() => {
 
 .search-box button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(255, 107, 157, 0.3);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
 }
 
 .category-filter {
@@ -237,8 +184,8 @@ onMounted(() => {
 
 .category-filter select:focus {
   outline: none;
-  border-color: #ff6b9d;
-  box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
 }
 
 .post-meta {
@@ -265,7 +212,7 @@ onMounted(() => {
 }
 
 .category-tag:hover {
-  background-color: #ff6b9d;
+  background-color: #3498db;
   color: white;
 }
 
@@ -309,7 +256,7 @@ h2 {
   color: #34495e;
   margin-bottom: 20px;
   padding-bottom: 10px;
-  border-bottom: 3px solid #ff6b9d;
+  border-bottom: 3px solid #3498db;
   display: inline-block;
 }
 
@@ -331,62 +278,7 @@ span {
   font-size: 0.9rem;
 }
 
-/* 公告切换按钮 */
-.announcement-toggle {
-  margin-bottom: 20px;
-  text-align: center;
-}
 
-.announcement-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #ff6b9d, #c44569);
-  color: white;
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.announcement-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(255, 107, 157, 0.3);
-}
-
-.announcement-icon {
-  font-size: 1.2rem;
-}
-
-.unread-badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background-color: #ff3742;
-  color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 0.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-}
-
-.unread-indicator {
-  display: inline-block;
-  background-color: #ff6b9d;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.8rem;
-  margin-left: 10px;
-}
 
 /* 动画效果 */
 @keyframes fadeIn {

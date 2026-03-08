@@ -25,8 +25,8 @@ export const useUserStore = defineStore('user', {
       try {
         const response = await axios.get('/api/rsa/public-key');
         if (response.data.code === 200) {
-          this.publicKey = response.data.publicKey;
-          return response.data.publicKey;
+          this.publicKey = response.data.data.publicKey;
+          return response.data.data.publicKey;
         } else {
           console.error('Failed to get public key:', response.data.message);
           return null;
