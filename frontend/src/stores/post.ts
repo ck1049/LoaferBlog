@@ -37,9 +37,17 @@ export const usePostStore = defineStore('post', {
     async fetchPostById(id: number) {
       try {
         const response = await axios.get(`/api/posts/${id}`);
-        this.currentPost = response.data.data;
+        if (response.data.data) {
+          this.currentPost = response.data.data;
+          return true;
+        } else {
+          this.currentPost = null;
+          return false;
+        }
       } catch (error) {
         console.error(`Failed to fetch post ${id}:`, error);
+        this.currentPost = null;
+        return false;
       }
     },
     async searchPosts(keyword: string) {

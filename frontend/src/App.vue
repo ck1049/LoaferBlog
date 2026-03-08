@@ -5,20 +5,20 @@
         <router-link to="/" class="logo">LoaferBlog</router-link>
         <div class="nav-links">
           <router-link to="/" class="nav-link home-btn">
-            <span class="nav-icon">🏠</span>
+            <img src="./assets/icons/home.svg" alt="首页" class="nav-svg-icon">
             <span class="nav-text">首页</span>
           </router-link>
           <button @click="toggleAnnouncements" class="nav-link announcement-btn">
-            <span class="nav-icon">📢</span>
+            <img src="./assets/icons/announcement.svg" alt="公告" class="nav-svg-icon">
             <span class="nav-text">公告</span>
           </button>
           <div v-if="userStore.isAuthenticated" class="auth-nav">
             <router-link v-if="userStore.isAdmin" to="/admin" class="nav-link admin-btn">
-              <span class="nav-icon">⚙️</span>
+              <img src="./assets/icons/settings.svg" alt="管理" class="nav-svg-icon">
               <span class="nav-text">管理</span>
             </router-link>
             <router-link to="/messages" class="nav-link message-btn">
-              <span class="nav-icon">💬</span>
+              <img src="./assets/icons/message.svg" alt="消息" class="nav-svg-icon">
               <span class="nav-text">消息</span>
             </router-link>
             <div class="user-section">
@@ -27,17 +27,17 @@
                 <span class="username">{{ userStore.user?.username }}</span>
               </router-link>
               <button @click="logout" class="nav-link logout-btn">
-                <span class="nav-text">退出</span>
+                <img src="./assets/icons/logout.svg" alt="退出" class="nav-svg-icon">
               </button>
             </div>
           </div>
           <div v-else class="guest-nav">
             <router-link to="/login" class="nav-link login-btn">
-              <span class="nav-icon">🔑</span>
+              <img src="./assets/icons/login.svg" alt="登录" class="nav-svg-icon">
               <span class="nav-text">登录</span>
             </router-link>
             <router-link to="/register" class="nav-link register-btn">
-              <span class="nav-icon">📝</span>
+              <img src="./assets/icons/register.svg" alt="注册" class="nav-svg-icon">
               <span class="nav-text">注册</span>
             </router-link>
           </div>
@@ -163,6 +163,17 @@ body {
 
 .nav-icon {
   font-size: 1.1rem;
+}
+
+.nav-svg-icon {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover .nav-svg-icon {
+  transform: scale(1.1);
 }
 
 .nav-text {

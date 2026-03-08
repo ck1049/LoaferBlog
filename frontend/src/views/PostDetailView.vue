@@ -18,6 +18,24 @@
           {{ tag.name }}
         </span>
       </div>
+      <div class="post-actions">
+          <button @click="likePost" class="action-btn like-btn" :class="{ 'liked': isLiked }">
+            <span class="btn-icon">❤️</span>
+            <span class="btn-text">{{ isLiked ? '已点赞' : '点赞' }}</span>
+            <span class="btn-count">{{ postStore.currentPost.likeCount || 0 }}</span>
+          </button>
+          <button @click="favoritePost" class="action-btn favorite-btn" :class="{ 'favorited': isFavorited }">
+            <span class="btn-icon">⭐</span>
+            <span class="btn-text">{{ isFavorited ? '已收藏' : '收藏' }}</span>
+          </button>
+          <div class="post-stats">
+            <span class="stat-item">浏览: {{ postStore.currentPost.viewCount || 0 }}</span>
+            <span class="stat-item">评论: {{ postStore.currentPost.commentCount || 0 }}</span>
+          </div>
+        </div>
+    </div>
+    <div v-else-if="postNotFound" class="post-not-found">
+      原贴已被删除
     </div>
     <div v-else class="loading">
       加载中...
@@ -34,7 +52,7 @@
       </div>
 
       <div class="comment-list">
-        <div v-for="comment in commentStore.comments" :key="comment.id" class="comment-item">
+        <div v-for="comment in commentStore.sortedComments" :key="comment.id" class="comment-item">
           <div class="comment-header">
             <span class="comment-author">{{ comment.user?.nickname }}</span>
             <span class="comment-time">{{ comment.createdAt }}</span>
@@ -82,13 +100,22 @@ const commentStore = useCommentStore()
 const commentContent = ref('')
 const replyContent = ref('')
 const replyingTo = ref<number | null>(null)
+const isLiked = ref(false)
+const isFavorited = ref(false)
+const postNotFound = ref(false)
 
 const fetchPost = async () => {
   try {
     const id = Number(route.params.id)
-    await postStore.fetchPostById(id)
+    const result = await postStore.fetchPostById(id)
+    if (!result) {
+      postNotFound.value = true
+    } else {
+      postNotFound.value = false
+    }
   } catch (error) {
     console.error('获取帖子详情失败:', error)
+    postNotFound.value = true
   }
 }
 
@@ -158,6 +185,112 @@ const deleteComment = async (commentId: number, parentId?: number) => {
   }
 }
 
+const likePost = async () => {
+  if (!userStore.isAuthenticated) {
+    alert('请登录后再进行操作')
+    return
+  }
+
+  try {
+    const id = Number(route.params.id)
+    let method = isLiked.value ? 'DELETE' : 'POST'
+    const response = await fetch(`/api/posts/${id}/like`, {
+      method: method,
+      headers: {
+        'Authorization': `Bearer ${userStore.token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    if (response.ok) {
+      isLiked.value = !isLiked.value
+      if (postStore.currentPost) {
+        postStore.currentPost.likeCount = (postStore.currentPost.likeCount || 0) + (isLiked.value ? 1 : -1)
+      }
+    }
+  } catch (error) {
+    console.error('点赞操作失败:', error)
+  }
+}
+
+const favoritePost = async () => {
+  if (!userStore.isAuthenticated) {
+    alert('请登录后再进行操作')
+    return
+  }
+
+  try {
+    const id = Number(route.params.id)
+    let method = isFavorited.value ? 'DELETE' : 'POST'
+    const response = await fetch(`/api/posts/${id}/favorite`, {
+      method: method,
+      headers: {
+        'Authorization': `Bearer ${userStore.token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    if (response.ok) {
+      isFavorited.value = !isFavorited.value
+    }
+  } catch (error) {
+    console.error('收藏操作失败:', error)
+  }
+}
+
+const checkLikeAndFavoriteStatus = async () => {
+  if (!userStore.isAuthenticated || !postStore.currentPost) return
+
+  try {
+    const id = Number(route.params.id)
+    
+    // 检查点赞状态
+    const likeResponse = await fetch(`/api/posts/${id}/like/check`, {
+      headers: {
+        'Authorization': `Bearer ${userStore.token}`
+      }
+    })
+    
+    if (likeResponse.ok) {
+      const likeData = await likeResponse.json()
+      isLiked.value = likeData.data
+    }
+    
+    // 检查收藏状态
+    const favoriteResponse = await fetch(`/api/posts/${id}/favorite/check`, {
+      headers: {
+        'Authorization': `Bearer ${userStore.token}`
+      }
+    })
+    
+    if (favoriteResponse.ok) {
+      const favoriteData = await favoriteResponse.json()
+      isFavorited.value = favoriteData.data
+    }
+  } catch (error) {
+    console.error('检查点赞和收藏状态失败:', error)
+  }
+}
+
+const recordViewHistory = async () => {
+  if (!userStore.isAuthenticated || !postStore.currentPost) return
+
+  try {
+    const id = Number(route.params.id)
+    // 这里需要调用后端API记录浏览历史
+    // 假设后端提供了 /api/posts/{id}/view 接口
+    await fetch(`/api/posts/${id}/view`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${userStore.token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+  } catch (error) {
+    console.error('记录浏览历史失败:', error)
+  }
+}
+
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
   const year = date.getFullYear()
@@ -169,9 +302,11 @@ const formatDate = (dateString: string) => {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
-onMounted(() => {
-  fetchPost()
-  fetchComments()
+onMounted(async () => {
+  await fetchPost()
+  await fetchComments()
+  await checkLikeAndFavoriteStatus()
+  await recordViewHistory()
 })
 </script>
 
@@ -374,5 +509,98 @@ onMounted(() => {
   text-align: center;
   padding: 50px;
   color: #999;
+}
+
+.post-not-found {
+  text-align: center;
+  padding: 100px;
+  color: #999;
+  font-size: 18px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.post-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 15px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.like-btn {
+  background-color: #f0f8ff;
+  color: #3498db;
+}
+
+.like-btn:hover {
+  background-color: #e3f2fd;
+}
+
+.like-btn.liked {
+  background-color: #ffebef;
+  color: #e74c3c;
+}
+
+.favorite-btn {
+  background-color: #fff8e1;
+  color: #f39c12;
+}
+
+.favorite-btn:hover {
+  background-color: #fff3cd;
+}
+
+.favorite-btn.favorited {
+  background-color: #fff3cd;
+  color: #e67e22;
+}
+
+.btn-icon {
+  font-size: 16px;
+}
+
+.btn-count {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.post-stats {
+  margin-left: auto;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  font-size: 14px;
+  color: #666;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 </style>

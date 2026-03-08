@@ -24,8 +24,9 @@
         
         <div class="setting-item danger-zone">
           <h3>危险操作</h3>
-          <p>注销账号将删除您的所有数据，此操作不可恢复。</p>
-          <button @click="confirmDeleteAccount" class="btn btn-danger">注销账号</button>
+          <p v-if="!userStore.isAdmin">注销账号将删除您的所有数据，此操作不可恢复。</p>
+          <button v-if="!userStore.isAdmin" @click="confirmDeleteAccount" class="btn btn-danger">注销账号</button>
+          <p v-else class="admin-notice">管理员账号禁止注销</p>
         </div>
       </div>
     </div>
@@ -178,5 +179,11 @@ const deleteAccount = async () => {
 .danger-zone p {
   margin-bottom: 15px;
   color: #666;
+}
+
+.admin-notice {
+  color: #999;
+  font-style: italic;
+  margin-top: 10px;
 }
 </style>

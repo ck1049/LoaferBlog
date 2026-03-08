@@ -53,8 +53,9 @@
           <button @click="changePassword" class="btn btn-primary">修改密码</button>
           <div class="danger-zone">
             <h4>危险操作</h4>
-            <p>注销账号将删除您的所有数据，此操作不可恢复。</p>
-            <button @click="confirmDeleteAccount" class="btn btn-danger">注销账号</button>
+            <p v-if="!userStore.isAdmin">注销账号将删除您的所有数据，此操作不可恢复。</p>
+            <button v-if="!userStore.isAdmin" @click="confirmDeleteAccount" class="btn btn-danger">注销账号</button>
+            <p v-else class="admin-notice">管理员账号禁止注销</p>
           </div>
         </div>
 
@@ -62,15 +63,31 @@
         <div v-if="activeTab === 'favorites'" class="tab-content">
           <h3>我的收藏</h3>
           <div v-if="favorites.length > 0" class="favorites-list">
-            <div v-for="post in favorites" :key="post.id" class="favorite-item">
-              <h4>{{ post.title }}</h4>
-              <p>{{ post.content.substring(0, 100) }}...</p>
-              <span>{{ formatDate(post.createdAt) }}</span>
-              <button @click="removeFavorite(post.id)" class="btn btn-secondary">取消收藏</button>
+            <div v-for="post in favorites" :key="post.id" class="swipe-container">
+              <div class="swipe-content favorite-item" 
+                   @click="navigateToPost(post.id)"
+                   @touchstart="startSwipe($event, post.id, 'favorites')"
+                   @touchmove="moveSwipe($event, post.id)"
+                   @touchend="endSwipe(post.id)"
+                   :style="swipeOffsets[post.id] ? { transform: `translateX(${swipeOffsets[post.id]}px)` } : {}"
+              >
+                <h4>{{ post.title }}</h4>
+                <p>{{ post.content.substring(0, 100) }}...</p>
+                <span>{{ formatDate(post.favoritedAt || post.createdAt) }}</span>
+              </div>
+              <div class="swipe-actions">
+                <button @click="removeFavorite(post.id)" class="swipe-btn cancel-favorite">取消收藏</button>
+              </div>
             </div>
           </div>
           <div v-else class="empty">
             暂无收藏
+          </div>
+          <!-- 分页控件 -->
+          <div v-if="totalCounts.favorites > 0" class="pagination">
+            <button @click="loadFavorites(currentPages.favorites - 1)" :disabled="currentPages.favorites === 1 || loading.favorites">上一页</button>
+            <span>{{ currentPages.favorites }} / {{ Math.ceil(totalCounts.favorites / pageSizes) }}</span>
+            <button @click="loadFavorites(currentPages.favorites + 1)" :disabled="currentPages.favorites >= Math.ceil(totalCounts.favorites / pageSizes) || loading.favorites">下一页</button>
           </div>
         </div>
 
@@ -78,14 +95,31 @@
         <div v-if="activeTab === 'history'" class="tab-content">
           <h3>浏览历史</h3>
           <div v-if="history.length > 0" class="history-list">
-            <div v-for="post in history" :key="post.id" class="history-item">
-              <h4>{{ post.title }}</h4>
-              <p>{{ post.content.substring(0, 100) }}...</p>
-              <span>{{ formatDate(post.viewedAt) }}</span>
+            <div v-for="post in history" :key="post.id" class="swipe-container">
+              <div class="swipe-content history-item" 
+                   @click="navigateToPost(post.id)"
+                   @touchstart="startSwipe($event, post.id, 'history')"
+                   @touchmove="moveSwipe($event, post.id)"
+                   @touchend="endSwipe(post.id)"
+                   :style="swipeOffsets[post.id] ? { transform: `translateX(${swipeOffsets[post.id]}px)` } : {}"
+              >
+                <h4>{{ post.title }}</h4>
+                <p>{{ post.content.substring(0, 100) }}...</p>
+                <span>{{ formatDate(post.viewedAt || post.createdAt) }}</span>
+              </div>
+              <div class="swipe-actions">
+                <button @click="removeHistory(post.id)" class="swipe-btn delete-history">删除历史</button>
+              </div>
             </div>
           </div>
           <div v-else class="empty">
             暂无浏览历史
+          </div>
+          <!-- 分页控件 -->
+          <div v-if="totalCounts.history > 0" class="pagination">
+            <button @click="loadHistory(currentPages.history - 1)" :disabled="currentPages.history === 1 || loading.history">上一页</button>
+            <span>{{ currentPages.history }} / {{ Math.ceil(totalCounts.history / pageSizes) }}</span>
+            <button @click="loadHistory(currentPages.history + 1)" :disabled="currentPages.history >= Math.ceil(totalCounts.history / pageSizes) || loading.history">下一页</button>
           </div>
         </div>
 
@@ -93,14 +127,31 @@
         <div v-if="activeTab === 'likes'" class="tab-content">
           <h3>我的点赞</h3>
           <div v-if="likes.length > 0" class="likes-list">
-            <div v-for="post in likes" :key="post.id" class="like-item">
-              <h4>{{ post.title }}</h4>
-              <p>{{ post.content.substring(0, 100) }}...</p>
-              <span>{{ formatDate(post.likedAt) }}</span>
+            <div v-for="post in likes" :key="post.id" class="swipe-container">
+              <div class="swipe-content like-item" 
+                   @click="navigateToPost(post.id)"
+                   @touchstart="startSwipe($event, post.id, 'likes')"
+                   @touchmove="moveSwipe($event, post.id)"
+                   @touchend="endSwipe(post.id)"
+                   :style="swipeOffsets[post.id] ? { transform: `translateX(${swipeOffsets[post.id]}px)` } : {}"
+              >
+                <h4>{{ post.title }}</h4>
+                <p>{{ post.content.substring(0, 100) }}...</p>
+                <span>{{ formatDate(post.likedAt || post.createdAt) }}</span>
+              </div>
+              <div class="swipe-actions">
+                <button @click="removeLike(post.id)" class="swipe-btn cancel-like">取消点赞</button>
+              </div>
             </div>
           </div>
           <div v-else class="empty">
             暂无点赞记录
+          </div>
+          <!-- 分页控件 -->
+          <div v-if="totalCounts.likes > 0" class="pagination">
+            <button @click="loadLikes(currentPages.likes - 1)" :disabled="currentPages.likes === 1 || loading.likes">上一页</button>
+            <span>{{ currentPages.likes }} / {{ Math.ceil(totalCounts.likes / pageSizes) }}</span>
+            <button @click="loadLikes(currentPages.likes + 1)" :disabled="currentPages.likes >= Math.ceil(totalCounts.likes / pageSizes) || loading.likes">下一页</button>
           </div>
         </div>
       </div>
@@ -135,6 +186,27 @@ const securityForm = ref({
 const favorites = ref<any[]>([])
 const history = ref<any[]>([])
 const likes = ref<any[]>([])
+const swipeOffsets = ref<Record<number, number>>({})
+const startX = ref<number>(0)
+const activeTabForSwipe = ref<string>('')
+
+// 分页相关变量
+const pageSizes = ref<number>(10)
+const currentPages = ref<Record<string, number>>({
+  favorites: 1,
+  history: 1,
+  likes: 1
+})
+const totalCounts = ref<Record<string, number>>({
+  favorites: 0,
+  history: 0,
+  likes: 0
+})
+const loading = ref<Record<string, boolean>>({
+  favorites: false,
+  history: false,
+  likes: false
+})
 
 // 监听userStore.user的变化，更新userAvatar
 watch(() => userStore.user, (newUser) => {
@@ -146,6 +218,32 @@ watch(() => userStore.user, (newUser) => {
     profileForm.value.bio = newUser.bio || ''
   }
 }, { deep: true })
+
+const startSwipe = (event: TouchEvent, postId: number, tab: string) => {
+  startX.value = event.touches[0].clientX
+  activeTabForSwipe.value = tab
+}
+
+const moveSwipe = (event: TouchEvent, postId: number) => {
+  const currentX = event.touches[0].clientX
+  const diffX = currentX - startX.value
+  
+  // 只允许向左滑动，最多滑动120px
+  if (diffX < 0 && Math.abs(diffX) <= 120) {
+    swipeOffsets.value[postId] = diffX
+  }
+}
+
+const endSwipe = (postId: number) => {
+  // 如果滑动距离超过60px，就保持打开状态，否则关闭
+  if (Math.abs(swipeOffsets.value[postId] || 0) > 60) {
+    swipeOffsets.value[postId] = -120
+  } else {
+    swipeOffsets.value[postId] = 0
+  }
+}
+
+
 
 const uploadAvatar = () => {
   avatarInput.value?.click()
@@ -268,10 +366,136 @@ const deleteAccount = async () => {
   }
 }
 
+const loadFavorites = async (page: number = 1) => {
+  try {
+    loading.value.favorites = true
+    const response = await axios.get('/api/users/favorites', {
+      headers: {
+        'Authorization': `Bearer ${userStore.token}`
+      },
+      params: {
+        page: page,
+        size: pageSizes.value
+      }
+    })
+    if (response.data.code === 200) {
+      favorites.value = response.data.data.list
+      totalCounts.value.favorites = response.data.data.total
+      currentPages.value.favorites = page
+    }
+  } catch (error) {
+    console.error('获取收藏失败:', error)
+  } finally {
+    loading.value.favorites = false
+  }
+}
+
 const removeFavorite = async (postId: number) => {
-  // 这里需要实现取消收藏逻辑
-  // 调用后端API取消收藏
-  alert('取消收藏功能开发中')
+  try {
+    const response = await axios.delete(`/api/users/favorites/${postId}`, {
+      headers: {
+        'Authorization': `Bearer ${userStore.token}`
+      }
+    })
+    if (response.data.code === 200) {
+      favorites.value = favorites.value.filter(f => f.id !== postId)
+      totalCounts.value.favorites--
+      alert('取消收藏成功')
+      // 重置滑动状态
+      swipeOffsets.value[postId] = 0
+    }
+  } catch (error) {
+    console.error('取消收藏失败:', error)
+    alert('取消收藏失败，请稍后重试')
+  }
+}
+
+const loadHistory = async (page: number = 1) => {
+  try {
+    loading.value.history = true
+    const response = await axios.get('/api/users/history', {
+      headers: {
+        'Authorization': `Bearer ${userStore.token}`
+      },
+      params: {
+        page: page,
+        size: pageSizes.value
+      }
+    })
+    if (response.data.code === 200) {
+      history.value = response.data.data.list
+      totalCounts.value.history = response.data.data.total
+      currentPages.value.history = page
+    }
+  } catch (error) {
+    console.error('获取浏览历史失败:', error)
+  } finally {
+    loading.value.history = false
+  }
+}
+
+const removeHistory = async (postId: number) => {
+  try {
+    const response = await axios.delete(`/api/users/history/${postId}`, {
+      headers: {
+        'Authorization': `Bearer ${userStore.token}`
+      }
+    })
+    if (response.data.code === 200) {
+      history.value = history.value.filter(f => f.id !== postId)
+      totalCounts.value.history--
+      alert('删除历史成功')
+      // 重置滑动状态
+      swipeOffsets.value[postId] = 0
+    }
+  } catch (error) {
+    console.error('删除历史失败:', error)
+    alert('删除历史失败，请稍后重试')
+  }
+}
+
+const loadLikes = async (page: number = 1) => {
+  try {
+    loading.value.likes = true
+    const response = await axios.get('/api/users/likes', {
+      headers: {
+        'Authorization': `Bearer ${userStore.token}`
+      },
+      params: {
+        page: page,
+        size: pageSizes.value
+      }
+    })
+    if (response.data.code === 200) {
+      likes.value = response.data.data.list
+      totalCounts.value.likes = response.data.data.total
+      currentPages.value.likes = page
+    }
+  } catch (error) {
+    console.error('获取点赞记录失败:', error)
+  } finally {
+    loading.value.likes = false
+  }
+}
+
+const removeLike = async (postId: number) => {
+  try {
+    const response = await axios.delete(`/api/posts/${postId}/like`, {
+      headers: {
+        'Authorization': `Bearer ${userStore.token}`
+      }
+    })
+    if (response.data.code === 200) {
+      likes.value = likes.value.filter(f => f.id !== postId)
+      totalCounts.value.likes--
+      alert('取消点赞成功')
+      // 重置滑动状态
+      swipeOffsets.value[postId] = 0
+    }
+  } catch (error) {
+    console.error('取消点赞失败:', error)
+    alert('取消点赞失败，请稍后重试')
+  }
 }
 
 const formatDate = (dateString: string) => {
@@ -284,6 +508,10 @@ const formatDate = (dateString: string) => {
   return `${year}-${month}-${day} ${hours}:${minutes}`
 }
 
+const navigateToPost = (postId: number) => {
+  router.push(`/post/${postId}`)
+}
+
 onMounted(async () => {
   // 获取用户资料
   if (userStore.token) {
@@ -294,8 +522,11 @@ onMounted(async () => {
       profileForm.value.nickname = userStore.user.nickname || userStore.user.username || ''
       profileForm.value.bio = userStore.user.bio || ''
     }
+    // 获取收藏、历史、点赞等数据
+    await loadFavorites()
+    await loadHistory()
+    await loadLikes()
   }
-  // 这里可以添加获取收藏、历史、点赞等数据的逻辑
   console.log('获取用户数据')
 })
 </script>
@@ -509,13 +740,60 @@ onMounted(async () => {
   gap: 15px;
 }
 
-.favorite-item,
-.history-item,
-.like-item {
+.swipe-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.swipe-content {
+  position: relative;
+  z-index: 2;
   background-color: white;
   padding: 15px;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.swipe-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  z-index: 1;
+}
+
+.swipe-btn {
+  padding: 12px 20px;
+  border: none;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cancel-favorite {
+  background-color: #f39c12;
+}
+
+.delete-history {
+  background-color: #e74c3c;
+}
+
+.cancel-like {
+  background-color: #3498db;
+}
+
+.favorite-item, .history-item, .like-item {
+  /* 移除默认样式，使用swipe-content的样式 */
 }
 
 .favorite-item h4,
@@ -556,6 +834,40 @@ onMounted(async () => {
   background-color: white;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 15px;
+}
+
+.pagination button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  background-color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  background-color: #f0f0f0;
+  border-color: #3498db;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-size: 14px;
+  color: #666;
+  min-width: 80px;
+  text-align: center;
 }
 
 @media (max-width: 768px) {

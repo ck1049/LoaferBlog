@@ -7,6 +7,7 @@
       <button @click="activeTab = 'categories'" :class="{ active: activeTab === 'categories' }">分类管理</button>
       <button @click="activeTab = 'tags'" :class="{ active: activeTab === 'tags' }">标签管理</button>
       <button @click="activeTab = 'sensitive-words'" :class="{ active: activeTab === 'sensitive-words' }">敏感词管理</button>
+      <button @click="activeTab = 'file-limits'" :class="{ active: activeTab === 'file-limits' }">文件大小限制</button>
     </div>
 
     <!-- 公告管理 -->
@@ -153,6 +154,33 @@
         </div>
       </div>
     </div>
+
+    <!-- 文件大小限制管理 -->
+    <div v-if="activeTab === 'file-limits'" class="admin-content">
+      <h2>文件大小限制管理</h2>
+      <div class="add-form">
+        <h3>修改文件大小限制</h3>
+        <div class="form-group">
+          <label>图片文件限制 (MB):</label>
+          <input type="number" v-model.number="fileLimits.image" min="1" max="100" step="1" />
+        </div>
+        <div class="form-group">
+          <label>视频文件限制 (MB):</label>
+          <input type="number" v-model.number="fileLimits.video" min="1" max="1000" step="10" />
+        </div>
+        <div class="form-group">
+          <label>其他文件限制 (MB):</label>
+          <input type="number" v-model.number="fileLimits.other" min="1" max="2000" step="10" />
+        </div>
+        <button @click="updateFileLimits">保存修改</button>
+      </div>
+      <div class="info-box">
+        <h3>当前限制</h3>
+        <p>图片文件: {{ fileLimits.image }} MB</p>
+        <p>视频文件: {{ fileLimits.video }} MB</p>
+        <p>其他文件: {{ fileLimits.other }} MB</p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -197,6 +225,13 @@ const editingTag = ref<any>(null)
 
 // 敏感词
 const newSensitiveWord = ref('')
+
+// 文件大小限制
+const fileLimits = ref({
+  image: 10, // 默认10MB
+  video: 500, // 默认500MB
+  other: 1000 // 默认1000MB
+})
 
 // 获取敏感词
 const fetchSensitiveWords = async () => {
@@ -369,6 +404,41 @@ const reloadSensitiveWords = async () => {
   }
 }
 
+// 获取文件大小限制
+const fetchFileLimits = async () => {
+  try {
+    const response = await axios.get('/api/admin/file-limits', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    if (response.data.code === 200) {
+      fileLimits.value = response.data.data
+    }
+  } catch (error) {
+    console.error('获取文件大小限制失败:', error)
+  }
+}
+
+// 更新文件大小限制
+const updateFileLimits = async () => {
+  try {
+    const response = await axios.put('/api/admin/file-limits', fileLimits.value, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    if (response.data.code === 200) {
+      alert('文件大小限制更新成功')
+    } else {
+      alert('更新失败: ' + response.data.message)
+    }
+  } catch (error) {
+    console.error('更新文件大小限制失败:', error)
+    alert('更新失败，请稍后重试')
+  }
+}
+
 // 处理图片上传
 const handleImageUpload = async (event: Event) => {
   const target = event.target as HTMLInputElement
@@ -461,6 +531,7 @@ onMounted(() => {
   categoryStore.fetchCategories()
   tagStore.fetchTags()
   fetchSensitiveWords()
+  fetchFileLimits()
 })
 </script>
 
@@ -685,5 +756,41 @@ onMounted(() => {
 
 .uploaded-files button:hover {
   background-color: #5a6268;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+.form-group input[type="number"] {
+  width: 200px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.info-box {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f0f8ff;
+  border-radius: 8px;
+  border-left: 4px solid #17a2b8;
+}
+
+.info-box h3 {
+  margin-bottom: 15px;
+  color: #17a2b8;
+}
+
+.info-box p {
+  margin-bottom: 8px;
+  color: #333;
 }
 </style>
