@@ -1,13 +1,16 @@
 package com.loafer.blog.controller;
 
 import com.loafer.blog.common.RsaUtilsBean;
-import com.loafer.blog.model.entity.User;
+import com.loafer.blog.dto.LoginDTO;
+import com.loafer.blog.dto.RegisterDTO;
 import com.loafer.blog.service.AuthService;
+import com.loafer.blog.vo.LoginResponseVO;
+import com.loafer.blog.vo.ResponseVO;
+import com.loafer.blog.vo.UserVO;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -19,38 +22,31 @@ public class AuthController {
     private RsaUtilsBean rsaUtils;
 
     @PostMapping("/register")
-    public Map<String, Object> register(@RequestBody Map<String, String> request) {
+    public ResponseVO<Void> register(@Valid @RequestBody RegisterDTO request) {
         try {
             // 解密敏感信息
-            String username = request.get("username");
-            String encryptedPassword = request.get("password");
-            String encryptedEmail = request.get("email");
+            String password = rsaUtils.decrypt(request.getPassword());
+            String email = rsaUtils.decrypt(request.getEmail());
             
-            String password = rsaUtils.decrypt(encryptedPassword);
-            String email = rsaUtils.decrypt(encryptedEmail);
+            RegisterDTO registerDTO = new RegisterDTO();
+            registerDTO.setUsername(request.getUsername());
+            registerDTO.setPassword(password);
+            registerDTO.setEmail(email);
+            registerDTO.setNickname(request.getNickname());
             
-            User user = new User();
-            user.setUsername(username);
-            user.setPassword(password);
-            user.setEmail(email);
-            user.setNickname(request.get("nickname"));
-            
-            return authService.register(user);
+            return authService.register(registerDTO);
         } catch (Exception e) {
             log.error("注册失败\n", e);
-            Map<String, Object> result = new java.util.HashMap<>();
-            result.put("code", 500);
-            result.put("message", "注册失败: " + e.getMessage());
-            return result;
+            return ResponseVO.error("注册失败: " + e.getMessage());
         }
     }
 
     @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody Map<String, String> request) {
+    public ResponseVO<LoginResponseVO> login(@Valid @RequestBody LoginDTO request) {
         try {
             // 解密敏感信息
-            String username = request.get("username");
-            String encryptedPassword = request.get("password");
+            String username = request.getUsername();
+            String encryptedPassword = request.getPassword();
             
             System.out.println("登录请求，用户名：" + username);
             System.out.println("加密密码长度：" + encryptedPassword.length());
@@ -58,32 +54,31 @@ public class AuthController {
             String password = rsaUtils.decrypt(encryptedPassword);
             System.out.println("解密后密码：" + password);
             
-            User user = new User();
-            user.setUsername(username);
-            user.setPassword(password);
+            LoginDTO loginDTO = new LoginDTO();
+            loginDTO.setUsername(username);
+            loginDTO.setPassword(password);
             
-            Map<String, Object> result = authService.login(user);
-            System.out.println("登录结果：" + result);
-            
-            return result;
+            return authService.login(loginDTO);
         } catch (Exception e) {
             System.out.println("登录失败：" + e.getMessage());
             e.printStackTrace();
-            Map<String, Object> result = new java.util.HashMap<>();
-            result.put("code", 500);
-            result.put("message", "登录失败: " + e.getMessage());
-            return result;
+            return ResponseVO.error("登录失败: " + e.getMessage());
         }
     }
 
     @PostMapping("/logout")
-    public Map<String, Object> logout() {
+    public ResponseVO<Void> logout() {
         return authService.logout();
+    }
+
+    @GetMapping("/me")
+    public ResponseVO<UserVO> getCurrentUser(@RequestAttribute("userId") Long userId) {
+        return authService.getCurrentUser(userId);
     }
 
     // 测试RSA加密解密功能
     @GetMapping("/test-rsa")
-    public Map<String, Object> testRsa() {
+    public ResponseVO<java.util.Map<String, Object>> testRsa() {
         try {
             // 测试数据
             String password = "password123";
@@ -103,21 +98,20 @@ public class AuthController {
             // 验证解密结果
             boolean success = password.equals(decryptedPassword) && email.equals(decryptedEmail);
             
-            Map<String, Object> result = new java.util.HashMap<>();
-            result.put("code", success ? 200 : 500);
-            result.put("message", success ? "RSA加密解密测试成功" : "RSA加密解密测试失败");
+            java.util.Map<String, Object> result = new java.util.HashMap<>();
             result.put("originalPassword", password);
             result.put("decryptedPassword", decryptedPassword);
             result.put("originalEmail", email);
             result.put("decryptedEmail", decryptedEmail);
             
-            return result;
+            if (success) {
+                return ResponseVO.success(result);
+            } else {
+                return ResponseVO.error("RSA加密解密测试失败");
+            }
         } catch (Exception e) {
             log.error("RSA测试失败: {}", e.getMessage());
-            Map<String, Object> result = new java.util.HashMap<>();
-            result.put("code", 500);
-            result.put("message", "RSA测试失败: " + e.getMessage());
-            return result;
+            return ResponseVO.error("RSA测试失败: " + e.getMessage());
         }
     }
 }

@@ -36,7 +36,35 @@
       <div class="add-form">
         <h3>添加技术贴</h3>
         <input type="text" v-model="newPost.title" placeholder="标题" />
-        <textarea v-model="newPost.content" placeholder="内容" rows="6"></textarea>
+        <div class="markdown-editor">
+          <v-md-editor v-model="newPost.content" height="400px">
+            <template #upload-image>
+              <input type="file" accept="image/*" @change="handleImageUpload" />
+            </template>
+          </v-md-editor>
+        </div>
+        <div class="file-upload-section">
+          <h4>上传文件</h4>
+          <div class="upload-options">
+            <div class="upload-option">
+              <label>媒体文件：</label>
+              <input type="file" @change="handleFileUpload" />
+            </div>
+            <div class="upload-option">
+              <label>Markdown文件：</label>
+              <input type="file" accept=".md" @change="handleMarkdownUpload" />
+            </div>
+          </div>
+          <div v-if="uploadedFiles.length > 0" class="uploaded-files">
+            <h5>已上传文件：</h5>
+            <ul>
+              <li v-for="file in uploadedFiles" :key="file.url">
+                {{ file.name }} 
+                <button @click="insertFileLink(file)">插入链接</button>
+              </li>
+            </ul>
+          </div>
+        </div>
         <div class="categories-select">
           <label>分类：</label>
           <select v-model="newPost.categoryIds" multiple>
@@ -135,6 +163,13 @@ import { useAnnouncementStore } from '../stores/announcement'
 import { useCategoryStore } from '../stores/category'
 import { useTagStore } from '../stores/tag'
 import { useSensitiveWordStore } from '../stores/sensitiveWord'
+import VMdEditor from '@kangc/v-md-editor'
+import '@kangc/v-md-editor/lib/style/base-editor.css'
+import githubTheme from '@kangc/v-md-editor/lib/theme/github.js'
+import '@kangc/v-md-editor/lib/theme/style/github.css'
+
+// 注册github主题
+VMdEditor.use(githubTheme)
 
 const activeTab = ref('announcements')
 const announcementStore = useAnnouncementStore()
@@ -150,6 +185,7 @@ const editingAnnouncement = ref<any>(null)
 const posts = ref<any[]>([])
 const newPost = ref({ title: '', content: '', categoryIds: [] as number[], tagIds: [] as number[] })
 const editingPost = ref<any>(null)
+const uploadedFiles = ref<{name: string, url: string}[]>([])
 
 // 分类
 const newCategory = ref({ name: '', description: '' })
@@ -333,6 +369,92 @@ const reloadSensitiveWords = async () => {
   }
 }
 
+// 处理图片上传
+const handleImageUpload = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  await uploadFile(file, true)
+  target.value = ''
+}
+
+// 处理文件上传
+const handleFileUpload = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  await uploadFile(file, false)
+  target.value = ''
+}
+
+// 上传文件
+const uploadFile = async (file: File, isImage: boolean) => {
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await axios.post('/api/files/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+
+    if (response.data.code === 200) {
+      const fileUrl = response.data.data.url
+      uploadedFiles.value.push({ name: file.name, url: fileUrl })
+
+      // 如果是图片，直接插入到编辑器
+      if (isImage) {
+        newPost.value.content += `![${file.name}](${fileUrl})\n`
+      }
+    } else {
+      alert('上传失败: ' + response.data.message)
+    }
+  } catch (error) {
+    console.error('上传文件失败:', error)
+    alert('上传文件失败')
+  }
+}
+
+// 插入文件链接
+const insertFileLink = (file: {name: string, url: string}) => {
+  newPost.value.content += `[${file.name}](${file.url})\n`
+}
+
+// 处理Markdown文件上传
+const handleMarkdownUpload = async (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await axios.post('/api/files/upload-markdown', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+
+    if (response.data.code === 200) {
+      const content = response.data.data.content
+      newPost.value.content = content
+      alert('Markdown文件上传成功，内容已导入编辑器')
+    } else {
+      alert('上传失败: ' + response.data.message)
+    }
+  } catch (error) {
+    console.error('上传Markdown文件失败:', error)
+    alert('上传Markdown文件失败')
+  }
+  target.value = ''
+}
+
 onMounted(() => {
   announcementStore.fetchAnnouncements()
   fetchPosts()
@@ -466,5 +588,102 @@ onMounted(() => {
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
+}
+
+.markdown-editor {
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* 调整编辑器内部样式 */
+.markdown-editor :deep(.v-md-editor-container) {
+  border: none;
+}
+
+.markdown-editor :deep(.v-md-editor-toolbar) {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.markdown-editor :deep(.v-md-editor-content) {
+  min-height: 400px;
+}
+
+.file-upload-section {
+  margin-bottom: 15px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.file-upload-section h4 {
+  margin-bottom: 15px;
+  color: #495057;
+}
+
+.upload-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.upload-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upload-option label {
+  font-weight: 500;
+  min-width: 100px;
+}
+
+.upload-option input[type="file"] {
+  flex: 1;
+}
+
+.uploaded-files {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #dee2e6;
+}
+
+.uploaded-files h5 {
+  margin-bottom: 10px;
+  color: #495057;
+}
+
+.uploaded-files ul {
+  list-style: none;
+  padding: 0;
+}
+
+.uploaded-files li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.uploaded-files button {
+  padding: 4px 8px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.uploaded-files button:hover {
+  background-color: #5a6268;
 }
 </style>

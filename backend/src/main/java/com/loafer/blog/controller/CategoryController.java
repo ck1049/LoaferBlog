@@ -1,7 +1,9 @@
 package com.loafer.blog.controller;
 
-import com.loafer.blog.model.entity.Category;
+import com.loafer.blog.model.dto.CategoryDTO;
+import com.loafer.blog.model.vo.CategoryVO;
 import com.loafer.blog.service.CategoryService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,29 +22,28 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Category>> getAllCategories() {
-        List<Category> categories = categoryService.getAllCategories();
+    public ResponseEntity<List<CategoryVO>> getAllCategories() {
+        List<CategoryVO> categories = categoryService.getAllCategories();
         return ResponseEntity.ok(categories);
     }
 
     @GetMapping("/post/{postId}")
-    public ResponseEntity<List<Category>> getCategoriesByPostId(@PathVariable Long postId) {
-        List<Category> categories = categoryService.getCategoriesByPostId(postId);
+    public ResponseEntity<List<CategoryVO>> getCategoriesByPostId(@PathVariable Long postId) {
+        List<CategoryVO> categories = categoryService.getCategoriesByPostId(postId);
         return ResponseEntity.ok(categories);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
-        Category createdCategory = categoryService.createCategory(category);
+    public ResponseEntity<CategoryVO> createCategory(@Valid @RequestBody CategoryDTO categoryDTO) {
+        CategoryVO createdCategory = categoryService.createCategory(categoryDTO);
         return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody Category category) {
-        category.setId(id);
-        Category updatedCategory = categoryService.updateCategory(category);
+    public ResponseEntity<CategoryVO> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryDTO categoryDTO) {
+        CategoryVO updatedCategory = categoryService.updateCategory(id, categoryDTO);
         return ResponseEntity.ok(updatedCategory);
     }
 

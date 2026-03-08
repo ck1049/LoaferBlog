@@ -1,40 +1,58 @@
 package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.loafer.blog.model.dto.TagDTO;
 import com.loafer.blog.model.entity.PostTag;
 import com.loafer.blog.model.entity.Tag;
+import com.loafer.blog.model.vo.TagVO;
 import com.loafer.blog.mapper.PostTagMapper;
 import com.loafer.blog.mapper.TagMapper;
 import com.loafer.blog.service.TagService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
-public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagService {
+public class TagServiceImpl implements TagService {
 
+    private final TagMapper tagMapper;
     private final PostTagMapper postTagMapper;
 
-    public TagServiceImpl(PostTagMapper postTagMapper) {
+    public TagServiceImpl(TagMapper tagMapper, PostTagMapper postTagMapper) {
+        this.tagMapper = tagMapper;
         this.postTagMapper = postTagMapper;
     }
 
     @Override
-    public List<Tag> getAllTags() {
-        return baseMapper.selectList(null);
+    public List<TagVO> getAllTags() {
+        List<Tag> tags = tagMapper.selectList(null);
+        return tags.stream()
+                .map(TagVO::new)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Tag createTag(Tag tag) {
-        baseMapper.insert(tag);
-        return tag;
+    public TagVO createTag(TagDTO tagDTO) {
+        Tag tag = new Tag();
+        tag.setName(tagDTO.getName());
+        tag.setDescription(tagDTO.getDescription());
+        tag.setStatus(tagDTO.getStatus());
+        tagMapper.insert(tag);
+        return new TagVO(tag);
     }
 
     @Override
-    public Tag updateTag(Tag tag) {
-        baseMapper.updateById(tag);
-        return tag;
+    public TagVO updateTag(Long id, TagDTO tagDTO) {
+        Tag tag = tagMapper.selectById(id);
+        if (tag == null) {
+            throw new RuntimeException("标签不存在");
+        }
+        tag.setName(tagDTO.getName());
+        tag.setDescription(tagDTO.getDescription());
+        tag.setStatus(tagDTO.getStatus());
+        tagMapper.updateById(tag);
+        return new TagVO(tag);
     }
 
     @Override
@@ -44,11 +62,11 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
         wrapper.eq("tag_id", id);
         postTagMapper.delete(wrapper);
         // 再删除标签
-        return baseMapper.deleteById(id) > 0;
+        return tagMapper.deleteById(id) > 0;
     }
 
     @Override
-    public List<Tag> getTagsByPostId(Long postId) {
+    public List<TagVO> getTagsByPostId(Long postId) {
         // 通过PostTag关联查询标签
         QueryWrapper<PostTag> wrapper = new QueryWrapper<>();
         wrapper.eq("post_id", postId);
@@ -62,7 +80,10 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagSe
             return List.of();
         }
         
-        return baseMapper.selectBatchIds(tagIds);
+        List<Tag> tags = tagMapper.selectBatchIds(tagIds);
+        return tags.stream()
+                .map(TagVO::new)
+                .collect(Collectors.toList());
     }
 
     @Override

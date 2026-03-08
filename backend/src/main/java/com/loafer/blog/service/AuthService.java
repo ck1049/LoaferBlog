@@ -1,11 +1,14 @@
 package com.loafer.blog.service;
 
-import com.loafer.blog.model.entity.User;
-
-import java.util.Map;
+import com.loafer.blog.dto.LoginDTO;
+import com.loafer.blog.dto.RegisterDTO;
+import com.loafer.blog.vo.LoginResponseVO;
+import com.loafer.blog.vo.ResponseVO;
+import com.loafer.blog.vo.UserVO;
 
 public interface AuthService {
-    Map<String, Object> register(User user);
-    Map<String, Object> login(User user);
-    Map<String, Object> logout();
+    ResponseVO<Void> register(RegisterDTO registerDTO);
+    ResponseVO<LoginResponseVO> login(LoginDTO loginDTO);
+    ResponseVO<Void> logout();
+    ResponseVO<UserVO> getCurrentUser(Long userId);
 }

@@ -1,14 +1,16 @@
 package com.loafer.blog.service;
 
-import com.loafer.blog.model.entity.Post;
+import com.loafer.blog.model.dto.PostDTO;
+import com.loafer.blog.model.vo.PostVO;
+import com.loafer.blog.model.vo.ResponseVO;
 
-import java.util.Map;
+import java.util.List;
 
 public interface PostService {
-    Map<String, Object> getPosts();
-    Map<String, Object> searchPosts(String keyword);
-    Map<String, Object> getPost(Long id);
-    Map<String, Object> createPost(Post post);
-    Map<String, Object> updatePost(Long id, Post post);
-    Map<String, Object> deletePost(Long id);
+    ResponseVO<List<PostVO>> getPosts();
+    ResponseVO<List<PostVO>> searchPosts(String keyword);
+    ResponseVO<PostVO> getPost(Long id);
+    ResponseVO<PostVO> createPost(PostDTO postDTO);
+    ResponseVO<PostVO> updatePost(Long id, PostDTO postDTO);
+    ResponseVO<Void> deletePost(Long id);
 }

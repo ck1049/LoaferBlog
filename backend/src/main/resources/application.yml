@@ -18,6 +18,11 @@ mybatis-plus:
 
 server:
   port: 8080
+  # 静态资源配置
+  servlet:
+    context-path: /
+  resources:
+    static-locations: classpath:/static/,file:./uploads/
 
 jwt:
   secret: loafer_blog_high_strength_jwt_secret_key

@@ -110,12 +110,12 @@ export const useUserStore = defineStore('user', {
           username,
           password: encryptedPassword,
         });
-        const { code, token, user, message } = response.data;
+        const { code, message, data } = response.data;
         if (code === 200) {
-          this.token = token;
-          this.user = user;
-          localStorage.setItem('token', token);
-          return { success: true, message: '登录成功' };
+          this.token = data.token;
+          this.user = data.user;
+          localStorage.setItem('token', data.token);
+          return { success: true, message };
         } else {
           console.error('Login failed:', message);
           return { success: false, message };
@@ -139,7 +139,7 @@ export const useUserStore = defineStore('user', {
         });
         const { code, message } = response.data;
         if (code === 200) {
-          return { success: true, message: '注册成功' };
+          return { success: true, message };
         } else {
           console.error('Registration failed:', message);
           return { success: false, message };
@@ -162,7 +162,12 @@ export const useUserStore = defineStore('user', {
             Authorization: `Bearer ${this.token}`,
           },
         });
-        this.user = response.data;
+        if (response.data.code === 200) {
+          this.user = response.data.data;
+        } else {
+          console.error('Failed to fetch user info:', response.data.message);
+          this.logout();
+        }
       } catch (error) {
         console.error('Failed to fetch user info:', error);
         this.logout();

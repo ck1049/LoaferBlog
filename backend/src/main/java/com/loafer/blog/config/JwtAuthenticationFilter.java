@@ -41,6 +41,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            // 将userId设置为请求属性
+            request.setAttribute("userId", userId);
         }
 
         chain.doFilter(request, response);

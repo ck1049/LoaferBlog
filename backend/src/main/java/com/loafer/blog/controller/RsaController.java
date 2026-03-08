@@ -1,6 +1,7 @@
 package com.loafer.blog.controller;
 
 import com.loafer.blog.common.RsaUtilsBean;
+import com.loafer.blog.model.vo.ResponseVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,17 +18,14 @@ public class RsaController {
     private RsaUtilsBean rsaUtils;
 
     @GetMapping("/public-key")
-    public Map<String, Object> getPublicKey() {
-        Map<String, Object> result = new HashMap<>();
+    public ResponseVO<Map<String, Object>> getPublicKey() {
         try {
             String publicKey = rsaUtils.getPublicKey();
-            result.put("code", 200);
-            result.put("message", "获取公钥成功");
-            result.put("publicKey", publicKey);
+            Map<String, Object> data = new HashMap<>();
+            data.put("publicKey", publicKey);
+            return ResponseVO.success(data);
         } catch (Exception e) {
-            result.put("code", 500);
-            result.put("message", "获取公钥失败: " + e.getMessage());
+            return ResponseVO.error("获取公钥失败: " + e.getMessage());
         }
-        return result;
     }
 }

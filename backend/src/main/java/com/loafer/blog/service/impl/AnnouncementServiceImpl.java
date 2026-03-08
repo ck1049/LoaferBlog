@@ -1,15 +1,19 @@
 package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.loafer.blog.model.dto.AnnouncementDTO;
 import com.loafer.blog.model.entity.Announcement;
+import com.loafer.blog.model.vo.AnnouncementVO;
+import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.mapper.AnnouncementMapper;
 import com.loafer.blog.service.AnnouncementService;
+import com.loafer.blog.utils.XssUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class AnnouncementServiceImpl implements AnnouncementService {
@@ -17,97 +21,92 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private AnnouncementMapper announcementMapper;
 
     @Override
-    public Map<String, Object> getAnnouncements() {
-        Map<String, Object> result = new HashMap<>();
+    public ResponseVO<List<AnnouncementVO>> getAnnouncements() {
         try {
             // 按发布时间倒序排列
             QueryWrapper<Announcement> wrapper = new QueryWrapper<>();
             wrapper.orderByDesc("created_at");
             List<Announcement> announcements = announcementMapper.selectList(wrapper);
-            result.put("code", 200);
-            result.put("message", "获取公告列表成功");
-            result.put("data", announcements);
+            List<AnnouncementVO> announcementVOs = announcements.stream()
+                    .map(AnnouncementVO::new).collect(Collectors.toList());
+            return ResponseVO.success(announcementVOs);
         } catch (Exception e) {
-            result.put("code", 500);
-            result.put("message", "获取公告列表失败: " + e.getMessage());
+            return ResponseVO.error("获取公告列表失败: " + e.getMessage());
         }
-        return result;
     }
 
     @Override
-    public Map<String, Object> getAnnouncement(Long id) {
-        Map<String, Object> result = new HashMap<>();
+    public ResponseVO<AnnouncementVO> getAnnouncement(Long id) {
         try {
             Announcement announcement = announcementMapper.selectById(id);
             if (announcement == null) {
-                result.put("code", 400);
-                result.put("message", "公告不存在");
-                return result;
+                return ResponseVO.error("公告不存在");
             }
-            result.put("code", 200);
-            result.put("message", "获取公告成功");
-            result.put("data", announcement);
+            AnnouncementVO announcementVO = new AnnouncementVO(announcement);
+            return ResponseVO.success(announcementVO);
         } catch (Exception e) {
-            result.put("code", 500);
-            result.put("message", "获取公告失败: " + e.getMessage());
+            return ResponseVO.error("获取公告失败: " + e.getMessage());
         }
-        return result;
     }
 
     @Override
-    public Map<String, Object> createAnnouncement(Announcement announcement) {
-        Map<String, Object> result = new HashMap<>();
+    public ResponseVO<AnnouncementVO> createAnnouncement(AnnouncementDTO announcementDTO) {
         try {
+            // 防XSS处理
+            String title = XssUtils.filter(announcementDTO.getTitle());
+            String content = XssUtils.filter(announcementDTO.getContent());
+            
+            Announcement announcement = new Announcement();
+            announcement.setTitle(title);
+            announcement.setContent(content);
+            announcement.setStatus(1);
+            announcement.setCreateTime(LocalDateTime.now());
+            announcement.setUpdateTime(LocalDateTime.now());
             announcementMapper.insert(announcement);
-            result.put("code", 200);
-            result.put("message", "创建公告成功");
+            
+            AnnouncementVO announcementVO = new AnnouncementVO(announcement);
+            return ResponseVO.success(announcementVO);
         } catch (Exception e) {
-            result.put("code", 500);
-            result.put("message", "创建公告失败: " + e.getMessage());
+            return ResponseVO.error("创建公告失败: " + e.getMessage());
         }
-        return result;
     }
 
     @Override
-    public Map<String, Object> updateAnnouncement(Long id, Announcement announcement) {
-        Map<String, Object> result = new HashMap<>();
+    public ResponseVO<AnnouncementVO> updateAnnouncement(Long id, AnnouncementDTO announcementDTO) {
         try {
             Announcement existingAnnouncement = announcementMapper.selectById(id);
             if (existingAnnouncement == null) {
-                result.put("code", 400);
-                result.put("message", "公告不存在");
-                return result;
+                return ResponseVO.error("公告不存在");
             }
 
-            announcement.setId(id);
-            announcementMapper.updateById(announcement);
-            result.put("code", 200);
-            result.put("message", "更新公告成功");
+            // 防XSS处理
+            String title = XssUtils.filter(announcementDTO.getTitle());
+            String content = XssUtils.filter(announcementDTO.getContent());
+
+            existingAnnouncement.setTitle(title);
+            existingAnnouncement.setContent(content);
+            existingAnnouncement.setUpdateTime(LocalDateTime.now());
+            announcementMapper.updateById(existingAnnouncement);
+            
+            AnnouncementVO announcementVO = new AnnouncementVO(existingAnnouncement);
+            return ResponseVO.success(announcementVO);
         } catch (Exception e) {
-            result.put("code", 500);
-            result.put("message", "更新公告失败: " + e.getMessage());
+            return ResponseVO.error("更新公告失败: " + e.getMessage());
         }
-        return result;
     }
 
     @Override
-    public Map<String, Object> deleteAnnouncement(Long id) {
-        Map<String, Object> result = new HashMap<>();
+    public ResponseVO<Void> deleteAnnouncement(Long id) {
         try {
             Announcement existingAnnouncement = announcementMapper.selectById(id);
             if (existingAnnouncement == null) {
-                result.put("code", 400);
-                result.put("message", "公告不存在");
-                return result;
+                return ResponseVO.error("公告不存在");
             }
 
             announcementMapper.deleteById(id);
-            result.put("code", 200);
-            result.put("message", "删除公告成功");
+            return ResponseVO.success(null);
         } catch (Exception e) {
-            result.put("code", 500);
-            result.put("message", "删除公告失败: " + e.getMessage());
+            return ResponseVO.error("删除公告失败: " + e.getMessage());
         }
-        return result;
     }
 }

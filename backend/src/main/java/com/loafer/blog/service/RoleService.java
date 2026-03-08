@@ -1,12 +1,14 @@
 package com.loafer.blog.service;
 
-import com.loafer.blog.model.entity.Role;
+import com.loafer.blog.model.dto.RoleDTO;
+import com.loafer.blog.model.vo.ResponseVO;
+import com.loafer.blog.model.vo.RoleVO;
 
-import java.util.Map;
+import java.util.List;
 
 public interface RoleService {
-    Map<String, Object> getRoles();
-    Map<String, Object> createRole(Role role);
-    Map<String, Object> updateRole(Long id, Role role);
-    Map<String, Object> deleteRole(Long id);
+    ResponseVO<List<RoleVO>> getRoles();
+    ResponseVO<RoleVO> createRole(RoleDTO roleDTO);
+    ResponseVO<RoleVO> updateRole(Long id, RoleDTO roleDTO);
+    ResponseVO<Void> deleteRole(Long id);
 }

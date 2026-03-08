@@ -1,15 +1,18 @@
 package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.loafer.blog.model.dto.RoleDTO;
 import com.loafer.blog.model.entity.Role;
+import com.loafer.blog.model.vo.ResponseVO;
+import com.loafer.blog.model.vo.RoleVO;
 import com.loafer.blog.mapper.RoleMapper;
 import com.loafer.blog.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class RoleServiceImpl implements RoleService {
@@ -17,93 +20,80 @@ public class RoleServiceImpl implements RoleService {
     private RoleMapper roleMapper;
 
     @Override
-    public Map<String, Object> getRoles() {
-        Map<String, Object> result = new HashMap<>();
+    public ResponseVO<List<RoleVO>> getRoles() {
         try {
             List<Role> roles = roleMapper.selectList(null);
-            result.put("code", 200);
-            result.put("message", "获取角色列表成功");
-            result.put("data", roles);
+            List<RoleVO> roleVOs = roles.stream().map(RoleVO::new).collect(Collectors.toList());
+            return ResponseVO.success(roleVOs);
         } catch (Exception e) {
-            result.put("code", 500);
-            result.put("message", "获取角色列表失败: " + e.getMessage());
+            return ResponseVO.error("获取角色列表失败: " + e.getMessage());
         }
-        return result;
     }
 
     @Override
-    public Map<String, Object> createRole(Role role) {
-        Map<String, Object> result = new HashMap<>();
+    public ResponseVO<RoleVO> createRole(RoleDTO roleDTO) {
         try {
             // 检查角色名是否已存在
             QueryWrapper<Role> wrapper = new QueryWrapper<>();
-            wrapper.eq("name", role.getName());
+            wrapper.eq("name", roleDTO.getName());
             if (roleMapper.selectOne(wrapper) != null) {
-                result.put("code", 400);
-                result.put("message", "角色名已存在");
-                return result;
+                return ResponseVO.error("角色名已存在");
             }
 
+            Role role = new Role();
+            role.setName(roleDTO.getName());
+            role.setDescription(roleDTO.getDescription());
+            role.setCreateTime(LocalDateTime.now());
+            role.setUpdateTime(LocalDateTime.now());
             roleMapper.insert(role);
-            result.put("code", 200);
-            result.put("message", "创建角色成功");
+            
+            RoleVO roleVO = new RoleVO(role);
+            return ResponseVO.success(roleVO);
         } catch (Exception e) {
-            result.put("code", 500);
-            result.put("message", "创建角色失败: " + e.getMessage());
+            return ResponseVO.error("创建角色失败: " + e.getMessage());
         }
-        return result;
     }
 
     @Override
-    public Map<String, Object> updateRole(Long id, Role role) {
-        Map<String, Object> result = new HashMap<>();
+    public ResponseVO<RoleVO> updateRole(Long id, RoleDTO roleDTO) {
         try {
             Role existingRole = roleMapper.selectById(id);
             if (existingRole == null) {
-                result.put("code", 400);
-                result.put("message", "角色不存在");
-                return result;
+                return ResponseVO.error("角色不存在");
             }
 
             // 检查角色名是否已存在
             QueryWrapper<Role> wrapper = new QueryWrapper<>();
-            wrapper.eq("name", role.getName());
+            wrapper.eq("name", roleDTO.getName());
             wrapper.ne("id", id);
             if (roleMapper.selectOne(wrapper) != null) {
-                result.put("code", 400);
-                result.put("message", "角色名已存在");
-                return result;
+                return ResponseVO.error("角色名已存在");
             }
 
-            role.setId(id);
-            roleMapper.updateById(role);
-            result.put("code", 200);
-            result.put("message", "更新角色成功");
+            existingRole.setName(roleDTO.getName());
+            existingRole.setDescription(roleDTO.getDescription());
+            existingRole.setUpdateTime(LocalDateTime.now());
+            roleMapper.updateById(existingRole);
+            
+            RoleVO roleVO = new RoleVO(existingRole);
+            return ResponseVO.success(roleVO);
         } catch (Exception e) {
-            result.put("code", 500);
-            result.put("message", "更新角色失败: " + e.getMessage());
+            return ResponseVO.error("更新角色失败: " + e.getMessage());
         }
-        return result;
     }
 
     @Override
-    public Map<String, Object> deleteRole(Long id) {
-        Map<String, Object> result = new HashMap<>();
+    public ResponseVO<Void> deleteRole(Long id) {
         try {
             Role existingRole = roleMapper.selectById(id);
             if (existingRole == null) {
-                result.put("code", 400);
-                result.put("message", "角色不存在");
-                return result;
+                return ResponseVO.error("角色不存在");
             }
 
             roleMapper.deleteById(id);
-            result.put("code", 200);
-            result.put("message", "删除角色成功");
+            return ResponseVO.success(null);
         } catch (Exception e) {
-            result.put("code", 500);
-            result.put("message", "删除角色失败: " + e.getMessage());
+            return ResponseVO.error("删除角色失败: " + e.getMessage());
         }
-        return result;
     }
 }

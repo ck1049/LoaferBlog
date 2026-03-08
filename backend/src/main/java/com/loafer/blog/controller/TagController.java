@@ -1,7 +1,9 @@
 package com.loafer.blog.controller;
 
-import com.loafer.blog.model.entity.Tag;
+import com.loafer.blog.model.dto.TagDTO;
+import com.loafer.blog.model.vo.TagVO;
 import com.loafer.blog.service.TagService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,29 +22,28 @@ public class TagController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Tag>> getAllTags() {
-        List<Tag> tags = tagService.getAllTags();
+    public ResponseEntity<List<TagVO>> getAllTags() {
+        List<TagVO> tags = tagService.getAllTags();
         return ResponseEntity.ok(tags);
     }
 
     @GetMapping("/post/{postId}")
-    public ResponseEntity<List<Tag>> getTagsByPostId(@PathVariable Long postId) {
-        List<Tag> tags = tagService.getTagsByPostId(postId);
+    public ResponseEntity<List<TagVO>> getTagsByPostId(@PathVariable Long postId) {
+        List<TagVO> tags = tagService.getTagsByPostId(postId);
         return ResponseEntity.ok(tags);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Tag> createTag(@RequestBody Tag tag) {
-        Tag createdTag = tagService.createTag(tag);
+    public ResponseEntity<TagVO> createTag(@Valid @RequestBody TagDTO tagDTO) {
+        TagVO createdTag = tagService.createTag(tagDTO);
         return new ResponseEntity<>(createdTag, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Tag> updateTag(@PathVariable Long id, @RequestBody Tag tag) {
-        tag.setId(id);
-        Tag updatedTag = tagService.updateTag(tag);
+    public ResponseEntity<TagVO> updateTag(@PathVariable Long id, @Valid @RequestBody TagDTO tagDTO) {
+        TagVO updatedTag = tagService.updateTag(id, tagDTO);
         return ResponseEntity.ok(updatedTag);
     }
 

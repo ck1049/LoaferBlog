@@ -3,7 +3,9 @@
     <div v-if="postStore.currentPost" class="post-content">
       <h1>{{ postStore.currentPost.title }}</h1>
       <p class="post-meta">发布时间: {{ postStore.currentPost.createdAt }}</p>
-      <div class="post-body">{{ postStore.currentPost.content }}</div>
+      <div class="post-body">
+        <MarkdownRenderer :content="postStore.currentPost.content" />
+      </div>
       <div class="post-categories">
         <span>分类: </span>
         <span v-for="category in postStore.currentPost.categories" :key="category.id" class="category-tag">
@@ -71,6 +73,7 @@ import { useRoute } from 'vue-router'
 import { usePostStore } from '../stores/post'
 import { useUserStore } from '../stores/user'
 import { useCommentStore } from '../stores/comment'
+import MarkdownRenderer from '../components/MarkdownRenderer.vue'
 
 const route = useRoute()
 const postStore = usePostStore()
@@ -180,7 +183,6 @@ onMounted(() => {
 }
 
 .post-body {
-  line-height: 1.6;
   margin-bottom: 20px;
 }
 

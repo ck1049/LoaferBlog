@@ -1,13 +1,15 @@
 package com.loafer.blog.service;
 
-import com.loafer.blog.model.entity.Announcement;
+import com.loafer.blog.model.dto.AnnouncementDTO;
+import com.loafer.blog.model.vo.AnnouncementVO;
+import com.loafer.blog.model.vo.ResponseVO;
 
-import java.util.Map;
+import java.util.List;
 
 public interface AnnouncementService {
-    Map<String, Object> getAnnouncements();
-    Map<String, Object> getAnnouncement(Long id);
-    Map<String, Object> createAnnouncement(Announcement announcement);
-    Map<String, Object> updateAnnouncement(Long id, Announcement announcement);
-    Map<String, Object> deleteAnnouncement(Long id);
+    ResponseVO<List<AnnouncementVO>> getAnnouncements();
+    ResponseVO<AnnouncementVO> getAnnouncement(Long id);
+    ResponseVO<AnnouncementVO> createAnnouncement(AnnouncementDTO announcementDTO);
+    ResponseVO<AnnouncementVO> updateAnnouncement(Long id, AnnouncementDTO announcementDTO);
+    ResponseVO<Void> deleteAnnouncement(Long id);
 }
