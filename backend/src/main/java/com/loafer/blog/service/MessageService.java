@@ -4,10 +4,15 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.loafer.blog.model.entity.Message;
 
 import java.util.List;
+import java.util.Map;
 
 public interface MessageService extends IService<Message> {
     List<Message> getMessagesByReceiverId(Long receiverId);
     Message createMessage(Message message);
     Message replyMessage(Message message);
     List<Message> getMessageHistory(Long userId1, Long userId2);
+    List<Map<String, Object>> getContactList(Long userId);
+    void topMessage(Long messageId, Integer isTop);
+    void deleteMessage(Long messageId);
+    Message sendFileMessage(Message message);
 }

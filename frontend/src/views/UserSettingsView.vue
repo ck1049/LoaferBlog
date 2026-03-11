@@ -22,11 +22,10 @@
           <button @click="changePassword" class="btn btn-primary">修改密码</button>
         </div>
         
-        <div class="setting-item danger-zone">
+        <div v-if="!userStore.isAdmin" class="setting-item danger-zone">
           <h3>危险操作</h3>
-          <p v-if="!userStore.isAdmin">注销账号将删除您的所有数据，此操作不可恢复。</p>
-          <button v-if="!userStore.isAdmin" @click="confirmDeleteAccount" class="btn btn-danger">注销账号</button>
-          <p v-else class="admin-notice">管理员账号禁止注销</p>
+          <p>注销账号将删除您的所有数据，此操作不可恢复。</p>
+          <button @click="confirmDeleteAccount" class="btn btn-danger">注销账号</button>
         </div>
       </div>
     </div>
@@ -76,14 +75,25 @@ const confirmDeleteAccount = () => {
 
 const deleteAccount = async () => {
   try {
-    // 这里需要实现注销账号的逻辑
-    // 调用后端API注销账号
-    userStore.logout()
-    router.push('/')
-    alert('账号已注销')
+    const response = await fetch('/api/users/me', {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    const data = await response.json()
+    if (data.code === 200) {
+      userStore.logout()
+      router.push('/')
+      alert('账号已注销')
+    } else {
+      alert(`账号注销失败: ${data.message}`)
+    }
   } catch (error) {
     console.error('注销账号失败:', error)
-    alert('注销账号失败')
+    alert('注销账号失败，请稍后重试')
   }
 }
 </script>

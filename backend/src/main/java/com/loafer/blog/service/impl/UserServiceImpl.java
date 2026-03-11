@@ -139,7 +139,7 @@ public class UserServiceImpl implements UserService {
         List<UserRole> userRoles = userRoleMapper.selectList(userRoleWrapper);
         for (UserRole userRole : userRoles) {
             Role role = roleMapper.selectById(userRole.getRoleId());
-            if (role != null && "ADMIN".equals(role.getName())) {
+            if (role != null && "admin".equals(role.getName().toLowerCase())) {
                 return ResponseVO.error("管理员账号禁止注销");
             }
         }

@@ -231,6 +231,13 @@ CREATE TABLE IF NOT EXISTS message (
     receiver_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE, -- 接收者ID
     content TEXT NOT NULL,              -- 过滤后的消息内容
     original_content TEXT,              -- 原始消息内容
+    message_type INTEGER DEFAULT 1,      -- 消息类型：1-文本, 2-表情, 3-图片, 4-视频, 5-文件
+    file_path TEXT,                     -- 存储文件路径
+    file_name TEXT,                     -- 存储文件名
+    file_size BIGINT,                   -- 存储文件大小
+    send_status INTEGER DEFAULT 1,      -- 发送状态：1-发送成功, 0-发送失败
+    error_message TEXT,                 -- 发送失败原因
+    is_top INTEGER DEFAULT 0,           -- 是否置顶：1-置顶, 0-普通
     status INTEGER DEFAULT 1,           -- 状态：1-正常，0-禁用
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
@@ -243,6 +250,13 @@ COMMENT ON COLUMN message.sender_id IS '发送者ID';
 COMMENT ON COLUMN message.receiver_id IS '接收者ID';
 COMMENT ON COLUMN message.content IS '过滤后的消息内容';
 COMMENT ON COLUMN message.original_content IS '原始消息内容';
+COMMENT ON COLUMN message.message_type IS '消息类型：1-文本, 2-表情, 3-图片, 4-视频, 5-文件';
+COMMENT ON COLUMN message.file_path IS '存储文件路径';
+COMMENT ON COLUMN message.file_name IS '存储文件名';
+COMMENT ON COLUMN message.file_size IS '存储文件大小';
+COMMENT ON COLUMN message.send_status IS '发送状态：1-发送成功, 0-发送失败';
+COMMENT ON COLUMN message.error_message IS '发送失败原因';
+COMMENT ON COLUMN message.is_top IS '是否置顶：1-置顶, 0-普通';
 COMMENT ON COLUMN message.status IS '状态：1-正常，0-禁用';
 COMMENT ON COLUMN message.created_at IS '创建时间';
 COMMENT ON COLUMN message.updated_at IS '更新时间';

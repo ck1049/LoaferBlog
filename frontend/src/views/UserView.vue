@@ -51,11 +51,10 @@
             <input type="password" id="confirmPassword" v-model="securityForm.confirmPassword" placeholder="请确认新密码" />
           </div>
           <button @click="changePassword" class="btn btn-primary">修改密码</button>
-          <div class="danger-zone">
+          <div v-if="!userStore.isAdmin" class="danger-zone">
             <h4>危险操作</h4>
-            <p v-if="!userStore.isAdmin">注销账号将删除您的所有数据，此操作不可恢复。</p>
-            <button v-if="!userStore.isAdmin" @click="confirmDeleteAccount" class="btn btn-danger">注销账号</button>
-            <p v-else class="admin-notice">管理员账号禁止注销</p>
+            <p>注销账号将删除您的所有数据，此操作不可恢复。</p>
+            <button @click="confirmDeleteAccount" class="btn btn-danger">注销账号</button>
           </div>
         </div>
 
