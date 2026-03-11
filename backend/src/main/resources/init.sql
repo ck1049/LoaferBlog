@@ -24,8 +24,9 @@ CREATE TABLE IF NOT EXISTS role (
     id SERIAL PRIMARY KEY,              -- 角色ID
     name VARCHAR(50) NOT NULL UNIQUE,   -- 角色名称
     description VARCHAR(255),           -- 角色描述
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
+    deleted INTEGER DEFAULT 0           -- 逻辑删除标记：0-未删除，1-已删除
 );
 
 -- 表注释
@@ -33,8 +34,9 @@ COMMENT ON TABLE role IS '角色表';
 COMMENT ON COLUMN role.id IS '角色ID';
 COMMENT ON COLUMN role.name IS '角色名称';
 COMMENT ON COLUMN role.description IS '角色描述';
-COMMENT ON COLUMN role.created_at IS '创建时间';
-COMMENT ON COLUMN role.updated_at IS '更新时间';
+COMMENT ON COLUMN role.create_time IS '创建时间';
+COMMENT ON COLUMN role.update_time IS '更新时间';
+COMMENT ON COLUMN role.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 
 -- 创建用户表
 CREATE TABLE IF NOT EXISTS "user" (
@@ -46,8 +48,9 @@ CREATE TABLE IF NOT EXISTS "user" (
     avatar VARCHAR(255),                -- 头像URL
     bio TEXT,                           -- 个性签名
     status INTEGER DEFAULT 1,           -- 状态：1-正常，0-禁用
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
+    deleted INTEGER DEFAULT 0           -- 逻辑删除标记：0-未删除，1-已删除
 );
 
 -- 表注释
@@ -60,15 +63,17 @@ COMMENT ON COLUMN "user".email IS '邮箱';
 COMMENT ON COLUMN "user".avatar IS '头像URL';
 COMMENT ON COLUMN "user".bio IS '个性签名';
 COMMENT ON COLUMN "user".status IS '状态：1-正常，0-禁用';
-COMMENT ON COLUMN "user".created_at IS '创建时间';
-COMMENT ON COLUMN "user".updated_at IS '更新时间';
+COMMENT ON COLUMN "user".create_time IS '创建时间';
+COMMENT ON COLUMN "user".update_time IS '更新时间';
+COMMENT ON COLUMN "user".deleted IS '逻辑删除标记：0-未删除，1-已删除';
 
 -- 创建用户角色关联表
 CREATE TABLE IF NOT EXISTS user_role (
     id SERIAL PRIMARY KEY,              -- 关联ID
     user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE, -- 用户ID
     role_id INTEGER NOT NULL REFERENCES role(id) ON DELETE CASCADE, -- 角色ID
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    deleted INTEGER DEFAULT 0,           -- 逻辑删除标记：0-未删除，1-已删除
     UNIQUE(user_id, role_id)            -- 唯一约束：用户与角色的组合
 );
 
@@ -77,7 +82,8 @@ COMMENT ON TABLE user_role IS '用户角色关联表';
 COMMENT ON COLUMN user_role.id IS '关联ID';
 COMMENT ON COLUMN user_role.user_id IS '用户ID';
 COMMENT ON COLUMN user_role.role_id IS '角色ID';
-COMMENT ON COLUMN user_role.created_at IS '创建时间';
+COMMENT ON COLUMN user_role.create_time IS '创建时间';
+COMMENT ON COLUMN user_role.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 
 -- 创建公告表
 CREATE TABLE IF NOT EXISTS announcement (
@@ -86,8 +92,9 @@ CREATE TABLE IF NOT EXISTS announcement (
     content TEXT NOT NULL,              -- 公告内容
     author_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE, -- 作者ID
     status INTEGER DEFAULT 1,           -- 状态：1-发布，0-草稿
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
+    deleted INTEGER DEFAULT 0           -- 逻辑删除标记：0-未删除，1-已删除
 );
 
 -- 表注释
@@ -97,8 +104,9 @@ COMMENT ON COLUMN announcement.title IS '公告标题';
 COMMENT ON COLUMN announcement.content IS '公告内容';
 COMMENT ON COLUMN announcement.author_id IS '作者ID';
 COMMENT ON COLUMN announcement.status IS '状态：1-发布，0-草稿';
-COMMENT ON COLUMN announcement.created_at IS '创建时间';
-COMMENT ON COLUMN announcement.updated_at IS '更新时间';
+COMMENT ON COLUMN announcement.create_time IS '创建时间';
+COMMENT ON COLUMN announcement.update_time IS '更新时间';
+COMMENT ON COLUMN announcement.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 
 -- 创建分类表
 CREATE TABLE IF NOT EXISTS category (
@@ -106,8 +114,9 @@ CREATE TABLE IF NOT EXISTS category (
     name VARCHAR(50) NOT NULL UNIQUE,   -- 分类名称
     description VARCHAR(255),           -- 分类描述
     status INTEGER DEFAULT 1,           -- 状态：1-启用，0-禁用
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
+    deleted INTEGER DEFAULT 0           -- 逻辑删除标记：0-未删除，1-已删除
 );
 
 -- 表注释
@@ -116,8 +125,9 @@ COMMENT ON COLUMN category.id IS '分类ID';
 COMMENT ON COLUMN category.name IS '分类名称';
 COMMENT ON COLUMN category.description IS '分类描述';
 COMMENT ON COLUMN category.status IS '状态：1-启用，0-禁用';
-COMMENT ON COLUMN category.created_at IS '创建时间';
-COMMENT ON COLUMN category.updated_at IS '更新时间';
+COMMENT ON COLUMN category.create_time IS '创建时间';
+COMMENT ON COLUMN category.update_time IS '更新时间';
+COMMENT ON COLUMN category.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 
 -- 创建标签表
 CREATE TABLE IF NOT EXISTS tag (
@@ -125,8 +135,9 @@ CREATE TABLE IF NOT EXISTS tag (
     name VARCHAR(50) NOT NULL UNIQUE,   -- 标签名称
     description VARCHAR(255),           -- 标签描述
     status INTEGER DEFAULT 1,           -- 状态：1-启用，0-禁用
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
+    deleted INTEGER DEFAULT 0           -- 逻辑删除标记：0-未删除，1-已删除
 );
 
 -- 表注释
@@ -135,8 +146,9 @@ COMMENT ON COLUMN tag.id IS '标签ID';
 COMMENT ON COLUMN tag.name IS '标签名称';
 COMMENT ON COLUMN tag.description IS '标签描述';
 COMMENT ON COLUMN tag.status IS '状态：1-启用，0-禁用';
-COMMENT ON COLUMN tag.created_at IS '创建时间';
-COMMENT ON COLUMN tag.updated_at IS '更新时间';
+COMMENT ON COLUMN tag.create_time IS '创建时间';
+COMMENT ON COLUMN tag.update_time IS '更新时间';
+COMMENT ON COLUMN tag.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 
 -- 创建技术贴表
 CREATE TABLE IF NOT EXISTS post (
@@ -149,8 +161,9 @@ CREATE TABLE IF NOT EXISTS post (
     comment_count INTEGER DEFAULT 0,    -- 评论次数
     like_count INTEGER DEFAULT 0,       -- 点赞次数
     status INTEGER DEFAULT 1,           -- 状态：1-发布，0-草稿
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
+    deleted INTEGER DEFAULT 0           -- 逻辑删除标记：0-未删除，1-已删除
 );
 
 -- 表注释
@@ -164,15 +177,17 @@ COMMENT ON COLUMN post.view_count IS '浏览次数';
 COMMENT ON COLUMN post.comment_count IS '评论次数';
 COMMENT ON COLUMN post.like_count IS '点赞次数';
 COMMENT ON COLUMN post.status IS '状态：1-发布，0-草稿';
-COMMENT ON COLUMN post.created_at IS '创建时间';
-COMMENT ON COLUMN post.updated_at IS '更新时间';
+COMMENT ON COLUMN post.create_time IS '创建时间';
+COMMENT ON COLUMN post.update_time IS '更新时间';
+COMMENT ON COLUMN post.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 
 -- 创建帖子分类关联表
 CREATE TABLE IF NOT EXISTS post_category (
     id SERIAL PRIMARY KEY,              -- 关联ID
     post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE, -- 帖子ID
     category_id INTEGER NOT NULL REFERENCES category(id) ON DELETE CASCADE, -- 分类ID
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    deleted INTEGER DEFAULT 0,           -- 逻辑删除标记：0-未删除，1-已删除
     UNIQUE(post_id, category_id)        -- 唯一约束：帖子与分类的组合
 );
 
@@ -181,14 +196,16 @@ COMMENT ON TABLE post_category IS '帖子分类关联表';
 COMMENT ON COLUMN post_category.id IS '关联ID';
 COMMENT ON COLUMN post_category.post_id IS '帖子ID';
 COMMENT ON COLUMN post_category.category_id IS '分类ID';
-COMMENT ON COLUMN post_category.created_at IS '创建时间';
+COMMENT ON COLUMN post_category.create_time IS '创建时间';
+COMMENT ON COLUMN post_category.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 
 -- 创建帖子标签关联表
 CREATE TABLE IF NOT EXISTS post_tag (
     id SERIAL PRIMARY KEY,              -- 关联ID
     post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE, -- 帖子ID
     tag_id INTEGER NOT NULL REFERENCES tag(id) ON DELETE CASCADE, -- 标签ID
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    deleted INTEGER DEFAULT 0,           -- 逻辑删除标记：0-未删除，1-已删除
     UNIQUE(post_id, tag_id)             -- 唯一约束：帖子与标签的组合
 );
 
@@ -197,7 +214,8 @@ COMMENT ON TABLE post_tag IS '帖子标签关联表';
 COMMENT ON COLUMN post_tag.id IS '关联ID';
 COMMENT ON COLUMN post_tag.post_id IS '帖子ID';
 COMMENT ON COLUMN post_tag.tag_id IS '标签ID';
-COMMENT ON COLUMN post_tag.created_at IS '创建时间';
+COMMENT ON COLUMN post_tag.create_time IS '创建时间';
+COMMENT ON COLUMN post_tag.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 
 -- 创建评论表
 CREATE TABLE IF NOT EXISTS comment (
@@ -208,8 +226,9 @@ CREATE TABLE IF NOT EXISTS comment (
     content TEXT NOT NULL,              -- 过滤后的评论内容
     original_content TEXT,              -- 原始评论内容
     status INTEGER DEFAULT 1,           -- 状态：1-正常，0-禁用
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
+    deleted INTEGER DEFAULT 0           -- 逻辑删除标记：0-未删除，1-已删除
 );
 
 -- 表注释
@@ -221,8 +240,9 @@ COMMENT ON COLUMN comment.parent_id IS '父评论ID（用于回复）';
 COMMENT ON COLUMN comment.content IS '过滤后的评论内容';
 COMMENT ON COLUMN comment.original_content IS '原始评论内容';
 COMMENT ON COLUMN comment.status IS '状态：1-正常，0-禁用';
-COMMENT ON COLUMN comment.created_at IS '创建时间';
-COMMENT ON COLUMN comment.updated_at IS '更新时间';
+COMMENT ON COLUMN comment.create_time IS '创建时间';
+COMMENT ON COLUMN comment.update_time IS '更新时间';
+COMMENT ON COLUMN comment.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 
 -- 创建消息表
 CREATE TABLE IF NOT EXISTS message (
@@ -239,8 +259,9 @@ CREATE TABLE IF NOT EXISTS message (
     error_message TEXT,                 -- 发送失败原因
     is_top INTEGER DEFAULT 0,           -- 是否置顶：1-置顶, 0-普通
     status INTEGER DEFAULT 1,           -- 状态：1-正常，0-禁用
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
+    deleted INTEGER DEFAULT 0           -- 逻辑删除标记：0-未删除，1-已删除
 );
 
 -- 表注释
@@ -258,15 +279,17 @@ COMMENT ON COLUMN message.send_status IS '发送状态：1-发送成功, 0-发�
 COMMENT ON COLUMN message.error_message IS '发送失败原因';
 COMMENT ON COLUMN message.is_top IS '是否置顶：1-置顶, 0-普通';
 COMMENT ON COLUMN message.status IS '状态：1-正常，0-禁用';
-COMMENT ON COLUMN message.created_at IS '创建时间';
-COMMENT ON COLUMN message.updated_at IS '更新时间';
+COMMENT ON COLUMN message.create_time IS '创建时间';
+COMMENT ON COLUMN message.update_time IS '更新时间';
+COMMENT ON COLUMN message.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 
 -- 创建帖子点赞表
 CREATE TABLE IF NOT EXISTS post_like (
     id SERIAL PRIMARY KEY,              -- 点赞ID
     post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE, -- 帖子ID
     user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE, -- 用户ID
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    deleted INTEGER DEFAULT 0,           -- 逻辑删除标记：0-未删除，1-已删除
     UNIQUE(post_id, user_id)            -- 唯一约束：一个用户对一个帖子只能点赞一次
 );
 
@@ -275,14 +298,16 @@ COMMENT ON TABLE post_like IS '帖子点赞表';
 COMMENT ON COLUMN post_like.id IS '点赞ID';
 COMMENT ON COLUMN post_like.post_id IS '帖子ID';
 COMMENT ON COLUMN post_like.user_id IS '用户ID';
-COMMENT ON COLUMN post_like.created_at IS '创建时间';
+COMMENT ON COLUMN post_like.create_time IS '创建时间';
+COMMENT ON COLUMN post_like.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 
 -- 创建帖子收藏表
 CREATE TABLE IF NOT EXISTS post_favorite (
     id SERIAL PRIMARY KEY,              -- 收藏ID
     post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE, -- 帖子ID
     user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE, -- 用户ID
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    deleted INTEGER DEFAULT 0,           -- 逻辑删除标记：0-未删除，1-已删除
     UNIQUE(post_id, user_id)            -- 唯一约束：一个用户对一个帖子只能收藏一次
 );
 
@@ -291,7 +316,8 @@ COMMENT ON TABLE post_favorite IS '帖子收藏表';
 COMMENT ON COLUMN post_favorite.id IS '收藏ID';
 COMMENT ON COLUMN post_favorite.post_id IS '帖子ID';
 COMMENT ON COLUMN post_favorite.user_id IS '用户ID';
-COMMENT ON COLUMN post_favorite.created_at IS '创建时间';
+COMMENT ON COLUMN post_favorite.create_time IS '创建时间';
+COMMENT ON COLUMN post_favorite.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 
 -- 创建帖子浏览历史表
 CREATE TABLE IF NOT EXISTS post_view_history (
@@ -299,6 +325,7 @@ CREATE TABLE IF NOT EXISTS post_view_history (
     post_id INTEGER NOT NULL REFERENCES post(id) ON DELETE CASCADE, -- 帖子ID
     user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE, -- 用户ID
     viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 浏览时间
+    deleted INTEGER DEFAULT 0,           -- 逻辑删除标记：0-未删除，1-已删除
     UNIQUE(post_id, user_id)            -- 唯一约束：一个用户对一个帖子只记录一次浏览
 );
 
@@ -308,14 +335,16 @@ COMMENT ON COLUMN post_view_history.id IS '历史ID';
 COMMENT ON COLUMN post_view_history.post_id IS '帖子ID';
 COMMENT ON COLUMN post_view_history.user_id IS '用户ID';
 COMMENT ON COLUMN post_view_history.viewed_at IS '浏览时间';
+COMMENT ON COLUMN post_view_history.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 
 -- 创建敏感词表
 CREATE TABLE IF NOT EXISTS sensitive_word (
     id SERIAL PRIMARY KEY,              -- 敏感词ID
     word VARCHAR(50) NOT NULL UNIQUE,   -- 敏感词
     status INTEGER DEFAULT 1,           -- 状态：1-启用，0-禁用
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 更新时间
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
+    deleted INTEGER DEFAULT 0           -- 逻辑删除标记：0-未删除，1-已删除
 );
 
 -- 表注释
@@ -323,8 +352,9 @@ COMMENT ON TABLE sensitive_word IS '敏感词表';
 COMMENT ON COLUMN sensitive_word.id IS '敏感词ID';
 COMMENT ON COLUMN sensitive_word.word IS '敏感词';
 COMMENT ON COLUMN sensitive_word.status IS '状态：1-启用，0-禁用';
-COMMENT ON COLUMN sensitive_word.created_at IS '创建时间';
-COMMENT ON COLUMN sensitive_word.updated_at IS '更新时间';
+COMMENT ON COLUMN sensitive_word.create_time IS '创建时间';
+COMMENT ON COLUMN sensitive_word.update_time IS '更新时间';
+COMMENT ON COLUMN sensitive_word.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 
 -- 插入初始数据
 

@@ -15,7 +15,7 @@
 - **字段名**：小写字母，下划线分隔，如 `user_id`
 
 ## 4. 其他规范
-- **时间戳**：为所有表添加 `created_at` 和 `updated_at` 字段，默认值为 `CURRENT_TIMESTAMP`
+- **时间戳**：为所有表添加 `create_time` 和 `updated_at` 字段，默认值为 `CURRENT_TIMESTAMP`
 - **状态**：使用 `status` 字段表示状态，1-正常/启用，0-禁用/草稿
 - **外键**：添加 `ON DELETE CASCADE` 选项，确保数据一致性
 - **唯一**：对需要唯一的字段组合添加 `UNIQUE` 约束

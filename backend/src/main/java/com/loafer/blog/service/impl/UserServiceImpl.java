@@ -152,13 +152,7 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        // 软删除，将状态设置为0
-        UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("id", userId)
-                .set("status", 0)
-                .set("updated_at", LocalDateTime.now());
-        userMapper.update(null, updateWrapper);
-
+        userMapper.deleteById(userId);
         return ResponseVO.success();
     }
 

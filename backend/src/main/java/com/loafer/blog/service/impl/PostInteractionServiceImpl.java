@@ -163,7 +163,7 @@ public class PostInteractionServiceImpl implements PostInteractionService {
     @Override
     public ResponseVO<?> getLikedPosts(Long userId, Integer page, Integer size) {
         QueryWrapper<PostLike> wrapper = new QueryWrapper<>();
-        wrapper.eq("user_id", userId).orderByDesc("created_at");
+        wrapper.eq("user_id", userId).orderByDesc("create_time");
         List<PostLike> postLikes = postLikeMapper.selectList(wrapper);
         
         // 构建返回数据，包含帖子信息和点赞时间
@@ -215,7 +215,7 @@ public class PostInteractionServiceImpl implements PostInteractionService {
     @Override
     public ResponseVO<?> getFavoritedPosts(Long userId, Integer page, Integer size) {
         QueryWrapper<PostFavorite> wrapper = new QueryWrapper<>();
-        wrapper.eq("user_id", userId).orderByDesc("created_at");
+        wrapper.eq("user_id", userId).orderByDesc("create_time");
         List<PostFavorite> postFavorites = postFavoriteMapper.selectList(wrapper);
         
         // 构建返回数据，包含帖子信息和收藏时间

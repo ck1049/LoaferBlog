@@ -31,7 +31,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         QueryWrapper<Comment> wrapper = new QueryWrapper<>();
         wrapper.eq("post_id", postId)
                 .eq("parent_id", 0)
-                .orderByAsc("created_at");
+                .orderByAsc("create_time");
         return baseMapper.selectList(wrapper);
     }
 
@@ -93,7 +93,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     public List<Comment> getRepliesByCommentId(Long commentId) {
         QueryWrapper<Comment> wrapper = new QueryWrapper<>();
         wrapper.eq("parent_id", commentId)
-                .orderByAsc("created_at");
+                .orderByAsc("create_time");
         return baseMapper.selectList(wrapper);
     }
 }

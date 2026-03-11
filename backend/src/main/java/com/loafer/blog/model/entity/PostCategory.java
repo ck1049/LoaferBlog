@@ -3,6 +3,7 @@ package com.loafer.blog.model.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -17,6 +18,8 @@ public class PostCategory {
     private Long postId;
     @TableField("category_id")
     private Long categoryId;
-    @TableField("created_at")
     private LocalDateTime createTime;
+    @TableField("deleted")
+    @TableLogic
+    private Integer deleted;
 }

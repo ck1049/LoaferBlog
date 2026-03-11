@@ -24,7 +24,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         QueryWrapper<Message> wrapper = new QueryWrapper<>();
         wrapper.eq("receiver_id", receiverId)
                 .orderByDesc("is_top")
-                .orderByDesc("created_at");
+                .orderByDesc("create_time");
         return baseMapper.selectList(wrapper);
     }
 
@@ -62,7 +62,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         QueryWrapper<Message> wrapper = new QueryWrapper<>();
         wrapper.and(w -> w.eq("sender_id", userId1).eq("receiver_id", userId2))
                 .or(w -> w.eq("sender_id", userId2).eq("receiver_id", userId1))
-                .orderByAsc("created_at");
+                .orderByAsc("create_time");
         return baseMapper.selectList(wrapper);
     }
 

@@ -41,7 +41,7 @@ public class PostServiceImpl implements PostService {
         try {
             // 按发布时间倒序排列
             QueryWrapper<Post> wrapper = new QueryWrapper<>();
-            wrapper.orderByDesc("created_at");
+            wrapper.orderByDesc("create_time");
             List<Post> posts = postMapper.selectList(wrapper);
             List<PostVO> postVOs = posts.stream().map(this::convertToPostVO).collect(Collectors.toList());
             return ResponseVO.success(postVOs);
@@ -56,7 +56,7 @@ public class PostServiceImpl implements PostService {
             // 使用PostgreSQL的全文搜索
             QueryWrapper<Post> wrapper = new QueryWrapper<>();
             wrapper.like("title", keyword).or().like("content", keyword);
-            wrapper.orderByDesc("created_at");
+            wrapper.orderByDesc("create_time");
             List<Post> posts = postMapper.selectList(wrapper);
             List<PostVO> postVOs = posts.stream().map(this::convertToPostVO).collect(Collectors.toList());
             return ResponseVO.success(postVOs);

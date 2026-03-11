@@ -3,6 +3,7 @@ package com.loafer.blog.model.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -21,22 +22,23 @@ public class Message {
     @TableField("original_content")
     private String originalContent;
     @TableField("message_type")
-    private Integer messageType; // 1:文本, 2:表情, 3:图片, 4:视频, 5:文件
+    private Integer messageType;
     @TableField("file_path")
-    private String filePath; // 存储文件路径
+    private String filePath;
     @TableField("file_name")
-    private String fileName; // 存储文件名
+    private String fileName;
     @TableField("file_size")
-    private Long fileSize; // 存储文件大小
+    private Long fileSize;
     @TableField("send_status")
-    private Integer sendStatus; // 1:发送成功, 0:发送失败
+    private Integer sendStatus;
     @TableField("error_message")
-    private String errorMessage; // 发送失败原因
+    private String errorMessage;
     @TableField("is_top")
-    private Integer isTop; // 1:置顶, 0:普通
-    @TableField("created_at")
-    private LocalDateTime createTime;
-    @TableField("updated_at")
-    private LocalDateTime updateTime;
+    private Integer isTop;
     private Integer status;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
+    @TableField("deleted")
+    @TableLogic
+    private Integer deleted;
 }

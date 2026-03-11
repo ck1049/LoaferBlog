@@ -3,6 +3,7 @@ package com.loafer.blog.model.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -26,10 +27,11 @@ public class User {
     private String avatar;
     @TableField("bio")
     private String bio;
-    @TableField("created_at")
     private LocalDateTime createTime;
-    @TableField("updated_at")
     private LocalDateTime updateTime;
     @TableField("status")
     private Integer status;
+    @TableField("deleted")
+    @TableLogic
+    private Integer deleted;
 }

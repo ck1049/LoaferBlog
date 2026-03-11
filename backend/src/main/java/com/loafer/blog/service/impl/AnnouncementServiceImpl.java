@@ -25,7 +25,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         try {
             // 按发布时间倒序排列
             QueryWrapper<Announcement> wrapper = new QueryWrapper<>();
-            wrapper.orderByDesc("created_at");
+            wrapper.orderByDesc("create_time");
             List<Announcement> announcements = announcementMapper.selectList(wrapper);
             List<AnnouncementVO> announcementVOs = announcements.stream()
                     .map(AnnouncementVO::new).collect(Collectors.toList());
