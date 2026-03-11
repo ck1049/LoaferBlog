@@ -1,6 +1,7 @@
 package com.loafer.blog.config;
 
 import com.loafer.blog.utils.JwtUtils;
+import com.loafer.blog.utils.TokenCache;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,16 +17,18 @@ import java.io.IOException;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
+    private final TokenCache tokenCache;
 
-    public JwtAuthenticationFilter(JwtUtils jwtUtils) {
+    public JwtAuthenticationFilter(JwtUtils jwtUtils, TokenCache tokenCache) {
         this.jwtUtils = jwtUtils;
+        this.tokenCache = tokenCache;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
         String token = getTokenFromRequest(request);
 
-        if (token != null && jwtUtils.validateToken(token)) {
+        if (token != null && jwtUtils.validateToken(token) && !tokenCache.containsToken(token)) {
             Long userId = jwtUtils.getUserIdFromToken(token);
             // 这里需要实现UserDetailsService来加载用户信息
             // UserDetails userDetails = userDetailsService.loadUserByUsername(userId.toString());

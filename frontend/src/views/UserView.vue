@@ -169,7 +169,7 @@ const userStore = useUserStore()
 const activeTab = ref('profile')
 const avatarInput = ref<HTMLInputElement>()
 
-const userAvatar = ref((userStore.user?.avatar && userStore.user.avatar !== '') ? userStore.user.avatar : 'https://via.placeholder.com/150')
+const userAvatar = ref(userStore.user?.avatar || '')
 
 const profileForm = ref({
   nickname: '',
@@ -211,7 +211,7 @@ const loading = ref<Record<string, boolean>>({
 watch(() => userStore.user, (newUser) => {
   console.log('User avatar:', newUser?.avatar)
   console.log('File base URL:', import.meta.env.VITE_FILE_BASE_URL)
-  userAvatar.value = (newUser?.avatar && newUser.avatar !== '') ? newUser.avatar : 'https://via.placeholder.com/150'
+  userAvatar.value = newUser?.avatar || ''
   if (newUser) {
     profileForm.value.nickname = newUser.nickname || newUser.username || ''
     profileForm.value.bio = newUser.bio || ''
@@ -517,7 +517,7 @@ onMounted(async () => {
     await userStore.fetchUserInfo()
     // 手动更新头像和个人资料
     if (userStore.user) {
-      userAvatar.value = (userStore.user.avatar && userStore.user.avatar !== '') ? userStore.user.avatar : 'https://via.placeholder.com/150'
+      userAvatar.value = userStore?.user?.avatar || ''
       profileForm.value.nickname = userStore.user.nickname || userStore.user.username || ''
       profileForm.value.bio = userStore.user.bio || ''
     }

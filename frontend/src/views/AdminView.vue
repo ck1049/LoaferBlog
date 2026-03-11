@@ -38,11 +38,11 @@
         <h3>添加技术贴</h3>
         <input type="text" v-model="newPost.title" placeholder="标题" />
         <div class="markdown-editor">
-          <v-md-editor v-model="newPost.content" height="400px">
+          <VueMarkdownEditor v-model="newPost.content" height="400px">
             <template #upload-image>
               <input type="file" accept="image/*" @change="handleImageUpload" />
             </template>
-          </v-md-editor>
+          </VueMarkdownEditor>
         </div>
         <div class="file-upload-section">
           <h4>上传文件</h4>
@@ -191,13 +191,6 @@ import { useAnnouncementStore } from '../stores/announcement'
 import { useCategoryStore } from '../stores/category'
 import { useTagStore } from '../stores/tag'
 import { useSensitiveWordStore } from '../stores/sensitiveWord'
-import VMdEditor from '@kangc/v-md-editor'
-import '@kangc/v-md-editor/lib/style/base-editor.css'
-import githubTheme from '@kangc/v-md-editor/lib/theme/github.js'
-import '@kangc/v-md-editor/lib/theme/style/github.css'
-
-// 注册github主题
-VMdEditor.use(githubTheme)
 
 const activeTab = ref('announcements')
 const announcementStore = useAnnouncementStore()
@@ -669,16 +662,16 @@ onMounted(() => {
 }
 
 /* 调整编辑器内部样式 */
-.markdown-editor :deep(.v-md-editor-container) {
+.markdown-editor :deep(.vue-markdown-editor-container) {
   border: none;
 }
 
-.markdown-editor :deep(.v-md-editor-toolbar) {
+.markdown-editor :deep(.vue-markdown-editor-toolbar) {
   background-color: #f8f9fa;
   border-bottom: 1px solid #e9ecef;
 }
 
-.markdown-editor :deep(.v-md-editor-content) {
+.markdown-editor :deep(.vue-markdown-editor-content) {
   min-height: 400px;
 }
 

@@ -12,6 +12,7 @@ import com.loafer.blog.model.entity.Role;
 import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.model.vo.UserVO;
 import com.loafer.blog.service.UserService;
+import com.loafer.blog.utils.SensitiveInfoUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,8 @@ public class UserServiceImpl implements UserService {
 
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(user, userVO);
+        // 对邮箱进行脱敏处理
+        userVO.setEmail(SensitiveInfoUtils.maskEmail(userVO.getEmail()));
         
         // 添加默认头像功能
         if (userVO.getAvatar() == null || userVO.getAvatar().isEmpty()) {
@@ -96,12 +99,17 @@ public class UserServiceImpl implements UserService {
         if (userDTO.getAvatar() != null) {
             user.setAvatar(userDTO.getAvatar());
         }
+        if (userDTO.getEmail() != null && !SensitiveInfoUtils.isMaskedEmail(userDTO.getEmail())) {
+            user.setEmail(userDTO.getEmail());
+        }
         user.setUpdateTime(LocalDateTime.now());
 
         userMapper.updateById(user);
 
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(user, userVO);
+        // 对邮箱进行脱敏处理
+        userVO.setEmail(SensitiveInfoUtils.maskEmail(userVO.getEmail()));
         
         // 添加默认头像功能
         if (userVO.getAvatar() == null || userVO.getAvatar().isEmpty()) {
@@ -186,6 +194,8 @@ public class UserServiceImpl implements UserService {
             // 返回更新后的用户信息
             UserVO userVO = new UserVO();
             BeanUtils.copyProperties(user, userVO);
+            // 对邮箱进行脱敏处理
+            userVO.setEmail(SensitiveInfoUtils.maskEmail(userVO.getEmail()));
             
             // 添加角色信息的查询和设置
             List<String> roles = new ArrayList<>();

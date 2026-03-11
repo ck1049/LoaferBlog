@@ -1,25 +1,38 @@
 <template>
   <div class="message-list">
     <h1>联系人列表</h1>
-    <div v-if="messageStore.contacts.length === 0" class="no-data">
+    <div class="search-container">
+      <input type="text" v-model="searchQuery" placeholder="搜索用户..." class="search-input" />
+    </div>
+    <div v-if="filteredContacts.length === 0" class="no-data">
       暂无联系人
     </div>
     <div v-else class="contact-items">
-      <div v-for="contact in messageStore.sortedContacts" :key="contact.userId" class="contact-item" 
+      <div v-for="contact in filteredContacts" :key="contact.userId" class="contact-item" 
            @touchstart="touchStart($event, contact.userId)" 
            @touchmove="touchMove($event)" 
            @touchend="touchEnd(contact.userId)">
-        <div class="contact-content" :style="{ transform: contactSlide[contact.userId] ? 'translateX(-80px)' : 'translateX(0)' }">
+        <div class="contact-content" :style="{ transform: contactSlide[contact.userId] ? 'translateX(-80px)' : 'translateX(0)' }" @click="viewMessage(contact.userId)">
           <div class="contact-header">
-            <span class="contact-name">{{ contact.user?.nickname || contact.user?.username || '未知用户' }}</span>
-            <span class="contact-time">{{ formatDate(contact.lastMessageTime) }}</span>
-          </div>
-          <div class="contact-last-message">
-            <span v-if="contact.lastMessage.messageType === 1">{{ contact.lastMessage.filteredContent }}</span>
-            <span v-else-if="contact.lastMessage.messageType === 2">[表情]</span>
-            <span v-else-if="contact.lastMessage.messageType === 3">[图片]</span>
-            <span v-else-if="contact.lastMessage.messageType === 4">[视频]</span>
-            <span v-else-if="contact.lastMessage.messageType === 5">[文件] {{ contact.lastMessage.fileName }}</span>
+            <div class="contact-avatar">
+              <img :src="contact.user?.avatar || ''" alt="用户头像" />
+            </div>
+            <div class="contact-info">
+              <div class="contact-name-row">
+                <span class="contact-name">{{ contact.user?.nickname || contact.user?.username || '未知用户' }}</span>
+                <span class="contact-time">{{ formatDate(contact.lastMessageTime) }}</span>
+              </div>
+              <div class="contact-bio" v-if="contact.user?.bio">
+                {{ contact.user.bio }}
+              </div>
+              <div class="contact-last-message">
+                <span v-if="contact.lastMessage.messageType === 1">{{ contact.lastMessage.filteredContent }}</span>
+                <span v-else-if="contact.lastMessage.messageType === 2">[表情]</span>
+                <span v-else-if="contact.lastMessage.messageType === 3">[图片]</span>
+                <span v-else-if="contact.lastMessage.messageType === 4">[视频]</span>
+                <span v-else-if="contact.lastMessage.messageType === 5">[文件] {{ contact.lastMessage.fileName }}</span>
+              </div>
+            </div>
           </div>
           <div class="contact-actions" v-if="contact.lastMessage.isTop === 1">
             <span class="top-badge">置顶</span>
@@ -40,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, reactive } from 'vue';
+import { onMounted, ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMessageStore } from '../stores/message';
 import { useUserStore } from '../stores/user';
@@ -51,6 +64,19 @@ const userStore = useUserStore();
 
 const contactSlide = reactive<Record<number, boolean>>({});
 const touchStartX = ref(0);
+const searchQuery = ref('');
+
+const filteredContacts = computed(() => {
+  if (!searchQuery.value) {
+    return messageStore.sortedContacts;
+  }
+  return messageStore.sortedContacts.filter(contact => {
+    const username = contact.user?.username?.toLowerCase() || '';
+    const nickname = contact.user?.nickname?.toLowerCase() || '';
+    const query = searchQuery.value.toLowerCase();
+    return username.includes(query) || nickname.includes(query);
+  });
+});
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleString();
@@ -121,6 +147,25 @@ h1 {
   padding-bottom: 10px;
 }
 
+.search-container {
+  margin-bottom: 20px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.search-input:focus {
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
 .no-data {
   text-align: center;
   padding: 40px 0;
@@ -154,18 +199,55 @@ h1 {
 
 .contact-header {
   display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.contact-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.contact-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.contact-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-name-row {
+  display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
+  align-items: center;
+  margin-bottom: 5px;
 }
 
 .contact-name {
   font-weight: bold;
   color: #333;
+  font-size: 16px;
 }
 
 .contact-time {
   color: #999;
   font-size: 14px;
+}
+
+.contact-bio {
+  font-size: 13px;
+  color: #999;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .contact-last-message {
@@ -174,7 +256,7 @@ h1 {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
 }
 
 .contact-actions {

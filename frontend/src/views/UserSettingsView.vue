@@ -6,6 +6,15 @@
         <h2>账户设置</h2>
         
         <div class="setting-item">
+          <h3>修改邮箱</h3>
+          <div class="form-group">
+            <label for="email">新邮箱</label>
+            <input type="email" id="email" v-model="emailForm.email" required />
+          </div>
+          <button @click="changeEmail" class="btn btn-primary">修改邮箱</button>
+        </div>
+        
+        <div class="setting-item">
           <h3>修改密码</h3>
           <div class="form-group">
             <label for="currentPassword">当前密码</label>
@@ -46,6 +55,10 @@ const passwordForm = ref({
   confirmPassword: ''
 })
 
+const emailForm = ref({
+  email: ''
+})
+
 const changePassword = async () => {
   if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
     alert('新密码和确认密码不一致')
@@ -64,6 +77,34 @@ const changePassword = async () => {
   } catch (error) {
     console.error('修改密码失败:', error)
     alert('修改密码失败')
+  }
+}
+
+const changeEmail = async () => {
+  try {
+    const response = await fetch('/api/users/me', {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(emailForm.value)
+    })
+    
+    const data = await response.json()
+    if (data.code === 200) {
+      // 更新用户信息
+      await userStore.fetchUserInfo()
+      alert('邮箱修改成功')
+      emailForm.value = {
+        email: ''
+      }
+    } else {
+      alert(`邮箱修改失败: ${data.message}`)
+    }
+  } catch (error) {
+    console.error('修改邮箱失败:', error)
+    alert('修改邮箱失败，请稍后重试')
   }
 }
 

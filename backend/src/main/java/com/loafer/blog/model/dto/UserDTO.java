@@ -7,4 +7,5 @@ public class UserDTO {
     private String nickname;
     private String bio;
     private String avatar;
+    private String email;
 }

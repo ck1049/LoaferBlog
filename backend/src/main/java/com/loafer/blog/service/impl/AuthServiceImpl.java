@@ -8,11 +8,15 @@ import com.loafer.blog.model.dto.ChangePasswordDTO;
 import com.loafer.blog.model.entity.User;
 import com.loafer.blog.model.entity.UserRole;
 import com.loafer.blog.model.entity.Role;
+import com.loafer.blog.model.entity.Message;
 import com.loafer.blog.mapper.UserMapper;
 import com.loafer.blog.mapper.UserRoleMapper;
 import com.loafer.blog.mapper.RoleMapper;
 import com.loafer.blog.service.AuthService;
+import com.loafer.blog.service.MessageService;
 import com.loafer.blog.utils.JwtUtils;
+import com.loafer.blog.utils.SensitiveInfoUtils;
+import com.loafer.blog.utils.TokenCache;
 import com.loafer.blog.vo.LoginResponseVO;
 import com.loafer.blog.vo.ResponseVO;
 import com.loafer.blog.vo.UserVO;
@@ -20,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,6 +42,16 @@ public class AuthServiceImpl implements AuthService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private JwtUtils jwtUtils;
+    @Autowired
+    private MessageService messageService;
+    @Autowired
+    private TokenCache tokenCache;
+    @Autowired
+    private HttpServletRequest request;
+    
+    // JWT过期时间配置
+    @Value("${jwt.expiration}")
+    private long jwtExpiration;
     
     // 文件上传路径配置
     @Value("${file.upload.avatar-dir}")
@@ -72,6 +87,16 @@ public class AuthServiceImpl implements AuthService {
             userRole.setUserId(user.getId());
             userRole.setRoleId(2L); // 普通用户角色ID
             userRoleMapper.insert(userRole);
+
+            // 发送欢迎消息
+            Message welcomeMessage = new Message();
+            welcomeMessage.setSenderId(1L); // 管理员ID
+            welcomeMessage.setReceiverId(user.getId());
+            welcomeMessage.setContent("Hi，欢迎加入LoaferBlog。");
+            welcomeMessage.setMessageType(1); // 文本消息
+            welcomeMessage.setSendStatus(1); // 发送成功
+            welcomeMessage.setIsTop(0); // 非置顶
+            messageService.createMessage(welcomeMessage);
 
             return ResponseVO.success(null);
         } catch (Exception e) {
@@ -115,7 +140,7 @@ public class AuthServiceImpl implements AuthService {
             UserVO userVO = new UserVO();
             userVO.setId(existingUser.getId());
             userVO.setUsername(existingUser.getUsername());
-            userVO.setEmail(existingUser.getEmail());
+            userVO.setEmail(SensitiveInfoUtils.maskEmail(existingUser.getEmail()));
             userVO.setNickname(existingUser.getNickname());
             userVO.setAvatar(existingUser.getAvatar());
             userVO.setBio(existingUser.getBio());
@@ -141,6 +166,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ResponseVO<Void> logout() {
+        // 从请求头中获取token
+        String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+            // 将token添加到失效缓存中
+            tokenCache.addToken(token, jwtExpiration);
+        }
         return ResponseVO.success(null);
     }
 

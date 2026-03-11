@@ -23,7 +23,7 @@
             </router-link>
             <div class="user-section">
               <router-link to="/user" class="nav-link user-btn">
-                <span class="user-avatar" :style="{ backgroundImage: `url(${userStore.user?.avatar || 'https://via.placeholder.com/30'})` }"></span>
+                <span class="user-avatar" :style="{ backgroundImage: `url(${userStore.user?.avatar})` }"></span>
                 <span class="username">{{ userStore.user?.username }}</span>
               </router-link>
               <button @click="logout" class="nav-link logout-btn">

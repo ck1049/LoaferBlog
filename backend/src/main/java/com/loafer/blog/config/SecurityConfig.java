@@ -1,6 +1,7 @@
 package com.loafer.blog.config;
 
 import com.loafer.blog.utils.JwtUtils;
+import com.loafer.blog.utils.TokenCache;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,9 +16,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
     private final JwtUtils jwtUtils;
+    private final TokenCache tokenCache;
 
-    public SecurityConfig(JwtUtils jwtUtils) {
+    public SecurityConfig(JwtUtils jwtUtils, TokenCache tokenCache) {
         this.jwtUtils = jwtUtils;
+        this.tokenCache = tokenCache;
     }
 
     @Bean
@@ -37,12 +40,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/comments/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/messages/**").authenticated()
-                        .requestMatchers("/api/categories/**").hasRole("ADMIN")
+                        .requestMatchers("/api/categories/**").permitAll()
                         .requestMatchers("/api/tags/**").hasRole("ADMIN")
                         .requestMatchers("/api/sensitive-words/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtils), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtUtils, tokenCache), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
