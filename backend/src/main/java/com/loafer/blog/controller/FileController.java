@@ -28,6 +28,9 @@ public class FileController {
     @Value("${file.access.prefix}")
     private String ACCESS_PREFIX;
 
+    @Value("${file.access.domain}")
+    private String ACCESS_DOMAIN;
+
     // 确保上传目录存在
     private void ensureDirExists(String dirPath) {
         File dir = new File(dirPath);
@@ -61,7 +64,7 @@ public class FileController {
             Files.write(path, file.getBytes());
 
             // 生成访问URL
-            String fileUrl = ACCESS_PREFIX + "/" + filename;
+            String fileUrl = ACCESS_DOMAIN + ACCESS_PREFIX + "/" + filename;
 
             // 返回文件信息
             return ResponseVO.success(java.util.Map.of("url", fileUrl));
@@ -101,7 +104,7 @@ public class FileController {
             Files.write(path, file.getBytes());
 
             // 生成访问URL
-            String fileUrl = ACCESS_PREFIX + "/" + filename;
+            String fileUrl = ACCESS_DOMAIN + ACCESS_PREFIX + "/" + filename;
 
             // 读取文件内容
             String content = new String(file.getBytes());

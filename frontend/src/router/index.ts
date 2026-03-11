@@ -60,8 +60,13 @@ const router = createRouter({
 })
 
 // 路由守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
+
+  // 如果有token但没有用户信息，先加载用户信息
+  if (userStore.token && !userStore.user) {
+    await userStore.fetchUserInfo()
+  }
 
   if (to.meta.requiresAdmin) {
     if (userStore.isAdmin) {

@@ -130,7 +130,13 @@
             <h5>已上传文件：</h5>
             <ul>
               <li v-for="file in uploadedFiles" :key="file.url">
-                {{ file.name }} 
+                <div class="file-info">
+                  <div class="file-name">{{ file.name }}</div>
+                  <div class="file-url">
+                    <input type="text" :value="file.url" readonly />
+                    <button @click="copyFileUrl(file.url)">复制链接</button>
+                  </div>
+                </div>
                 <button @click="insertFileLink(file)">插入链接</button>
               </li>
             </ul>
@@ -261,6 +267,12 @@ import { useAnnouncementStore } from '../stores/announcement'
 import { useCategoryStore } from '../stores/category'
 import { useTagStore } from '../stores/tag'
 import { useSensitiveWordStore } from '../stores/sensitiveWord'
+import VueMarkdownEditor from '@kangc/v-md-editor'
+import '@kangc/v-md-editor/lib/style/base-editor.css'
+import githubTheme from '@kangc/v-md-editor/lib/theme/github.js'
+import '@kangc/v-md-editor/lib/theme/style/github.css'
+
+VueMarkdownEditor.use(githubTheme)
 
 const activeTab = ref('announcements')
 const announcementStore = useAnnouncementStore()
@@ -360,8 +372,23 @@ const addPost = async () => {
 
 // 编辑技术贴
 const editPost = (post: any) => {
+  // 深拷贝帖子数据
   editingPost.value = { ...post }
-  // 这里可以实现编辑表单
+  // 确保categoryIds和tagIds是数组
+  if (!editingPost.value.categoryIds) {
+    editingPost.value.categoryIds = []
+  }
+  if (!editingPost.value.tagIds) {
+    editingPost.value.tagIds = []
+  }
+  // 如果帖子有categories属性，提取categoryIds
+  if (post.categories && Array.isArray(post.categories)) {
+    editingPost.value.categoryIds = post.categories.map((cat: any) => cat.id)
+  }
+  // 如果帖子有tags属性，提取tagIds
+  if (post.tags && Array.isArray(post.tags)) {
+    editingPost.value.tagIds = post.tags.map((tag: any) => tag.id)
+  }
 }
 
 // 删除技术贴
@@ -615,34 +642,34 @@ const insertFileLink = (file: {name: string, url: string}) => {
   newPost.value.content += `[${file.name}](${file.url})\n`
 }
 
+// 复制文件URL
+const copyFileUrl = (url: string) => {
+  navigator.clipboard.writeText(url)
+    .then(() => {
+      alert('链接已复制到剪贴板')
+    })
+    .catch(err => {
+      console.error('复制失败:', err)
+      alert('复制失败，请手动复制')
+    })
+}
+
 // 处理Markdown文件上传
-const handleMarkdownUpload = async (event: Event) => {
+const handleMarkdownUpload = (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (!file) return
 
-  try {
-    const formData = new FormData()
-    formData.append('file', file)
-
-    const response = await axios.post('/api/files/upload-markdown', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-
-    if (response.data.code === 200) {
-      const content = response.data.data.content
-      newPost.value.content = content
-      alert('Markdown文件上传成功，内容已导入编辑器')
-    } else {
-      alert('上传失败: ' + response.data.message)
-    }
-  } catch (error) {
-    console.error('上传Markdown文件失败:', error)
-    alert('上传Markdown文件失败')
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    const content = e.target?.result as string
+    newPost.value.content = content
+    alert('Markdown文件解析成功，内容已导入编辑器')
   }
+  reader.onerror = () => {
+    alert('解析Markdown文件失败')
+  }
+  reader.readAsText(file, 'utf-8')
   target.value = ''
 }
 
@@ -856,16 +883,41 @@ onMounted(() => {
 
 .uploaded-files li {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px;
+  flex-direction: column;
+  padding: 12px;
   background-color: white;
   border: 1px solid #dee2e6;
   border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.file-info {
+  width: 100%;
   margin-bottom: 8px;
 }
 
-.uploaded-files button {
+.file-name {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.file-url {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.file-url input {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  background-color: #f8f9fa;
+}
+
+.file-url button {
   padding: 4px 8px;
   background-color: #6c757d;
   color: white;
@@ -875,9 +927,26 @@ onMounted(() => {
   font-size: 12px;
 }
 
-.uploaded-files button:hover {
+.file-url button:hover {
   background-color: #5a6268;
 }
+
+.uploaded-files li button:last-child {
+  align-self: flex-end;
+  padding: 4px 8px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.uploaded-files li button:last-child:hover {
+  background-color: #5a6268;
+}
+
+
 
 .form-group {
   margin-bottom: 15px;
