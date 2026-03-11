@@ -119,6 +119,12 @@ public class PostInteractionServiceImpl implements PostInteractionService {
         postFavorite.setCreateTime(LocalDateTime.now());
         postFavoriteMapper.insert(postFavorite);
         
+        // 更新帖子收藏数
+        UpdateWrapper<Post> postUpdateWrapper = new UpdateWrapper<>();
+        postUpdateWrapper.eq("id", postId)
+                .set("favorite_count", post.getFavoriteCount() != null ? post.getFavoriteCount() + 1 : 1);
+        postMapper.update(null, postUpdateWrapper);
+        
         return ResponseVO.success();
     }
 
@@ -140,6 +146,12 @@ public class PostInteractionServiceImpl implements PostInteractionService {
         
         // 删除收藏记录
         postFavoriteMapper.delete(wrapper);
+        
+        // 更新帖子收藏数
+        UpdateWrapper<Post> postUpdateWrapper = new UpdateWrapper<>();
+        postUpdateWrapper.eq("id", postId)
+                .set("favorite_count", Math.max(0, post.getFavoriteCount() != null ? post.getFavoriteCount() - 1 : 0));
+        postMapper.update(null, postUpdateWrapper);
         
         return ResponseVO.success();
     }

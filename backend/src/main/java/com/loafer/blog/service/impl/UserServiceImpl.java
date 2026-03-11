@@ -1,7 +1,7 @@
 package com.loafer.blog.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.loafer.blog.mapper.UserMapper;
 import com.loafer.blog.mapper.UserRoleMapper;
 import com.loafer.blog.mapper.RoleMapper;
@@ -29,10 +29,8 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
-    @Autowired
-    private UserMapper userMapper;
     @Autowired
     private UserRoleMapper userRoleMapper;
     @Autowired
@@ -49,7 +47,7 @@ public class UserServiceImpl implements UserService {
     private String ACCESS_DOMAIN;
     @Override
     public ResponseVO<UserVO> getCurrentUser(Long userId) {
-        User user = userMapper.selectById(userId);
+        User user = getById(userId);
         if (user == null) {
             return ResponseVO.error("用户不存在");
         }
@@ -84,7 +82,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseVO<UserVO> updateCurrentUser(Long userId, UserDTO userDTO) {
-        User user = userMapper.selectById(userId);
+        User user = getById(userId);
         if (user == null) {
             return ResponseVO.error("用户不存在");
         }
@@ -104,7 +102,7 @@ public class UserServiceImpl implements UserService {
         }
         user.setUpdateTime(LocalDateTime.now());
 
-        userMapper.updateById(user);
+        updateById(user);
 
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(user, userVO);
@@ -136,7 +134,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseVO<Void> deleteAccount(Long userId) {
-        User user = userMapper.selectById(userId);
+        User user = getById(userId);
         if (user == null) {
             return ResponseVO.error("用户不存在");
         }
@@ -152,13 +150,13 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        userMapper.deleteById(userId);
+        removeById(userId);
         return ResponseVO.success();
     }
 
     @Override
     public ResponseVO<UserVO> uploadAvatar(Long userId, MultipartFile avatar) {
-        User user = userMapper.selectById(userId);
+        User user = getById(userId);
         if (user == null) {
             return ResponseVO.error("用户不存在");
         }
@@ -183,7 +181,7 @@ public class UserServiceImpl implements UserService {
             String avatarUrl = ACCESS_PREFIX + "/avatars/" + fileName;
             user.setAvatar(avatarUrl);
             user.setUpdateTime(LocalDateTime.now());
-            userMapper.updateById(user);
+            updateById(user);
             
             // 返回更新后的用户信息
             UserVO userVO = new UserVO();

@@ -1,5 +1,6 @@
 package com.loafer.blog.model.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -18,8 +19,10 @@ public class PostLike {
     private Long postId;
     @TableField("user_id")
     private Long userId;
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
     @TableField("deleted")
     @TableLogic
     private Integer deleted;
+    private LocalDateTime deleteTime;
 }

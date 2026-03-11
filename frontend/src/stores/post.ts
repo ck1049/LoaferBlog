@@ -7,6 +7,9 @@ interface Post {
   content: string;
   author: string;
   viewCount: number;
+  likeCount: number;
+  favoriteCount: number;
+  commentCount: number;
   createdAt: string;
   updatedAt: string;
   categories?: any[];

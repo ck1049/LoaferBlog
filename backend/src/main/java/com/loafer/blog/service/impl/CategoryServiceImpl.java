@@ -1,6 +1,7 @@
 package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.loafer.blog.model.dto.CategoryDTO;
 import com.loafer.blog.model.entity.Category;
 import com.loafer.blog.model.entity.PostCategory;
@@ -14,19 +15,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class CategoryServiceImpl implements CategoryService {
+public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> implements CategoryService {
 
-    private final CategoryMapper categoryMapper;
     private final PostCategoryMapper postCategoryMapper;
 
-    public CategoryServiceImpl(CategoryMapper categoryMapper, PostCategoryMapper postCategoryMapper) {
-        this.categoryMapper = categoryMapper;
+    public CategoryServiceImpl(PostCategoryMapper postCategoryMapper) {
         this.postCategoryMapper = postCategoryMapper;
     }
 
     @Override
     public List<CategoryVO> getAllCategories() {
-        List<Category> categories = categoryMapper.selectList(null);
+        List<Category> categories = list();
         return categories.stream()
                 .map(CategoryVO::new)
                 .collect(Collectors.toList());
@@ -38,20 +37,20 @@ public class CategoryServiceImpl implements CategoryService {
         category.setName(categoryDTO.getName());
         category.setDescription(categoryDTO.getDescription());
         category.setStatus(categoryDTO.getStatus());
-        categoryMapper.insert(category);
+        save(category);
         return new CategoryVO(category);
     }
 
     @Override
     public CategoryVO updateCategory(Long id, CategoryDTO categoryDTO) {
-        Category category = categoryMapper.selectById(id);
+        Category category = getById(id);
         if (category == null) {
             throw new RuntimeException("分类不存在");
         }
         category.setName(categoryDTO.getName());
         category.setDescription(categoryDTO.getDescription());
         category.setStatus(categoryDTO.getStatus());
-        categoryMapper.updateById(category);
+        updateById(category);
         return new CategoryVO(category);
     }
 
@@ -62,7 +61,7 @@ public class CategoryServiceImpl implements CategoryService {
         wrapper.eq("category_id", id);
         postCategoryMapper.delete(wrapper);
         // 再删除分类
-        return categoryMapper.deleteById(id) > 0;
+        return removeById(id);
     }
 
     @Override
@@ -80,7 +79,7 @@ public class CategoryServiceImpl implements CategoryService {
             return List.of();
         }
         
-        List<Category> categories = categoryMapper.selectBatchIds(categoryIds);
+        List<Category> categories = listByIds(categoryIds);
         return categories.stream()
                 .map(CategoryVO::new)
                 .collect(Collectors.toList());

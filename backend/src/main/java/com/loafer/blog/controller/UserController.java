@@ -1,26 +1,26 @@
 package com.loafer.blog.controller;
 
-import com.loafer.blog.model.dto.PostWithTimeDTO;
 import com.loafer.blog.model.dto.UserDTO;
 import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.model.vo.UserVO;
 import com.loafer.blog.service.UserService;
 import com.loafer.blog.service.PostInteractionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
     
-    @Autowired
-    private PostInteractionService postInteractionService;
+    private final PostInteractionService postInteractionService;
+
+    public UserController(UserService userService, PostInteractionService postInteractionService) {
+        this.userService = userService;
+        this.postInteractionService = postInteractionService;
+    }
 
     @GetMapping("/me")
     public ResponseVO<UserVO> getCurrentUser(@RequestAttribute("userId") Long userId) {

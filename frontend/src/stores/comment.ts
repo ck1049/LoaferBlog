@@ -24,7 +24,7 @@ export const useCommentStore = defineStore('comment', {
   getters: {
     sortedComments: (state) => {
       return [...state.comments].sort((a, b) => {
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
     },
   },
@@ -39,6 +39,38 @@ export const useCommentStore = defineStore('comment', {
         }
       } catch (error) {
         console.error('Failed to fetch comments:', error);
+      }
+    },
+    async fetchCommentsByPostIdWithPagination(postId: number, parentId: number, lastCommentId: number | null, size: number) {
+      try {
+        // 构建参数对象，只包含非 null 的值
+        const params: any = { parentId, size };
+        if (lastCommentId !== null) {
+          params.lastCommentId = lastCommentId;
+        }
+        const response = await axios.get(`/api/comments/post/${postId}/pagination`, {
+          params
+        });
+        const newComments = response.data.data;
+        // 为每个新评论获取回复
+        for (const comment of newComments) {
+          await this.fetchRepliesByCommentId(comment.id, comment);
+        }
+        return newComments;
+      } catch (error) {
+        console.error('Failed to fetch comments with pagination:', error);
+        return [];
+      }
+    },
+    async getCommentsCountByPostId(postId: number, parentId: number) {
+      try {
+        const response = await axios.get(`/api/comments/post/${postId}/count`, {
+          params: { parentId }
+        });
+        return response.data.data;
+      } catch (error) {
+        console.error('Failed to get comments count:', error);
+        return 0;
       }
     },
     async fetchRepliesByCommentId(commentId: number, parentComment?: Comment) {

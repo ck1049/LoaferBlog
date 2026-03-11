@@ -25,6 +25,24 @@ public class CommentController {
         return ResponseEntity.ok(comments);
     }
 
+    @GetMapping("/post/{postId}/pagination")
+    public ResponseEntity<List<Comment>> getCommentsByPostIdWithPagination(
+            @PathVariable Long postId,
+            @RequestParam(defaultValue = "0") Long parentId,
+            @RequestParam(required = false) Long lastCommentId,
+            @RequestParam(defaultValue = "5") int size) {
+        List<Comment> comments = commentService.getCommentsByPostIdWithPagination(postId, parentId, lastCommentId, size);
+        return ResponseEntity.ok(comments);
+    }
+
+    @GetMapping("/post/{postId}/count")
+    public ResponseEntity<Integer> getCommentsCountByPostId(
+            @PathVariable Long postId,
+            @RequestParam(defaultValue = "0") Long parentId) {
+        int count = commentService.getCommentsCountByPostId(postId, parentId);
+        return ResponseEntity.ok(count);
+    }
+
     @GetMapping("/replies/{commentId}")
     public ResponseEntity<List<Comment>> getRepliesByCommentId(@PathVariable Long commentId) {
         List<Comment> replies = commentService.getRepliesByCommentId(commentId);

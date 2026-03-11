@@ -1,5 +1,6 @@
 package com.loafer.blog.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.loafer.blog.dto.LoginDTO;
 import com.loafer.blog.dto.RegisterDTO;
 import com.loafer.blog.model.dto.ChangePasswordDTO;

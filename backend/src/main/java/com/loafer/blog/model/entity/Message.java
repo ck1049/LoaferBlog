@@ -1,5 +1,6 @@
 package com.loafer.blog.model.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -36,9 +37,12 @@ public class Message {
     @TableField("is_top")
     private Integer isTop;
     private Integer status;
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
     @TableField("deleted")
     @TableLogic
     private Integer deleted;
+    private LocalDateTime deleteTime;
 }

@@ -27,6 +27,7 @@
           <button @click="favoritePost" class="action-btn favorite-btn" :class="{ 'favorited': isFavorited }">
             <span class="btn-icon">⭐</span>
             <span class="btn-text">{{ isFavorited ? '已收藏' : '收藏' }}</span>
+            <span class="btn-count">{{ postStore.currentPost.favoriteCount || 0 }}</span>
           </button>
           <div class="post-stats">
             <span class="stat-item">浏览: {{ postStore.currentPost.viewCount || 0 }}</span>
@@ -57,7 +58,7 @@
             <span class="comment-author">{{ comment.user?.nickname }}</span>
             <span class="comment-time">{{ comment.createdAt }}</span>
           </div>
-          <div class="comment-body">{{ comment.filteredContent }}</div>
+          <div class="comment-body">{{ comment.content }}</div>
           <div class="comment-actions">
             <button @click="replyComment(comment.id)">回复</button>
             <button v-if="userStore.isAdmin" @click="deleteComment(comment.id)">删除</button>
@@ -73,12 +74,23 @@
                 <span class="reply-author">{{ reply.user?.nickname }}</span>
                 <span class="reply-time">{{ reply.createdAt }}</span>
               </div>
-              <div class="reply-body">{{ reply.filteredContent }}</div>
+              <div class="reply-body">{{ reply.content }}</div>
               <div class="reply-actions">
                 <button v-if="userStore.isAdmin" @click="deleteComment(reply.id, comment.id)">删除</button>
               </div>
             </div>
           </div>
+        </div>
+        <!-- 查看更多按钮 -->
+        <div v-if="showLoadMore" class="load-more-container">
+          <button 
+            @click="loadMoreComments" 
+            class="load-more-btn"
+            :disabled="isLoadingComments"
+          >
+            <span v-if="isLoadingComments">加载中...</span>
+            <span v-else>查看更多</span>
+          </button>
         </div>
       </div>
     </div>
@@ -104,6 +116,14 @@ const isLiked = ref(false)
 const isFavorited = ref(false)
 const postNotFound = ref(false)
 
+// 评论分页相关
+const lastCommentId = ref<number | null>(null)
+const pageSize = ref(5)
+const totalComments = ref(0)
+const isLoadingComments = ref(false)
+const showLoadMore = ref(false)
+const hasMoreComments = ref(true)
+
 const fetchPost = async () => {
   try {
     const id = Number(route.params.id)
@@ -122,9 +142,55 @@ const fetchPost = async () => {
 const fetchComments = async () => {
   try {
     const id = Number(route.params.id)
-    await commentStore.fetchCommentsByPostId(id)
+    const parentId = 0 // 顶级评论的父ID为0
+    lastCommentId.value = null
+    hasMoreComments.value = true
+    // 获取评论总数
+    totalComments.value = await commentStore.getCommentsCountByPostId(id, parentId)
+    // 获取第一页评论（最新的评论）
+    const comments = await commentStore.fetchCommentsByPostIdWithPagination(id, parentId, lastCommentId.value, pageSize.value)
+    commentStore.comments = comments
+    // 更新最后一条评论的ID（现在是最小的ID，因为按时间倒序排序）
+    if (comments.length > 0) {
+      // 找到最小的ID
+      lastCommentId.value = Math.min(...comments.map(comment => comment.id))
+    }
+    // 检查是否需要显示"查看更多"按钮
+    showLoadMore.value = comments.length > 0 && comments.length < totalComments.value
+    hasMoreComments.value = comments.length === pageSize.value
   } catch (error) {
     console.error('获取评论失败:', error)
+  }
+}
+
+const loadMoreComments = async () => {
+  if (isLoadingComments.value || !hasMoreComments.value) return
+  
+  try {
+    isLoadingComments.value = true
+    const id = Number(route.params.id)
+    const parentId = 0 // 顶级评论的父ID为0
+    // 获取下一页评论（更旧的评论）
+    const moreComments = await commentStore.fetchCommentsByPostIdWithPagination(id, parentId, lastCommentId.value, pageSize.value)
+    
+    if (moreComments.length > 0) {
+      // 添加到现有评论列表
+      commentStore.comments = [...commentStore.comments, ...moreComments]
+      // 更新最后一条评论的ID（现在是最小的ID，因为按时间倒序排序）
+      lastCommentId.value = Math.min(...moreComments.map(comment => comment.id))
+      // 检查是否还有更多评论
+      hasMoreComments.value = moreComments.length === pageSize.value
+    } else {
+      // 没有更多评论了
+      hasMoreComments.value = false
+    }
+    
+    // 检查是否需要显示"查看更多"按钮
+    showLoadMore.value = hasMoreComments.value
+  } catch (error) {
+    console.error('加载更多评论失败:', error)
+  } finally {
+    isLoadingComments.value = false
   }
 }
 
@@ -140,6 +206,8 @@ const submitComment = async () => {
 
     if (success) {
       commentContent.value = ''
+      // 重新获取评论列表，确保新评论显示出来
+      await fetchComments()
     }
   } catch (error) {
     console.error('提交评论失败:', error)
@@ -169,6 +237,8 @@ const submitReply = async (commentId: number) => {
     if (success) {
       replyContent.value = ''
       replyingTo.value = null
+      // 重新获取评论列表，确保新回复显示出来
+      await fetchComments()
     }
   } catch (error) {
     console.error('提交回复失败:', error)
@@ -179,7 +249,11 @@ const deleteComment = async (commentId: number, parentId?: number) => {
   if (!confirm('确定要删除这个评论吗？')) return
 
   try {
-    await commentStore.deleteComment(commentId, parentId)
+    const success = await commentStore.deleteComment(commentId, parentId)
+    if (success) {
+      // 重新获取评论列表，确保删除后的评论列表正确显示
+      await fetchComments()
+    }
   } catch (error) {
     console.error('删除评论失败:', error)
   }
@@ -232,6 +306,9 @@ const favoritePost = async () => {
     
     if (response.ok) {
       isFavorited.value = !isFavorited.value
+      if (postStore.currentPost) {
+        postStore.currentPost.favoriteCount = (postStore.currentPost.favoriteCount || 0) + (isFavorited.value ? 1 : -1)
+      }
     }
   } catch (error) {
     console.error('收藏操作失败:', error)
@@ -615,5 +692,44 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 5px;
+}
+
+/* 查看更多按钮样式 */
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+.load-more-btn {
+  padding: 10px 24px;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  background-color: #e0e0e0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.load-more-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
 }
 </style>

@@ -1,6 +1,7 @@
 package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.loafer.blog.model.dto.TagDTO;
 import com.loafer.blog.model.entity.PostTag;
 import com.loafer.blog.model.entity.Tag;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class TagServiceImpl implements TagService {
+public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagService {
 
     private final TagMapper tagMapper;
     private final PostTagMapper postTagMapper;

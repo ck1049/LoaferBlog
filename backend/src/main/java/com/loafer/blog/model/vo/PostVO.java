@@ -18,6 +18,7 @@ public class PostVO {
     private Integer viewCount;
     private Integer commentCount;
     private Integer likeCount;
+    private Integer favoriteCount;
 
     public PostVO(Post post) {
         this.id = post.getId();
@@ -28,5 +29,6 @@ public class PostVO {
         this.viewCount = post.getViewCount();
         this.commentCount = post.getCommentCount();
         this.likeCount = post.getLikeCount();
+        this.favoriteCount = post.getFavoriteCount() != null ? post.getFavoriteCount() : 0;
     }
 }

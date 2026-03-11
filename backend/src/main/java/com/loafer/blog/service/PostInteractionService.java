@@ -1,9 +1,6 @@
 package com.loafer.blog.service;
 
-import com.loafer.blog.model.dto.PostWithTimeDTO;
 import com.loafer.blog.model.vo.ResponseVO;
-
-import java.util.List;
 
 public interface PostInteractionService {
     // 点赞帖子

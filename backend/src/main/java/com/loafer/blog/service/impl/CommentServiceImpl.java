@@ -36,6 +36,32 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
+    public List<Comment> getCommentsByPostIdWithPagination(Long postId, Long parentId, Long lastCommentId, int size) {
+        QueryWrapper<Comment> wrapper = new QueryWrapper<>();
+        wrapper.eq("post_id", postId)
+                .eq("parent_id", parentId)
+                .orderByDesc("create_time");
+        
+        // 如果提供了lastCommentId，则查询ID小于该值的记录
+        if (lastCommentId != null) {
+            wrapper.lt("id", lastCommentId);
+        }
+        
+        // 限制返回记录数
+        wrapper.last("LIMIT " + size);
+        
+        return baseMapper.selectList(wrapper);
+    }
+
+    @Override
+    public int getCommentsCountByPostId(Long postId, Long parentId) {
+        QueryWrapper<Comment> wrapper = new QueryWrapper<>();
+        wrapper.eq("post_id", postId)
+                .eq("parent_id", parentId);
+        return baseMapper.selectCount(wrapper).intValue();
+    }
+
+    @Override
     public Comment createComment(Comment comment) {
         // 敏感词过滤
         String originalContent = comment.getContent();

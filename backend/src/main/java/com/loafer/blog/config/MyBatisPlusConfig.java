@@ -23,20 +23,20 @@ public class MyBatisPlusConfig {
     }
 
     /**
-     * 元数据处理器，用于自动填充创建时间和更新时间
+     * 元数据处理器，用于自动填充创建时间、更新时间和删除时间
      */
     @Bean
     public MetaObjectHandler metaObjectHandler() {
         return new MetaObjectHandler() {
             @Override
             public void insertFill(MetaObject metaObject) {
-                this.strictInsertFill(metaObject, "createTime", LocalDateTime.class, LocalDateTime.now());
-                this.strictInsertFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
+                this.setFieldValByName("createTime", LocalDateTime.now(), metaObject);
+                this.setFieldValByName("updateTime", LocalDateTime.now(), metaObject);
             }
 
             @Override
             public void updateFill(MetaObject metaObject) {
-                this.strictUpdateFill(metaObject, "updateTime", LocalDateTime.class, LocalDateTime.now());
+                this.setFieldValByName("updateTime", LocalDateTime.now(), metaObject);
             }
         };
     }
