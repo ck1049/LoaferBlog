@@ -11,6 +11,7 @@ import com.loafer.blog.mapper.PostCategoryMapper;
 import com.loafer.blog.service.CategoryService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,7 +62,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         wrapper.eq("category_id", id);
         postCategoryMapper.delete(wrapper);
         // 再删除分类
-        return removeById(id);
+        Category category = getById(id);
+        category.setDeleteTime(LocalDateTime.now());
+        return removeById(category);
     }
 
     @Override

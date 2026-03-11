@@ -24,5 +24,6 @@ public class Role {
     @TableField("deleted")
     @TableLogic
     private Integer deleted;
+    @TableField(fill = FieldFill.UPDATE)
     private LocalDateTime deleteTime;
 }

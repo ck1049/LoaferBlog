@@ -102,7 +102,8 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
                 return ResponseVO.error("公告不存在");
             }
 
-            removeById(id);
+            existingAnnouncement.setDeleteTime(LocalDateTime.now());
+            removeById(existingAnnouncement);
             return ResponseVO.success(null);
         } catch (Exception e) {
             return ResponseVO.error("删除公告失败: " + e.getMessage());

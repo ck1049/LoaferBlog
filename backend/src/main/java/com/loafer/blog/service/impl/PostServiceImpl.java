@@ -201,8 +201,9 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
             QueryWrapper<PostTag> tagWrapper = new QueryWrapper<>();
             tagWrapper.eq("post_id", id);
             postTagMapper.delete(tagWrapper);
-            
-            removeById(id);
+
+            existingPost.setDeleteTime(LocalDateTime.now());
+            removeById(existingPost);
             return ResponseVO.success(null);
         } catch (Exception e) {
             return ResponseVO.error("删除技术贴失败: " + e.getMessage());

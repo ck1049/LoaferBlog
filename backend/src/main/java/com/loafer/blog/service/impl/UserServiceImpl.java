@@ -150,7 +150,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             }
         }
 
-        removeById(userId);
+        user.setDeleteTime(LocalDateTime.now());
+        removeById(user);
         return ResponseVO.success();
     }
 
