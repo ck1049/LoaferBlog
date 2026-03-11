@@ -50,7 +50,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     }
 
     @Override
-    public ResponseVO<AnnouncementVO> createAnnouncement(AnnouncementDTO announcementDTO) {
+    public ResponseVO<AnnouncementVO> createAnnouncement(AnnouncementDTO announcementDTO, Long userId) {
         try {
             // 防XSS处理
             String title = XssUtils.filter(announcementDTO.getTitle());
@@ -59,6 +59,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             Announcement announcement = new Announcement();
             announcement.setTitle(title);
             announcement.setContent(content);
+            announcement.setAuthorId(userId);
             announcement.setStatus(1);
             announcement.setCreateTime(LocalDateTime.now());
             announcement.setUpdateTime(LocalDateTime.now());

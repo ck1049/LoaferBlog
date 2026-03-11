@@ -2,10 +2,9 @@ package com.loafer.blog.controller;
 
 import com.loafer.blog.model.dto.TagDTO;
 import com.loafer.blog.model.vo.TagVO;
+import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.service.TagService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,46 +21,46 @@ public class TagController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TagVO>> getAllTags() {
+    public ResponseVO<List<TagVO>> getAllTags() {
         List<TagVO> tags = tagService.getAllTags();
-        return ResponseEntity.ok(tags);
+        return ResponseVO.success(tags);
     }
 
     @GetMapping("/post/{postId}")
-    public ResponseEntity<List<TagVO>> getTagsByPostId(@PathVariable Long postId) {
+    public ResponseVO<List<TagVO>> getTagsByPostId(@PathVariable Long postId) {
         List<TagVO> tags = tagService.getTagsByPostId(postId);
-        return ResponseEntity.ok(tags);
+        return ResponseVO.success(tags);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TagVO> createTag(@Valid @RequestBody TagDTO tagDTO) {
+    public ResponseVO<TagVO> createTag(@Valid @RequestBody TagDTO tagDTO) {
         TagVO createdTag = tagService.createTag(tagDTO);
-        return new ResponseEntity<>(createdTag, HttpStatus.CREATED);
+        return ResponseVO.success(createdTag);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TagVO> updateTag(@PathVariable Long id, @Valid @RequestBody TagDTO tagDTO) {
+    public ResponseVO<TagVO> updateTag(@PathVariable Long id, @Valid @RequestBody TagDTO tagDTO) {
         TagVO updatedTag = tagService.updateTag(id, tagDTO);
-        return ResponseEntity.ok(updatedTag);
+        return ResponseVO.success(updatedTag);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteTag(@PathVariable Long id) {
+    public ResponseVO<Void> deleteTag(@PathVariable Long id) {
         boolean deleted = tagService.deleteTag(id);
         if (deleted) {
-            return ResponseEntity.noContent().build();
+            return ResponseVO.success();
         } else {
-            return ResponseEntity.notFound().build();
+            return ResponseVO.error("标签不存在");
         }
     }
 
     @PostMapping("/post/{postId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> addTagToPost(@PathVariable Long postId, @RequestBody List<Long> tagIds) {
+    public ResponseVO<Void> addTagToPost(@PathVariable Long postId, @RequestBody List<Long> tagIds) {
         tagService.addTagToPost(postId, tagIds);
-        return ResponseEntity.ok().build();
+        return ResponseVO.success();
     }
 }

@@ -5,6 +5,7 @@ import com.loafer.blog.model.vo.AnnouncementVO;
 import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.service.AnnouncementService;
 import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,8 +27,9 @@ public class AnnouncementController {
     }
 
     @PostMapping
-    public ResponseVO<AnnouncementVO> createAnnouncement(@RequestBody AnnouncementDTO announcementDTO) {
-        return announcementService.createAnnouncement(announcementDTO);
+    public ResponseVO<AnnouncementVO> createAnnouncement(@RequestBody AnnouncementDTO announcementDTO, HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return announcementService.createAnnouncement(announcementDTO, userId);
     }
 
     @PutMapping("/{id}")

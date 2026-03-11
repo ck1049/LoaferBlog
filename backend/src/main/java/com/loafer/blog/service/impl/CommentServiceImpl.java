@@ -42,6 +42,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         String filteredContent = sensitiveWordFilter.filter(originalContent);
         comment.setOriginalContent(originalContent);
         comment.setContent(filteredContent);
+        if (comment.getParentId() == null) {
+            comment.setParentId(0L);
+        }
 
         baseMapper.insert(comment);
         

@@ -1,9 +1,8 @@
 package com.loafer.blog.controller;
 
 import com.loafer.blog.model.entity.SensitiveWord;
+import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.service.SensitiveWordService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,33 +20,33 @@ public class SensitiveWordController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<SensitiveWord>> getAllSensitiveWords() {
+    public ResponseVO<List<SensitiveWord>> getAllSensitiveWords() {
         List<SensitiveWord> sensitiveWords = sensitiveWordService.getAllSensitiveWords();
-        return ResponseEntity.ok(sensitiveWords);
+        return ResponseVO.success(sensitiveWords);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SensitiveWord> createSensitiveWord(@RequestBody SensitiveWord sensitiveWord) {
+    public ResponseVO<SensitiveWord> createSensitiveWord(@RequestBody SensitiveWord sensitiveWord) {
         SensitiveWord createdWord = sensitiveWordService.createSensitiveWord(sensitiveWord);
-        return new ResponseEntity<>(createdWord, HttpStatus.CREATED);
+        return ResponseVO.success(createdWord);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteSensitiveWord(@PathVariable Long id) {
+    public ResponseVO<Void> deleteSensitiveWord(@PathVariable Long id) {
         boolean deleted = sensitiveWordService.deleteSensitiveWord(id);
         if (deleted) {
-            return ResponseEntity.noContent().build();
+            return ResponseVO.success();
         } else {
-            return ResponseEntity.notFound().build();
+            return ResponseVO.error("敏感词不存在");
         }
     }
 
     @PostMapping("/reload")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> reloadSensitiveWords() {
+    public ResponseVO<Void> reloadSensitiveWords() {
         sensitiveWordService.reloadSensitiveWords();
-        return ResponseEntity.ok().build();
+        return ResponseVO.success();
     }
 }

@@ -24,7 +24,7 @@ export const useCategoryStore = defineStore('category', {
     async fetchCategories() {
       try {
         const response = await axios.get('/api/categories');
-        this.categories = response.data;
+        this.categories = response.data.data;
       } catch (error) {
         console.error('Failed to fetch categories:', error);
       }
@@ -40,7 +40,7 @@ export const useCategoryStore = defineStore('category', {
             Authorization: `Bearer ${token}`,
           },
         });
-        this.categories.push(response.data);
+        this.categories.push(response.data.data);
         return true;
       } catch (error) {
         console.error('Failed to create category:', error);
@@ -60,7 +60,7 @@ export const useCategoryStore = defineStore('category', {
         });
         const index = this.categories.findIndex(c => c.id === id);
         if (index !== -1) {
-          this.categories[index] = response.data;
+          this.categories[index] = response.data.data;
         }
         return true;
       } catch (error) {

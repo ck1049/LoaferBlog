@@ -10,6 +10,76 @@
       <button @click="activeTab = 'file-limits'" :class="{ active: activeTab === 'file-limits' }">文件大小限制</button>
     </div>
 
+    <!-- 编辑表单模态框 -->
+    <div v-if="editingCategory" class="modal">
+      <div class="modal-content">
+        <h3>编辑分类</h3>
+        <input type="text" v-model="editingCategory.name" placeholder="分类名称" />
+        <input type="text" v-model="editingCategory.description" placeholder="分类描述" />
+        <div class="modal-actions">
+          <button @click="saveCategory">保存</button>
+          <button @click="editingCategory = null">取消</button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="editingAnnouncement" class="modal">
+      <div class="modal-content">
+        <h3>编辑公告</h3>
+        <input type="text" v-model="editingAnnouncement.title" placeholder="标题" />
+        <textarea v-model="editingAnnouncement.content" placeholder="内容" rows="4"></textarea>
+        <div class="modal-actions">
+          <button @click="saveAnnouncement">保存</button>
+          <button @click="editingAnnouncement = null">取消</button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="editingPost" class="modal">
+      <div class="modal-content">
+        <h3>编辑技术贴</h3>
+        <input type="text" v-model="editingPost.title" placeholder="标题" />
+        <div class="markdown-editor">
+          <VueMarkdownEditor v-model="editingPost.content" height="400px">
+            <template #upload-image>
+              <input type="file" accept="image/*" @change="handleImageUpload" />
+            </template>
+          </VueMarkdownEditor>
+        </div>
+        <div class="categories-select">
+          <label>分类：</label>
+          <select v-model="editingPost.categoryIds" multiple>
+            <option v-for="category in categoryStore.sortedCategories" :key="category.id" :value="category.id">
+              {{ category.name }}
+            </option>
+          </select>
+        </div>
+        <div class="tags-select">
+          <label>标签：</label>
+          <select v-model="editingPost.tagIds" multiple>
+            <option v-for="tag in tagStore.sortedTags" :key="tag.id" :value="tag.id">
+              {{ tag.name }}
+            </option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button @click="savePost">保存</button>
+          <button @click="editingPost = null">取消</button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="editingTag" class="modal">
+      <div class="modal-content">
+        <h3>编辑标签</h3>
+        <input type="text" v-model="editingTag.name" placeholder="标签名称" />
+        <div class="modal-actions">
+          <button @click="saveTag">保存</button>
+          <button @click="editingTag = null">取消</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 公告管理 -->
     <div v-if="activeTab === 'announcements'" class="admin-content">
       <h2>公告管理</h2>
@@ -352,7 +422,65 @@ const addTag = async () => {
 // 编辑标签
 const editTag = (tag: any) => {
   editingTag.value = { ...tag }
-  // 这里可以实现编辑表单
+}
+
+// 保存分类
+const saveCategory = async () => {
+  if (!editingCategory.value) return
+  try {
+    const success = await categoryStore.updateCategory(editingCategory.value.id, editingCategory.value)
+    if (success) {
+      editingCategory.value = null
+    }
+  } catch (error) {
+    console.error('保存分类失败:', error)
+  }
+}
+
+// 保存公告
+const saveAnnouncement = async () => {
+  if (!editingAnnouncement.value) return
+  try {
+    const success = await announcementStore.updateAnnouncement(
+      editingAnnouncement.value.id,
+      editingAnnouncement.value.title,
+      editingAnnouncement.value.content
+    )
+    if (success) {
+      editingAnnouncement.value = null
+    }
+  } catch (error) {
+    console.error('保存公告失败:', error)
+  }
+}
+
+// 保存技术贴
+const savePost = async () => {
+  if (!editingPost.value) return
+  try {
+    await axios.put(`/api/posts/${editingPost.value.id}`, editingPost.value, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    fetchPosts()
+    editingPost.value = null
+  } catch (error) {
+    console.error('保存技术贴失败:', error)
+  }
+}
+
+// 保存标签
+const saveTag = async () => {
+  if (!editingTag.value) return
+  try {
+    const success = await tagStore.updateTag(editingTag.value.id, editingTag.value)
+    if (success) {
+      editingTag.value = null
+    }
+  } catch (error) {
+    console.error('保存标签失败:', error)
+  }
 }
 
 // 删除标签
@@ -785,5 +913,75 @@ onMounted(() => {
 .info-box p {
   margin-bottom: 8px;
   color: #333;
+}
+
+/* 模态框样式 */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 600px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h3 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.modal-content input,
+.modal-content textarea,
+.modal-content select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.modal-actions button:first-child {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.modal-actions button:first-child:hover {
+  background-color: #45a049;
+}
+
+.modal-actions button:last-child {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.modal-actions button:last-child:hover {
+  background-color: #e0e0e0;
 }
 </style>

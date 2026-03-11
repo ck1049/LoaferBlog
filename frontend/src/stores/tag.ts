@@ -23,7 +23,7 @@ export const useTagStore = defineStore('tag', {
     async fetchTags() {
       try {
         const response = await axios.get('/api/tags');
-        this.tags = response.data;
+        this.tags = response.data.data;
       } catch (error) {
         console.error('Failed to fetch tags:', error);
       }
@@ -38,7 +38,7 @@ export const useTagStore = defineStore('tag', {
             Authorization: `Bearer ${token}`,
           },
         });
-        this.tags.push(response.data);
+        this.tags.push(response.data.data);
         return true;
       } catch (error) {
         console.error('Failed to create tag:', error);
@@ -57,7 +57,7 @@ export const useTagStore = defineStore('tag', {
         });
         const index = this.tags.findIndex(t => t.id === id);
         if (index !== -1) {
-          this.tags[index] = response.data;
+          this.tags[index] = response.data.data;
         }
         return true;
       } catch (error) {

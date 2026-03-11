@@ -9,7 +9,7 @@ import java.util.List;
 public interface AnnouncementService {
     ResponseVO<List<AnnouncementVO>> getAnnouncements();
     ResponseVO<AnnouncementVO> getAnnouncement(Long id);
-    ResponseVO<AnnouncementVO> createAnnouncement(AnnouncementDTO announcementDTO);
+    ResponseVO<AnnouncementVO> createAnnouncement(AnnouncementDTO announcementDTO, Long userId);
     ResponseVO<AnnouncementVO> updateAnnouncement(Long id, AnnouncementDTO announcementDTO);
     ResponseVO<Void> deleteAnnouncement(Long id);
 }

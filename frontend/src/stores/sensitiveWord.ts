@@ -27,7 +27,7 @@ export const useSensitiveWordStore = defineStore('sensitiveWord', {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
         });
-        this.sensitiveWords = response.data;
+        this.sensitiveWords = response.data.data;
       } catch (error) {
         console.error('Failed to fetch sensitive words:', error);
       }
@@ -40,7 +40,7 @@ export const useSensitiveWordStore = defineStore('sensitiveWord', {
             Authorization: `Bearer ${token}`,
           },
         });
-        this.sensitiveWords.push(response.data);
+        this.sensitiveWords.push(response.data.data);
         return true;
       } catch (error) {
         console.error('Failed to create sensitive word:', error);

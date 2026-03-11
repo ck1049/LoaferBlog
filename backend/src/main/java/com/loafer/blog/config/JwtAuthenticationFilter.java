@@ -32,11 +32,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Long userId = jwtUtils.getUserIdFromToken(token);
             // 这里需要实现UserDetailsService来加载用户信息
             // UserDetails userDetails = userDetailsService.loadUserByUsername(userId.toString());
-            // 暂时使用一个简单的实现
+            // 暂时使用一个简单的实现 - 假设所有登录用户都是管理员
+            // TODO: 实现真正的角色管理
             UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
                     .username(userId.toString())
                     .password("")
-                    .authorities("ROLE_USER")
+                    .authorities("ROLE_USER", "ROLE_ADMIN")
                     .build();
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

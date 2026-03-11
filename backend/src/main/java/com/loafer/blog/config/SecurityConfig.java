@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/categories/**").permitAll()
                         .requestMatchers("/api/tags/**").hasRole("ADMIN")
                         .requestMatchers("/api/sensitive-words/**").hasRole("ADMIN")
+                        .requestMatchers("/api/files/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtils, tokenCache), UsernamePasswordAuthenticationFilter.class);
