@@ -37,10 +37,6 @@ public class MyBatisPlusConfig {
             @Override
             public void updateFill(MetaObject metaObject) {
                 this.setFieldValByName("updateTime", LocalDateTime.now(), metaObject);
-                Object deleted = metaObject.getValue("deleted");
-                if (deleted != null && deleted.equals(1)) {
-                    this.setFieldValByName("deleteTime", LocalDateTime.now(), metaObject);
-                }
             }
         };
     }
