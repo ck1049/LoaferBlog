@@ -330,6 +330,19 @@ onMounted(async () => {
 
 .post-body {
   margin-bottom: 20px;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* v-html 渲染的图片无 scoped 属性，用 :deep() 确保样式生效 */
+.post-body :deep(img) {
+  max-width: 100% !important;
+  max-height: 80vh !important;
+  width: auto !important;
+  height: auto !important;
+  display: block !important;
+  margin: 0 auto !important;
+  object-fit: contain !important;
 }
 
 .post-categories,

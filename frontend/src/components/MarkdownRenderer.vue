@@ -109,10 +109,15 @@ const renderedContent = computed(() => {
   margin-bottom: 0.25em;
 }
 
-.markdown-renderer img {
-  max-width: 100%;
-  box-sizing: content-box;
-  background-color: #fff;
+/* v-html 内的 img 无 scoped 属性，必须用 :deep() 才能生效 */
+.markdown-renderer :deep(img) {
+  max-width: 100% !important;
+  max-height: 80vh !important;
+  width: auto !important;
+  height: auto !important;
+  display: block !important;
+  margin: 0 auto !important;
+  object-fit: contain !important;
 }
 
 .markdown-renderer a {

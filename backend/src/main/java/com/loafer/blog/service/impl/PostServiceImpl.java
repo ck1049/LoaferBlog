@@ -83,7 +83,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public ResponseVO<PostVO> createPost(PostDTO postDTO) {
+    public ResponseVO<PostVO> createPost(PostDTO postDTO, Long userId) {
         try {
             // 防XSS处理
             String title = XssUtils.filter(postDTO.getTitle());
@@ -92,6 +92,7 @@ public class PostServiceImpl implements PostService {
             Post post = new Post();
             post.setTitle(title);
             post.setContent(content);
+            post.setAuthorId(userId);
             post.setViewCount(0);
             post.setStatus(1);
             post.setCreateTime(LocalDateTime.now());
@@ -126,7 +127,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public ResponseVO<PostVO> updatePost(Long id, PostDTO postDTO) {
+    public ResponseVO<PostVO> updatePost(Long id, PostDTO postDTO, Long userId) {
         try {
             Post existingPost = postMapper.selectById(id);
             if (existingPost == null) {

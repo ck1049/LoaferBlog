@@ -10,7 +10,7 @@ public interface PostService {
     ResponseVO<List<PostVO>> getPosts();
     ResponseVO<List<PostVO>> searchPosts(String keyword);
     ResponseVO<PostVO> getPost(Long id);
-    ResponseVO<PostVO> createPost(PostDTO postDTO);
-    ResponseVO<PostVO> updatePost(Long id, PostDTO postDTO);
+    ResponseVO<PostVO> createPost(PostDTO postDTO, Long userId);
+    ResponseVO<PostVO> updatePost(Long id, PostDTO postDTO, Long userId);
     ResponseVO<Void> deletePost(Long id);
 }
