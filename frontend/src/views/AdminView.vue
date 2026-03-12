@@ -561,7 +561,11 @@ const fetchFileLimits = async () => {
       }
     })
     if (response.data.code === 200) {
-      fileLimits.value = response.data.data
+      const res = response.data.data
+      fileLimits.value = res
+      fileLimits.value.image = res.imageMaxSize / 1024 / 1024
+      fileLimits.value.video = res.videoMaxSize / 1024 / 1024
+      fileLimits.value.other = res.otherMaxSize / 1024 / 1024
     }
   } catch (error) {
     console.error('获取文件大小限制失败:', error)
@@ -571,7 +575,13 @@ const fetchFileLimits = async () => {
 // 更新文件大小限制
 const updateFileLimits = async () => {
   try {
-    const response = await axios.put('/api/admin/file-limits', fileLimits.value, {
+    let req = {
+      imageMaxSize: fileLimits.value.image * 1024 * 1024,
+      videoMaxSize: fileLimits.value.video * 1024 * 1024,
+      otherMaxSize: fileLimits.value.other * 1024 * 1024,
+    }
+
+    const response = await axios.put('/api/admin/file-limits', req, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
