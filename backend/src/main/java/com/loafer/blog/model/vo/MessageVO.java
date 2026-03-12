@@ -1,7 +1,7 @@
 package com.loafer.blog.model.vo;
 
 import com.loafer.blog.model.entity.Message;
-import com.loafer.blog.model.entity.User;
+import com.loafer.blog.utils.FileUploadUtils;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -22,8 +22,8 @@ public class MessageVO {
     private String errorMessage;
     private Integer isTop;
     private LocalDateTime createdAt;
-    private User sender;
-    private User receiver;
+    private UserVO sender;
+    private UserVO receiver;
 
     public MessageVO(Message message) {
         this.id = message.getId();
@@ -41,5 +41,9 @@ public class MessageVO {
         this.createdAt = message.getCreateTime();
         // filteredContent暂时使用content
         this.filteredContent = message.getContent();
+    }
+
+    public String getFilePath() {
+        return FileUploadUtils.spliceUrl(this.filePath);
     }
 }

@@ -141,7 +141,7 @@ const handleFileUpload = async (event: Event) => {
         receiverId,
         content: messageContent.value || '',
         messageType,
-        filePath: response.data.url,
+        filePath: response.data.data.url,
         fileName: file.name,
         fileSize: file.size,
       });

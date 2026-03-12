@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.loafer.blog.utils.FileUploadUtils;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -46,4 +47,8 @@ public class Message {
     private Integer deleted;
     @TableField(fill = FieldFill.UPDATE)
     private LocalDateTime deleteTime;
+
+    public void setFilePath(String filePath) {
+        this.filePath = FileUploadUtils.uploadPathRevert(filePath);
+    }
 }

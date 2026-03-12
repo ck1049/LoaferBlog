@@ -41,7 +41,7 @@ public class FileController {
      * 上传文件
      */
     @PostMapping("/upload")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseVO<?> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
             // 检查文件是否为空
@@ -76,7 +76,7 @@ public class FileController {
      * 上传Markdown文件
      */
     @PostMapping("/upload-markdown")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseVO<?> uploadMarkdownFile(@RequestParam("file") MultipartFile file) {
         try {
             // 检查文件是否为空

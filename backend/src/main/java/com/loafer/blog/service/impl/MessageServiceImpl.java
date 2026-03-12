@@ -8,9 +8,11 @@ import com.loafer.blog.model.vo.ContactVO;
 import com.loafer.blog.mapper.MessageMapper;
 import com.loafer.blog.mapper.UserMapper;
 import com.loafer.blog.model.vo.MessageVO;
+import com.loafer.blog.model.vo.UserVO;
 import com.loafer.blog.service.MessageService;
 import com.loafer.blog.common.SensitiveWordFilter;
 import com.loafer.blog.model.enumtype.MessageType;
+import com.loafer.blog.utils.FileUploadUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -72,9 +74,9 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
             // 为头像地址拼接域名前缀
             String avatar = sender.getAvatar();
             if (avatar != null && !avatar.startsWith("http")) {
-                sender.setAvatar("http://localhost:8080" + avatar);
+                sender.setAvatar(FileUploadUtils.spliceUrl(avatar));
             }
-            messageVO.setSender(sender);
+            messageVO.setSender(new UserVO(sender));
         }
         
         // 设置接收者信息
@@ -83,9 +85,9 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
             // 为头像地址拼接域名前缀
             String avatar = receiver.getAvatar();
             if (avatar != null && !avatar.startsWith("http")) {
-                receiver.setAvatar("http://localhost:8080" + avatar);
+                receiver.setAvatar(FileUploadUtils.spliceUrl(avatar));
             }
-            messageVO.setReceiver(receiver);
+            messageVO.setReceiver(new UserVO(receiver));
         }
         
         return messageVO;
@@ -105,26 +107,26 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
             MessageVO messageVO = new MessageVO(message);
             
             // 设置发送者信息
-            User sender = userMapper.selectById(message.getSenderId());
-            if (sender != null) {
-                // 为头像地址拼接域名前缀
-                String avatar = sender.getAvatar();
-                if (avatar != null && !avatar.startsWith("http")) {
-                    sender.setAvatar("http://localhost:8080" + avatar);
-                }
-                messageVO.setSender(sender);
+        User sender = userMapper.selectById(message.getSenderId());
+        if (sender != null) {
+            // 为头像地址拼接域名前缀
+            String avatar = sender.getAvatar();
+            if (avatar != null && !avatar.startsWith("http")) {
+                sender.setAvatar(FileUploadUtils.spliceUrl(avatar));
             }
-            
-            // 设置接收者信息
-            User receiver = userMapper.selectById(message.getReceiverId());
-            if (receiver != null) {
-                // 为头像地址拼接域名前缀
-                String avatar = receiver.getAvatar();
-                if (avatar != null && !avatar.startsWith("http")) {
-                    receiver.setAvatar("http://localhost:8080" + avatar);
-                }
-                messageVO.setReceiver(receiver);
+            messageVO.setSender(new UserVO(sender));
+        }
+        
+        // 设置接收者信息
+        User receiver = userMapper.selectById(message.getReceiverId());
+        if (receiver != null) {
+            // 为头像地址拼接域名前缀
+            String avatar = receiver.getAvatar();
+            if (avatar != null && !avatar.startsWith("http")) {
+                receiver.setAvatar(FileUploadUtils.spliceUrl(avatar));
             }
+            messageVO.setReceiver(new UserVO(receiver));
+        }
             
             messageVOs.add(messageVO);
         }
@@ -153,9 +155,9 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
                     // 为头像地址拼接域名前缀
                     String avatar = user.getAvatar();
                     if (avatar != null && !avatar.startsWith("http")) {
-                        user.setAvatar("http://localhost:8080" + avatar);
+                        user.setAvatar(FileUploadUtils.spliceUrl(avatar));
                     }
-                    contactVO.setUser(user);
+                    contactVO.setUser(new UserVO(user));
                 }
                 
                 contactVO.setLastMessage(message);
@@ -208,7 +210,6 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
             message.setOriginalContent(originalContent);
             message.setContent(filteredContent);
         }
-        
         message.setSendStatus(1); // 默认发送成功
         message.setIsTop(0); // 默认非置顶
 
@@ -223,9 +224,9 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
             // 为头像地址拼接域名前缀
             String avatar = sender.getAvatar();
             if (avatar != null && !avatar.startsWith("http")) {
-                sender.setAvatar("http://localhost:8080" + avatar);
+                sender.setAvatar(FileUploadUtils.spliceUrl(avatar));
             }
-            messageVO.setSender(sender);
+            messageVO.setSender(new UserVO(sender));
         }
         
         // 设置接收者信息
@@ -234,11 +235,10 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
             // 为头像地址拼接域名前缀
             String avatar = receiver.getAvatar();
             if (avatar != null && !avatar.startsWith("http")) {
-                receiver.setAvatar("http://localhost:8080" + avatar);
+                receiver.setAvatar(FileUploadUtils.spliceUrl(avatar));
             }
-            messageVO.setReceiver(receiver);
+            messageVO.setReceiver(new UserVO(receiver));
         }
-        
         return messageVO;
     }
 }

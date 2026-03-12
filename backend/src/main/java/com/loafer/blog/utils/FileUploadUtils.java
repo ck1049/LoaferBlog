@@ -1,6 +1,7 @@
 package com.loafer.blog.utils;
 
 import cn.hutool.extra.spring.SpringUtil;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +32,17 @@ public class FileUploadUtils {
      * @return http访问路径
      */
     public static String spliceUrl(String uploadPath) {
+        if (StringUtils.isBlank(uploadPath)) {
+            return "";
+        }
         return SpringUtil.getBean(FileUploadUtils.class).getAccessDomain() + uploadPath;
+    }
+
+    public static String uploadPathRevert(String url) {
+        if (StringUtils.isBlank(url)) {
+            return "";
+        }
+        return url.replace(SpringUtil.getBean(FileUploadUtils.class).getAccessDomain(), "");
     }
 
     // 判断请求是否包含文件上传
