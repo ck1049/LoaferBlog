@@ -29,8 +29,8 @@ public class MessageController {
 
     @GetMapping("/history/{userId1}/{userId2}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<List<Message>> getMessageHistory(@PathVariable Long userId1, @PathVariable Long userId2) {
-        List<Message> messages = messageService.getMessageHistory(userId1, userId2);
+    public ResponseEntity<List<com.loafer.blog.model.vo.MessageVO>> getMessageHistory(@PathVariable Long userId1, @PathVariable Long userId2) {
+        List<com.loafer.blog.model.vo.MessageVO> messages = messageService.getMessageHistory(userId1, userId2);
         return ResponseEntity.ok(messages);
     }
 
@@ -44,16 +44,16 @@ public class MessageController {
 
     @PostMapping("/reply")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Message> replyMessage(@RequestBody Message message, @RequestAttribute("userId") Long userId) {
+    public ResponseEntity<com.loafer.blog.model.vo.MessageVO> replyMessage(@RequestBody Message message, @RequestAttribute("userId") Long userId) {
         message.setSenderId(userId);
-        Message repliedMessage = messageService.replyMessage(message);
+        com.loafer.blog.model.vo.MessageVO repliedMessage = messageService.replyMessage(message);
         return new ResponseEntity<>(repliedMessage, HttpStatus.CREATED);
     }
 
     @GetMapping("/contacts/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<List<Map<String, Object>>> getContactList(@PathVariable Long userId) {
-        List<Map<String, Object>> contacts = messageService.getContactList(userId);
+    public ResponseEntity<List<com.loafer.blog.model.vo.ContactVO>> getContactList(@PathVariable Long userId) {
+        List<com.loafer.blog.model.vo.ContactVO> contacts = messageService.getContactList(userId);
         return ResponseEntity.ok(contacts);
     }
 
@@ -73,9 +73,9 @@ public class MessageController {
 
     @PostMapping("/file")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Message> sendFileMessage(@RequestBody Message message, @RequestAttribute("userId") Long userId) {
+    public ResponseEntity<com.loafer.blog.model.vo.MessageVO> sendFileMessage(@RequestBody Message message, @RequestAttribute("userId") Long userId) {
         message.setSenderId(userId);
-        Message sentMessage = messageService.sendFileMessage(message);
+        com.loafer.blog.model.vo.MessageVO sentMessage = messageService.sendFileMessage(message);
         return new ResponseEntity<>(sentMessage, HttpStatus.CREATED);
     }
 }

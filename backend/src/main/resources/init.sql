@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS "user" (
     username VARCHAR(50) NOT NULL,      -- 用户名
     password VARCHAR(100) NOT NULL,     -- 密码（加密存储）
     nickname VARCHAR(50),               -- 昵称
-    email VARCHAR(500),                 -- 邮箱
+    email VARCHAR(1000),                 -- 邮箱
     avatar VARCHAR(255),                -- 头像URL
     bio TEXT,                           -- 个性签名
     status INTEGER DEFAULT 1,           -- 状态：1-正常，0-禁用

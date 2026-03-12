@@ -17,6 +17,7 @@ import com.loafer.blog.service.MessageService;
 import com.loafer.blog.utils.JwtUtils;
 import com.loafer.blog.utils.RSAUtils;
 import com.loafer.blog.utils.SensitiveInfoUtils;
+import com.loafer.blog.utils.AvatarGenerator;
 import com.loafer.blog.config.BusinessRSAKeyManager;
 import com.loafer.blog.utils.TokenCache;
 import com.loafer.blog.vo.LoginResponseVO;
@@ -93,6 +94,17 @@ public class AuthServiceImpl implements AuthService {
             user.setNickname(registerDTO.getNickname());
             user.setStatus(1);
             userMapper.insert(user);
+            
+            // 为新用户生成默认头像
+            try {
+                String fileName = AvatarGenerator.generateAvatar(user.getUsername(), AVATAR_DIR);
+                String avatarUrl = ACCESS_PREFIX + "/avatars/" + fileName;
+                user.setAvatar(avatarUrl);
+                userMapper.updateById(user);
+            } catch (Exception e) {
+                // 头像生成失败不影响注册流程，只记录日志
+                System.out.println("生成默认头像失败: " + e.getMessage());
+            }
 
             // 为新用户分配默认角色（普通用户）
             UserRole userRole = new UserRole();

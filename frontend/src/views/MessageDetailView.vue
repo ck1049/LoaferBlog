@@ -28,7 +28,7 @@
     <div class="message-input-container">
       <div class="input-tools">
         <button @click="toggleEmojiPicker" class="tool-btn">😀</button>
-        <input type="file" @change="handleFileUpload" class="file-input" accept="image/*,video/*,application/*" />
+        <input type="file" id="file-upload" @change="handleFileUpload" class="file-input" accept="image/*,video/*,application/*" />
         <label for="file-upload" class="tool-btn">📎</label>
       </div>
       <div class="emoji-picker" v-if="showEmojiPicker">
@@ -62,7 +62,10 @@ const showEmojiPicker = ref(false);
 const emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥴', '😵', '🤯', '🤠', '🥳', '😎', '🤓', '🧐', '🤨', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥴', '😵'];
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleString();
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleString();
 };
 
 const toggleEmojiPicker = () => {

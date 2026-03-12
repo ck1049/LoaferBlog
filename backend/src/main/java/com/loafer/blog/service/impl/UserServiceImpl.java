@@ -64,7 +64,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 byte[] decryptedEmail = RSAUtils.decrypt(RSAUtils.base64Decode(userVO.getEmail()), businessRSAKeyManager.getPrivateKey());
                 userVO.setEmail(SensitiveInfoUtils.maskEmail(new String(decryptedEmail)));
             } catch (Exception e) {
-                userVO.setEmail("邮箱解密失败");
+                userVO.setEmail("");
             }
         }
         
@@ -211,7 +211,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             UserVO userVO = new UserVO();
             BeanUtils.copyProperties(user, userVO);
             // 对邮箱进行脱敏处理
-            userVO.setEmail(SensitiveInfoUtils.maskEmail(userVO.getEmail()));
+            if (userVO.getEmail() != null && !userVO.getEmail().isEmpty()) {
+                try {
+                    byte[] decryptedEmail = RSAUtils.decrypt(RSAUtils.base64Decode(userVO.getEmail()), businessRSAKeyManager.getPrivateKey());
+                    userVO.setEmail(SensitiveInfoUtils.maskEmail(new String(decryptedEmail)));
+                } catch (Exception e) {
+                    userVO.setEmail("邮箱解密失败");
+                }
+            }
             
             // 添加角色信息的查询和设置
             List<String> roles = new ArrayList<>();

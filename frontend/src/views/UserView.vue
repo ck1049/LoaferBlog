@@ -29,6 +29,10 @@
             <input type="text" id="nickname" v-model="profileForm.nickname" placeholder="请输入昵称" />
           </div>
           <div class="form-group">
+            <label for="email">邮箱</label>
+            <input type="email" id="email" v-model="profileForm.email" placeholder="请输入邮箱" />
+          </div>
+          <div class="form-group">
             <label for="bio">个性签名</label>
             <textarea id="bio" v-model="profileForm.bio" placeholder="请输入个性签名" rows="4"></textarea>
           </div>
@@ -173,6 +177,7 @@ const userAvatar = ref(userStore.user?.avatar || '')
 
 const profileForm = ref({
   nickname: '',
+  email: '',
   bio: ''
 })
 
@@ -214,6 +219,7 @@ watch(() => userStore.user, (newUser) => {
   userAvatar.value = newUser?.avatar || ''
   if (newUser) {
     profileForm.value.nickname = newUser.nickname || newUser.username || ''
+    profileForm.value.email = newUser.email || ''
     profileForm.value.bio = newUser.bio || ''
   }
 }, { deep: true })
@@ -519,6 +525,7 @@ onMounted(async () => {
     if (userStore.user) {
       userAvatar.value = userStore?.user?.avatar || ''
       profileForm.value.nickname = userStore.user.nickname || userStore.user.username || ''
+      profileForm.value.email = userStore.user.email || ''
       profileForm.value.bio = userStore.user.bio || ''
     }
     // 获取收藏、历史、点赞等数据

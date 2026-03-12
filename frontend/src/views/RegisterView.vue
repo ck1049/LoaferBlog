@@ -12,7 +12,7 @@
       </div>
       <div class="form-group">
         <label for="email">邮箱</label>
-        <input type="email" id="email" v-model="email" required />
+        <input type="email" id="email" v-model="email" />
       </div>
       <div class="form-group">
         <label for="nickname">昵称</label>

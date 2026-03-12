@@ -2,6 +2,7 @@ package com.loafer.blog.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.loafer.blog.model.entity.Message;
+import com.loafer.blog.model.vo.MessageVO;
 
 import java.util.List;
 import java.util.Map;
@@ -9,10 +10,10 @@ import java.util.Map;
 public interface MessageService extends IService<Message> {
     List<Message> getMessagesByReceiverId(Long receiverId);
     Message createMessage(Message message);
-    Message replyMessage(Message message);
-    List<Message> getMessageHistory(Long userId1, Long userId2);
-    List<Map<String, Object>> getContactList(Long userId);
+    MessageVO replyMessage(Message message);
+    List<MessageVO> getMessageHistory(Long userId1, Long userId2);
+    List<com.loafer.blog.model.vo.ContactVO> getContactList(Long userId);
     void topMessage(Long messageId, Integer isTop);
     void deleteMessage(Long messageId);
-    Message sendFileMessage(Message message);
+    MessageVO sendFileMessage(Message message);
 }
