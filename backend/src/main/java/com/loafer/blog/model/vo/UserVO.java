@@ -34,9 +34,14 @@ public class UserVO {
 
     public String getEmail() {
         if (StringUtils.isNotBlank(this.email)) {
-            PrivateKey privateKey = SpringUtil.getBean(BusinessRSAKeyManager.class).getPrivateKey();
-            byte[] decryptedEmail = RSAUtils.decrypt(RSAUtils.base64Decode(this.email), privateKey);
-            this.email = SensitiveInfoUtils.maskEmail(new String(decryptedEmail));
+            try {
+                PrivateKey privateKey = SpringUtil.getBean(BusinessRSAKeyManager.class).getPrivateKey();
+                byte[] decryptedEmail = RSAUtils.decrypt(RSAUtils.base64Decode(this.email), privateKey);
+                this.email = SensitiveInfoUtils.maskEmail(new String(decryptedEmail));
+            } catch (Exception e) {
+                this.email = SensitiveInfoUtils.maskEmail(this.email);
+            }
+
         }
         return this.email;
     }
