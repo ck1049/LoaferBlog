@@ -23,9 +23,9 @@
         SELECT 
             id, 
             ts_headline('jiebacfg', title, to_tsquery('jiebacfg', b.search_condition), 
-                'StartSel=&lt;span class="highLight"&gt;,StopSel=&lt;/span&gt;,HighlightAll=TRUE') AS title,
-            ts_headline('jiebacfg', content, to_tsquery('jiebacfg', b.search_condition), 
-                'StartSel=&lt;span class="highLight"&gt;,StopSel=&lt;/span&gt;,HighlightAll=TRUE') AS content,
+                'StartSel="&lt;span class=""highLight""&gt;",StopSel="&lt;/span&gt;",HighlightAll=TRUE') AS title,
+            ts_headline('jiebacfg', content, to_tsquery('jiebacfg', b.search_condition),
+                'StartSel="&lt;span class=""highLight""&gt;",StopSel="&lt;/span&gt;",HighlightAll=TRUE') AS content,
             author_id, 
             summary, 
             view_count, 
