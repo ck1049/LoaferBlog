@@ -11,7 +11,9 @@ import com.loafer.blog.model.entity.UserRole;
 import com.loafer.blog.model.entity.Role;
 import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.model.vo.UserVO;
+import com.loafer.blog.config.BusinessRSAKeyManager;
 import com.loafer.blog.service.UserService;
+import com.loafer.blog.utils.RSAUtils;
 import com.loafer.blog.utils.SensitiveInfoUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -45,6 +47,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Value("${file.access.domain}")
     private String ACCESS_DOMAIN;
+    @Autowired
+    private BusinessRSAKeyManager businessRSAKeyManager;
     @Override
     public ResponseVO<UserVO> getCurrentUser(Long userId) {
         User user = getById(userId);
@@ -55,7 +59,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(user, userVO);
         // 对邮箱进行脱敏处理
-        userVO.setEmail(SensitiveInfoUtils.maskEmail(userVO.getEmail()));
+        if (userVO.getEmail() != null && !userVO.getEmail().isEmpty()) {
+            try {
+                byte[] decryptedEmail = RSAUtils.decrypt(RSAUtils.base64Decode(userVO.getEmail()), businessRSAKeyManager.getPrivateKey());
+                userVO.setEmail(SensitiveInfoUtils.maskEmail(new String(decryptedEmail)));
+            } catch (Exception e) {
+                userVO.setEmail("邮箱解密失败");
+            }
+        }
         
         // 添加默认头像功能
         if (userVO.getAvatar() == null || userVO.getAvatar().isEmpty()) {
@@ -98,7 +109,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setAvatar(userDTO.getAvatar());
         }
         if (userDTO.getEmail() != null && !SensitiveInfoUtils.isMaskedEmail(userDTO.getEmail())) {
-            user.setEmail(userDTO.getEmail());
+            try {
+                byte[] encryptedEmail = RSAUtils.encrypt(userDTO.getEmail().getBytes(), businessRSAKeyManager.getPublicKey());
+                user.setEmail(RSAUtils.base64Encode(encryptedEmail));
+            } catch (Exception e) {
+                return ResponseVO.error("邮箱加密失败: " + e.getMessage());
+            }
         }
         user.setUpdateTime(LocalDateTime.now());
 
@@ -107,7 +123,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(user, userVO);
         // 对邮箱进行脱敏处理
-        userVO.setEmail(SensitiveInfoUtils.maskEmail(userVO.getEmail()));
+        if (userVO.getEmail() != null && !userVO.getEmail().isEmpty()) {
+            try {
+                byte[] decryptedEmail = RSAUtils.decrypt(RSAUtils.base64Decode(userVO.getEmail()), businessRSAKeyManager.getPrivateKey());
+                userVO.setEmail(SensitiveInfoUtils.maskEmail(new String(decryptedEmail)));
+            } catch (Exception e) {
+                userVO.setEmail("邮箱解密失败");
+            }
+        }
         
         // 添加默认头像功能
         if (userVO.getAvatar() == null || userVO.getAvatar().isEmpty()) {

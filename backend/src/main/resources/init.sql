@@ -18,6 +18,7 @@ DROP TABLE IF EXISTS user_role;
 DROP TABLE IF EXISTS role;
 DROP TABLE IF EXISTS "user";
 DROP TABLE IF EXISTS sensitive_word;
+DROP TABLE IF EXISTS configuration;
 
 -- 创建角色表
 CREATE TABLE IF NOT EXISTS role (
@@ -27,7 +28,7 @@ CREATE TABLE IF NOT EXISTS role (
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
     deleted INTEGER DEFAULT 0,          -- 逻辑删除标记：0-未删除，1-已删除
-    delete_time TIMESTAMP,              -- 删除时间
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00',              -- 删除时间
     UNIQUE(name, deleted, delete_time)  -- 唯一约束：角色名称、删除标记和删除时间的组合
 );
 
@@ -47,14 +48,14 @@ CREATE TABLE IF NOT EXISTS "user" (
     username VARCHAR(50) NOT NULL,      -- 用户名
     password VARCHAR(100) NOT NULL,     -- 密码（加密存储）
     nickname VARCHAR(50),               -- 昵称
-    email VARCHAR(100),                 -- 邮箱
+    email VARCHAR(500),                 -- 邮箱
     avatar VARCHAR(255),                -- 头像URL
     bio TEXT,                           -- 个性签名
     status INTEGER DEFAULT 1,           -- 状态：1-正常，0-禁用
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
     deleted INTEGER DEFAULT 0,          -- 逻辑删除标记：0-未删除，1-已删除
-    delete_time TIMESTAMP,              -- 删除时间
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00',              -- 删除时间
     UNIQUE(username, deleted, delete_time) -- 唯一约束：用户名、删除标记和删除时间的组合
 );
 
@@ -80,7 +81,7 @@ CREATE TABLE IF NOT EXISTS user_role (
     role_id INTEGER NOT NULL,            -- 角色ID
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     deleted INTEGER DEFAULT 0,           -- 逻辑删除标记：0-未删除，1-已删除
-    delete_time TIMESTAMP,               -- 删除时间
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00',               -- 删除时间
     UNIQUE(user_id, role_id, deleted, delete_time)            -- 唯一约束：用户与角色的组合
 );
 
@@ -103,7 +104,7 @@ CREATE TABLE IF NOT EXISTS announcement (
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
     deleted INTEGER DEFAULT 0,          -- 逻辑删除标记：0-未删除，1-已删除
-    delete_time TIMESTAMP               -- 删除时间
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00'               -- 删除时间
 );
 
 -- 表注释
@@ -127,7 +128,7 @@ CREATE TABLE IF NOT EXISTS category (
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
     deleted INTEGER DEFAULT 0,          -- 逻辑删除标记：0-未删除，1-已删除
-    delete_time TIMESTAMP,              -- 删除时间
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00',              -- 删除时间
     UNIQUE(name, deleted, delete_time)  -- 唯一约束：分类名称、删除标记和删除时间的组合
 );
 
@@ -151,7 +152,7 @@ CREATE TABLE IF NOT EXISTS tag (
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
     deleted INTEGER DEFAULT 0,          -- 逻辑删除标记：0-未删除，1-已删除
-    delete_time TIMESTAMP,              -- 删除时间
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00',              -- 删除时间
     UNIQUE(name, deleted, delete_time)  -- 唯一约束：标签名称、删除标记和删除时间的组合
 );
 
@@ -181,7 +182,7 @@ CREATE TABLE IF NOT EXISTS post (
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
     deleted INTEGER DEFAULT 0,          -- 逻辑删除标记：0-未删除，1-已删除
-    delete_time TIMESTAMP               -- 删除时间
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00'               -- 删除时间
 );
 
 -- 表注释
@@ -208,7 +209,7 @@ CREATE TABLE IF NOT EXISTS post_category (
     category_id INTEGER NOT NULL,        -- 分类ID
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     deleted INTEGER DEFAULT 0,           -- 逻辑删除标记：0-未删除，1-已删除
-    delete_time TIMESTAMP,               -- 删除时间
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00',               -- 删除时间
     UNIQUE(post_id, category_id, deleted, delete_time)        -- 唯一约束：帖子与分类的组合
 );
 
@@ -228,7 +229,7 @@ CREATE TABLE IF NOT EXISTS post_tag (
     tag_id INTEGER NOT NULL,             -- 标签ID
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     deleted INTEGER DEFAULT 0,           -- 逻辑删除标记：0-未删除，1-已删除
-    delete_time TIMESTAMP,               -- 删除时间
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00',               -- 删除时间
     UNIQUE(post_id, tag_id, deleted, delete_time)             -- 唯一约束：帖子与标签的组合
 );
 
@@ -253,7 +254,7 @@ CREATE TABLE IF NOT EXISTS comment (
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
     deleted INTEGER DEFAULT 0,          -- 逻辑删除标记：0-未删除，1-已删除
-    delete_time TIMESTAMP               -- 删除时间
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00'               -- 删除时间
 );
 
 -- 表注释
@@ -288,7 +289,7 @@ CREATE TABLE IF NOT EXISTS message (
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
     deleted INTEGER DEFAULT 0,          -- 逻辑删除标记：0-未删除，1-已删除
-    delete_time TIMESTAMP               -- 删除时间
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00'               -- 删除时间
 );
 
 -- 表注释
@@ -318,7 +319,7 @@ CREATE TABLE IF NOT EXISTS post_like (
     user_id INTEGER NOT NULL,            -- 用户ID
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     deleted INTEGER DEFAULT 0,           -- 逻辑删除标记：0-未删除，1-已删除
-    delete_time TIMESTAMP,               -- 删除时间
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00',               -- 删除时间
     UNIQUE(post_id, user_id, deleted, delete_time)            -- 唯一约束：一个用户对一个帖子只能点赞一次
 );
 
@@ -338,7 +339,7 @@ CREATE TABLE IF NOT EXISTS post_favorite (
     user_id INTEGER NOT NULL,            -- 用户ID
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     deleted INTEGER DEFAULT 0,           -- 逻辑删除标记：0-未删除，1-已删除
-    delete_time TIMESTAMP,               -- 删除时间
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00',               -- 删除时间
     UNIQUE(post_id, user_id, deleted, delete_time)            -- 唯一约束：一个用户对一个帖子只能收藏一次
 );
 
@@ -358,7 +359,7 @@ CREATE TABLE IF NOT EXISTS post_view_history (
     user_id INTEGER NOT NULL,            -- 用户ID
     viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 浏览时间
     deleted INTEGER DEFAULT 0,           -- 逻辑删除标记：0-未删除，1-已删除
-    delete_time TIMESTAMP,               -- 删除时间
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00',               -- 删除时间
     UNIQUE(post_id, user_id, deleted, delete_time)            -- 唯一约束：一个用户对一个帖子只记录一次浏览
 );
 
@@ -379,7 +380,7 @@ CREATE TABLE IF NOT EXISTS sensitive_word (
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
     deleted INTEGER DEFAULT 0,          -- 逻辑删除标记：0-未删除，1-已删除
-    delete_time TIMESTAMP,              -- 删除时间
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00',              -- 删除时间
     UNIQUE(word, deleted, delete_time)  -- 唯一约束：敏感词、删除标记和删除时间的组合
 );
 
@@ -392,6 +393,32 @@ COMMENT ON COLUMN sensitive_word.create_time IS '创建时间';
 COMMENT ON COLUMN sensitive_word.update_time IS '更新时间';
 COMMENT ON COLUMN sensitive_word.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 COMMENT ON COLUMN sensitive_word.delete_time IS '删除时间';
+
+-- 创建配置表
+CREATE TABLE IF NOT EXISTS configuration (
+    id SERIAL PRIMARY KEY,              -- 配置ID
+    module VARCHAR(50) NOT NULL,         -- 模块
+    key VARCHAR(100) NOT NULL,           -- 配置键
+    value VARCHAR(255) NOT NULL,         -- 配置值
+    description VARCHAR(255),            -- 配置描述
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
+    deleted INTEGER DEFAULT 0,           -- 逻辑删除标记：0-未删除，1-已删除
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00', -- 删除时间
+    UNIQUE(module, key, deleted, delete_time) -- 唯一约束：模块、键、删除标记和删除时间的组合
+);
+
+-- 表注释
+COMMENT ON TABLE configuration IS '配置表';
+COMMENT ON COLUMN configuration.id IS '配置ID';
+COMMENT ON COLUMN configuration.module IS '模块';
+COMMENT ON COLUMN configuration.key IS '配置键';
+COMMENT ON COLUMN configuration.value IS '配置值';
+COMMENT ON COLUMN configuration.description IS '配置描述';
+COMMENT ON COLUMN configuration.create_time IS '创建时间';
+COMMENT ON COLUMN configuration.update_time IS '更新时间';
+COMMENT ON COLUMN configuration.deleted IS '逻辑删除标记：0-未删除，1-已删除';
+COMMENT ON COLUMN configuration.delete_time IS '删除时间';
 
 -- 插入初始数据
 
@@ -439,6 +466,12 @@ INSERT INTO sensitive_word (word) VALUES
 ('敏感词1'),
 ('敏感词2'),
 ('敏感词3');
+
+-- 插入初始配置
+INSERT INTO configuration (module, key, value, description) VALUES
+('file', 'max_size', '10485760', '文件上传最大大小（字节）'),
+('file', 'allowed_extensions', 'jpg,jpeg,png,gif,md', '允许的文件扩展名');
+
 
 -- 插入初始公告
 INSERT INTO announcement (title, content, author_id, status) VALUES

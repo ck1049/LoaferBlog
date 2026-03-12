@@ -46,3 +46,10 @@ file:
   access:
     prefix: /uploads
     domain: http://localhost:8080
+  rsa:
+    business:
+      private-key-path: /rsa/business/private.key
+      public-key-path: /rsa/business/public.key
+    communication:
+      private-key-path: /rsa/communication/private.key
+      public-key-path: /rsa/communication/public.key

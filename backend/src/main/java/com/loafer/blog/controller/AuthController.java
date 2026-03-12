@@ -27,7 +27,10 @@ public class AuthController {
         try {
             // 解密敏感信息
             String password = rsaUtils.decrypt(request.getPassword());
-            String email = rsaUtils.decrypt(request.getEmail());
+            String email = null;
+            if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+                email = rsaUtils.decrypt(request.getEmail());
+            }
             
             RegisterDTO registerDTO = new RegisterDTO();
             registerDTO.setUsername(request.getUsername());

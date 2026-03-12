@@ -36,14 +36,16 @@ public class MessageController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Message> createMessage(@RequestBody Message message) {
+    public ResponseEntity<Message> createMessage(@RequestBody Message message, @RequestAttribute("userId") Long userId) {
+        message.setSenderId(userId);
         Message createdMessage = messageService.createMessage(message);
         return new ResponseEntity<>(createdMessage, HttpStatus.CREATED);
     }
 
     @PostMapping("/reply")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Message> replyMessage(@RequestBody Message message) {
+    public ResponseEntity<Message> replyMessage(@RequestBody Message message, @RequestAttribute("userId") Long userId) {
+        message.setSenderId(userId);
         Message repliedMessage = messageService.replyMessage(message);
         return new ResponseEntity<>(repliedMessage, HttpStatus.CREATED);
     }
@@ -71,7 +73,8 @@ public class MessageController {
 
     @PostMapping("/file")
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Message> sendFileMessage(@RequestBody Message message) {
+    public ResponseEntity<Message> sendFileMessage(@RequestBody Message message, @RequestAttribute("userId") Long userId) {
+        message.setSenderId(userId);
         Message sentMessage = messageService.sendFileMessage(message);
         return new ResponseEntity<>(sentMessage, HttpStatus.CREATED);
     }

@@ -15,7 +15,9 @@ import com.loafer.blog.mapper.RoleMapper;
 import com.loafer.blog.service.AuthService;
 import com.loafer.blog.service.MessageService;
 import com.loafer.blog.utils.JwtUtils;
+import com.loafer.blog.utils.RSAUtils;
 import com.loafer.blog.utils.SensitiveInfoUtils;
+import com.loafer.blog.config.BusinessRSAKeyManager;
 import com.loafer.blog.utils.TokenCache;
 import com.loafer.blog.vo.LoginResponseVO;
 import com.loafer.blog.vo.ResponseVO;
@@ -48,6 +50,8 @@ public class AuthServiceImpl implements AuthService {
     private TokenCache tokenCache;
     @Autowired
     private HttpServletRequest request;
+    @Autowired
+    private BusinessRSAKeyManager businessRSAKeyManager;
     
     // JWT过期时间配置
     @Value("${jwt.expiration}")
@@ -76,7 +80,15 @@ public class AuthServiceImpl implements AuthService {
             // 创建用户
             User user = new User();
             user.setUsername(registerDTO.getUsername());
-            user.setEmail(registerDTO.getEmail());
+            // 加密邮箱
+            if (registerDTO.getEmail() != null && !registerDTO.getEmail().isEmpty()) {
+                try {
+                    byte[] encryptedEmail = RSAUtils.encrypt(registerDTO.getEmail().getBytes(), businessRSAKeyManager.getPublicKey());
+                    user.setEmail(RSAUtils.base64Encode(encryptedEmail));
+                } catch (Exception e) {
+                    return ResponseVO.error("邮箱加密失败: " + e.getMessage());
+                }
+            }
             user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
             user.setNickname(registerDTO.getNickname());
             user.setStatus(1);
@@ -140,7 +152,15 @@ public class AuthServiceImpl implements AuthService {
             UserVO userVO = new UserVO();
             userVO.setId(existingUser.getId());
             userVO.setUsername(existingUser.getUsername());
-            userVO.setEmail(SensitiveInfoUtils.maskEmail(existingUser.getEmail()));
+            // 解密邮箱后脱敏
+            if (existingUser.getEmail() != null && !existingUser.getEmail().isEmpty()) {
+                try {
+                    byte[] decryptedEmail = RSAUtils.decrypt(RSAUtils.base64Decode(existingUser.getEmail()), businessRSAKeyManager.getPrivateKey());
+                    userVO.setEmail(SensitiveInfoUtils.maskEmail(new String(decryptedEmail)));
+                } catch (Exception e) {
+                    userVO.setEmail("邮箱解密失败");
+                }
+            }
             userVO.setNickname(existingUser.getNickname());
             userVO.setAvatar(existingUser.getAvatar());
             userVO.setBio(existingUser.getBio());
