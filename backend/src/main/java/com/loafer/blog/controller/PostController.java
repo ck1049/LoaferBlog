@@ -1,6 +1,7 @@
 package com.loafer.blog.controller;
 
 import com.loafer.blog.model.dto.PostDTO;
+import com.loafer.blog.model.vo.PageResultVO;
 import com.loafer.blog.model.vo.PostVO;
 import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.service.PostService;
@@ -22,8 +23,10 @@ public class PostController {
     }
 
     @GetMapping("/search")
-    public ResponseVO<List<PostVO>> searchPosts(@RequestParam String keyword) {
-        return postService.searchPosts(keyword);
+    public ResponseVO<PageResultVO<PostVO>> searchPosts(@RequestParam String keyword, 
+                                               @RequestParam(required = false, defaultValue = "1") Integer page, 
+                                               @RequestParam(required = false, defaultValue = "10") Integer size) {
+        return postService.searchPosts(keyword, page, size);
     }
 
     @GetMapping("/{id}")

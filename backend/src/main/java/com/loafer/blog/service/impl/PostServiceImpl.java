@@ -1,12 +1,16 @@
 package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.loafer.blog.config.FullTextSearchConfig;
 import com.loafer.blog.model.dto.PostDTO;
 import com.loafer.blog.model.entity.Post;
 import com.loafer.blog.model.entity.PostCategory;
 import com.loafer.blog.model.entity.PostTag;
 import com.loafer.blog.model.vo.CategoryVO;
+import com.loafer.blog.model.vo.PageResultVO;
 import com.loafer.blog.model.vo.PostVO;
 import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.model.vo.TagVO;
@@ -27,7 +31,6 @@ import java.util.stream.Collectors;
 @Service
 public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements PostService {
 
-
     @Autowired
     private PostCategoryMapper postCategoryMapper;
     @Autowired
@@ -36,12 +39,23 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
     private CategoryMapper categoryMapper;
     @Autowired
     private TagMapper tagMapper;
+    @Autowired
+    private FullTextSearchConfig fullTextSearchConfig;
+
+    // 高亮处理
+    private String highlightKeyword(String text, String keyword) {
+        if (text == null || keyword == null || keyword.isEmpty()) {
+            return text;
+        }
+        return text.replaceAll(keyword, "<span class='highLight'>" + keyword + "</span>");
+    }
 
     @Override
     public ResponseVO<List<PostVO>> getPosts() {
         try {
-            // 按发布时间倒序排列
             QueryWrapper<Post> wrapper = new QueryWrapper<>();
+            wrapper.eq("deleted", 0);
+            wrapper.eq("status", 1);
             wrapper.orderByDesc("create_time");
             List<Post> posts = list(wrapper);
             List<PostVO> postVOs = posts.stream().map(this::convertToPostVO).collect(Collectors.toList());
@@ -52,15 +66,48 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
     }
 
     @Override
-    public ResponseVO<List<PostVO>> searchPosts(String keyword) {
+    public ResponseVO<PageResultVO<PostVO>> searchPosts(String keyword, Integer page, Integer size) {
         try {
-            // 使用PostgreSQL的全文搜索
-            QueryWrapper<Post> wrapper = new QueryWrapper<>();
-            wrapper.like("title", keyword).or().like("content", keyword);
-            wrapper.orderByDesc("create_time");
-            List<Post> posts = list(wrapper);
-            List<PostVO> postVOs = posts.stream().map(this::convertToPostVO).collect(Collectors.toList());
-            return ResponseVO.success(postVOs);
+            Page<Post> pageParam = new Page<>(page, size);
+            IPage<Post> postPage;
+
+            // 当关键词为空时，使用方案A
+            if (keyword == null || keyword.isEmpty()) {
+                QueryWrapper<Post> wrapper = new QueryWrapper<>();
+                wrapper.eq("deleted", 0);
+                wrapper.eq("status", 1);
+                wrapper.orderByDesc("create_time");
+                postPage = page(pageParam, wrapper);
+            } else {
+                // 检测jieba分词器是否可用
+                if (fullTextSearchConfig.isJiebaAvailable()) {
+                    // 方案B：使用jieba全文检索
+                    postPage = baseMapper.searchPostsJieba(pageParam, keyword);
+                } else {
+                    // 方案A：使用传统like查询
+                    postPage = baseMapper.searchPostsLike(pageParam, keyword);
+                    
+                    // 方案A需要在Java层做高亮处理
+                    List<Post> posts = postPage.getRecords();
+                    posts.forEach(post -> {
+                        post.setTitle(highlightKeyword(post.getTitle(), keyword));
+                        post.setContent(highlightKeyword(post.getContent(), keyword));
+                    });
+                }
+            }
+
+            List<PostVO> postVOs = postPage.getRecords().stream()
+                    .map(this::convertToPostVO)
+                    .collect(Collectors.toList());
+            
+            PageResultVO<PostVO> pageResult = new PageResultVO<>(
+                    postVOs,
+                    postPage.getTotal(),
+                    postPage.getSize(),
+                    postPage.getCurrent()
+            );
+            
+            return ResponseVO.success(pageResult);
         } catch (Exception e) {
             return ResponseVO.error("搜索技术贴失败: " + e.getMessage());
         }
@@ -73,7 +120,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
             if (post == null) {
                 return ResponseVO.error("技术贴不存在");
             }
-            // 确保 favoriteCount 不为 null
             if (post.getFavoriteCount() == null) {
                 post.setFavoriteCount(0);
             }
@@ -87,7 +133,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
     @Override
     public ResponseVO<PostVO> createPost(PostDTO postDTO, Long userId) {
         try {
-            // 防XSS处理
             String title = XssUtils.filter(postDTO.getTitle());
             String content = XssUtils.filter(postDTO.getContent());
             
@@ -102,7 +147,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
             post.setUpdateTime(LocalDateTime.now());
             save(post);
             
-            // 处理分类关联
             if (postDTO.getCategoryIds() != null) {
                 for (Long categoryId : postDTO.getCategoryIds()) {
                     PostCategory postCategory = new PostCategory();
@@ -112,7 +156,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
                 }
             }
             
-            // 处理标签关联
             if (postDTO.getTagIds() != null) {
                 for (Long tagId : postDTO.getTagIds()) {
                     PostTag postTag = new PostTag();
@@ -137,7 +180,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
                 return ResponseVO.error("技术贴不存在");
             }
 
-            // 防XSS处理
             String title = XssUtils.filter(postDTO.getTitle());
             String content = XssUtils.filter(postDTO.getContent());
 
@@ -146,7 +188,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
             existingPost.setUpdateTime(LocalDateTime.now());
             updateById(existingPost);
             
-            // 先删除现有关联
             QueryWrapper<PostCategory> categoryWrapper = new QueryWrapper<>();
             categoryWrapper.eq("post_id", id);
             postCategoryMapper.delete(categoryWrapper);
@@ -155,7 +196,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
             tagWrapper.eq("post_id", id);
             postTagMapper.delete(tagWrapper);
             
-            // 处理分类关联
             if (postDTO.getCategoryIds() != null) {
                 for (Long categoryId : postDTO.getCategoryIds()) {
                     PostCategory postCategory = new PostCategory();
@@ -165,7 +205,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
                 }
             }
             
-            // 处理标签关联
             if (postDTO.getTagIds() != null) {
                 for (Long tagId : postDTO.getTagIds()) {
                     PostTag postTag = new PostTag();
@@ -190,7 +229,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
                 return ResponseVO.error("技术贴不存在");
             }
 
-            // 先删除关联
             QueryWrapper<PostCategory> categoryWrapper = new QueryWrapper<>();
             categoryWrapper.eq("post_id", id);
             postCategoryMapper.delete(categoryWrapper);
@@ -210,7 +248,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
     private PostVO convertToPostVO(Post post) {
         PostVO postVO = new PostVO(post);
         
-        // 获取分类
         QueryWrapper<PostCategory> categoryWrapper = new QueryWrapper<>();
         categoryWrapper.eq("post_id", post.getId());
         List<PostCategory> postCategories = postCategoryMapper.selectList(categoryWrapper);
@@ -221,7 +258,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
             postVO.setCategories(categoryVOs);
         }
         
-        // 获取标签
         QueryWrapper<PostTag> tagWrapper = new QueryWrapper<>();
         tagWrapper.eq("post_id", post.getId());
         List<PostTag> postTags = postTagMapper.selectList(tagWrapper);

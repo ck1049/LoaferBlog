@@ -20,7 +20,13 @@
             <div class="nickname">{{ user.nickname || user.username }}</div>
           </div>
         </div>
-        <button class="add-btn">添加好友</button>
+        <button 
+          class="add-btn" 
+          :disabled="user.adding"
+          @click="addFriend(user.id, user.username)"
+        >
+          {{ user.adding ? '添加中...' : '添加好友' }}
+        </button>
       </div>
       
       <div v-if="hasMore" class="load-more">
@@ -109,6 +115,38 @@ const loadMore = async () => {
     console.error('加载更多用户失败:', error);
   } finally {
     searching.value = false;
+  }
+};
+
+const addFriend = async (userId: number, username: string) => {
+  // 找到用户并设置添加状态
+  const user = users.value.find(u => u.id === userId);
+  if (user) {
+    user.adding = true;
+  }
+  
+  try {
+    const token = localStorage.getItem('token');
+    await axios.post('/api/users/add-friend', {
+      userId: userId
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    // 显示成功消息
+    alert(`成功添加 ${username} 为好友`);
+    
+    // 从列表中移除该用户
+    users.value = users.value.filter(u => u.id !== userId);
+  } catch (error: any) {
+    console.error('添加好友失败:', error);
+    alert(`添加好友失败: ${error.response?.data?.message || '未知错误'}`);
+  } finally {
+    if (user) {
+      user.adding = false;
+    }
   }
 };
 </script>

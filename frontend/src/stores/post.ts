@@ -20,6 +20,17 @@ export const usePostStore = defineStore('post', {
   state: () => ({
     posts: [] as Post[],
     currentPost: null as Post | null,
+    pagination: {
+      current: 1,
+      size: 10,
+      total: 0,
+      pages: 0
+    } as {
+      current: number;
+      size: number;
+      total: number;
+      pages: number;
+    },
   }),
   getters: {
     sortedPosts: (state) => {
@@ -33,6 +44,11 @@ export const usePostStore = defineStore('post', {
       try {
         const response = await axios.get('/api/posts');
         this.posts = response.data.data;
+        // 设置分页信息
+        this.pagination.current = 1;
+        this.pagination.size = 10;
+        this.pagination.total = response.data.data.length;
+        this.pagination.pages = Math.ceil(response.data.data.length / 10);
       } catch (error) {
         console.error('Failed to fetch posts:', error);
       }
@@ -53,10 +69,25 @@ export const usePostStore = defineStore('post', {
         return false;
       }
     },
-    async searchPosts(keyword: string) {
+    async searchPosts(keyword: string, page: number = 1, size: number = 10) {
       try {
-        const response = await axios.get(`/api/posts/search?keyword=${keyword}`);
-        this.posts = response.data.data;
+        const response = await axios.get(`/api/posts/search`, {
+          params: {
+            keyword,
+            page,
+            size
+          }
+        });
+        // 处理分页结果，实际数据在records字段中
+        const data = response.data.data;
+        this.posts = data?.records || [];
+        // 保存分页信息
+        if (data) {
+          this.pagination.current = data.current;
+          this.pagination.size = data.size;
+          this.pagination.total = data.total;
+          this.pagination.pages = data.pages;
+        }
       } catch (error) {
         console.error('Failed to search posts:', error);
       }

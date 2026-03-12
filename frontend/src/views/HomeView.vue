@@ -4,7 +4,7 @@
       <div class="filter-box">
         <div class="search-box">
           <input type="text" v-model="searchKeyword" placeholder="搜索帖子" />
-          <button @click="searchPosts">搜索</button>
+          <button @click="() => searchPosts()">搜索</button>
         </div>
         <div class="category-filter">
           <label>按分类筛选：</label>
@@ -18,8 +18,8 @@
       </div>
       <div v-if="filteredPosts.length > 0" class="post-list">
         <div v-for="post in filteredPosts" :key="post.id" class="post-item" @click="viewPost(post.id)">
-          <h3>{{ post.title }}</h3>
-          <p>{{ post.content.substring(0, 100) }}...</p>
+          <h3 v-html="post.title"></h3>
+          <p v-html="post.content.substring(0, 100) + '...'"></p>
           <div class="post-meta">
             <span>{{ formatDate(post.createdAt) }}</span>
             <div class="post-categories">
@@ -33,6 +33,41 @@
       </div>
       <div v-else class="empty">
         暂无技术贴
+      </div>
+      
+      <!-- 分页条 -->
+      <div v-if="filteredPosts.length > 0" class="pagination">
+        <button 
+          @click="() => changePage(1)" 
+          :disabled="postStore.pagination.current === 1"
+          class="page-btn"
+        >
+          首页
+        </button>
+        <button 
+          @click="() => changePage(postStore.pagination.current - 1)" 
+          :disabled="postStore.pagination.current === 1"
+          class="page-btn"
+        >
+          上一页
+        </button>
+        <span class="page-info">
+          第 {{ postStore.pagination.current }} 页，共 {{ postStore.pagination.pages }} 页，总 {{ postStore.pagination.total }} 条
+        </span>
+        <button 
+          @click="() => changePage(postStore.pagination.current + 1)" 
+          :disabled="postStore.pagination.current === postStore.pagination.pages"
+          class="page-btn"
+        >
+          下一页
+        </button>
+        <button 
+          @click="() => changePage(postStore.pagination.pages)" 
+          :disabled="postStore.pagination.current === postStore.pagination.pages"
+          class="page-btn"
+        >
+          末页
+        </button>
       </div>
     </div>
   </div>
@@ -68,8 +103,14 @@ const filteredPosts = computed(() => {
 
 
 
-const searchPosts = async () => {
-  await postStore.searchPosts(searchKeyword.value)
+const searchPosts = async (page: number = 1) => {
+  await postStore.searchPosts(searchKeyword.value, page)
+}
+
+const changePage = async (page: number) => {
+  if (page >= 1 && page <= postStore.pagination.pages) {
+    await searchPosts(page)
+  }
 }
 
 const filterPostsByCategory = () => {
@@ -292,6 +333,55 @@ span {
 }
 
 
+
+/* 高亮样式 */
+:deep(.highLight) {
+  color: #e74c3c !important;
+  font-weight: bold !important;
+}
+
+/* 分页样式 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 30px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.page-btn {
+  padding: 8px 16px;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.page-btn:hover:not(:disabled) {
+  background-color: #3498db;
+  color: white;
+  border-color: #3498db;
+  transform: translateY(-1px);
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  color: #666;
+  font-weight: 500;
+  min-width: 200px;
+  text-align: center;
+}
 
 /* 动画效果 */
 @keyframes fadeIn {

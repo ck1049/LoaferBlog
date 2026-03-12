@@ -1,6 +1,9 @@
--- PostgreSQL数据库初始化脚本
+-- PostgreSQL数据库初始化脚本（支持jieba分词）
 -- 版本: 1.0
--- 日期: 2026-03-07
+-- 日期: 2026-03-13
+
+-- 加载pg_jieba插件（需超级用户权限）
+CREATE EXTENSION IF NOT EXISTS pg_jieba;
 
 -- 删除已存在的表（如果存在）
 DROP TABLE IF EXISTS post_view_history;
@@ -184,7 +187,7 @@ CREATE TABLE IF NOT EXISTS post (
     deleted INTEGER DEFAULT 0,          -- 逻辑删除标记：0-未删除，1-已删除
     delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00',              -- 删除时间
     ts_vector_col tsvector  GENERATED ALWAYS AS (
-        to_tsvector('english', title || ' ' || content)
+        to_tsvector('jiebacfg', title || ' ' || content)
     ) STORED
 );
 
@@ -204,7 +207,7 @@ COMMENT ON COLUMN post.create_time IS '创建时间';
 COMMENT ON COLUMN post.update_time IS '更新时间';
 COMMENT ON COLUMN post.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 COMMENT ON COLUMN post.delete_time IS '删除时间';
-COMMENT ON COLUMN post.ts_vector_col IS '全文检索向量（使用english分词器）';
+COMMENT ON COLUMN post.ts_vector_col IS '全文检索向量（使用jiebacfg分词器）';
 
 -- 为全文检索向量创建索引
 CREATE INDEX idx_post_ts_vector ON post USING gin(ts_vector_col);
