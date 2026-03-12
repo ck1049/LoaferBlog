@@ -26,7 +26,7 @@ public class Post {
     private Integer commentCount;
     @TableField("like_count")
     private Integer likeCount;
-    @TableField(exist = false)
+    @TableField("favorite_count")
     private Integer favoriteCount;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;

@@ -1,7 +1,11 @@
 package com.loafer.blog.utils;
 
+import cn.hutool.extra.spring.SpringUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartRequest;
 import org.springframework.web.multipart.MultipartResolver;
@@ -14,7 +18,21 @@ import java.util.Iterator;
  * @author loafer
  * @since 2026-03-12 20:41:54
  **/
+@Component
 public class FileUploadUtils {
+
+    @Getter
+    @Value("${file.access.domain}")
+    private String accessDomain;
+
+    /**
+     * 拼接文件访问路径
+     * @param uploadPath 上传路径
+     * @return http访问路径
+     */
+    public static String spliceUrl(String uploadPath) {
+        return SpringUtil.getBean(FileUploadUtils.class).getAccessDomain() + uploadPath;
+    }
 
     // 判断请求是否包含文件上传
     public static boolean hasFileUpload(HttpServletRequest request, MultipartResolver multipartResolver) {

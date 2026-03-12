@@ -10,6 +10,7 @@ import com.loafer.blog.mapper.UserMapper;
 import com.loafer.blog.model.vo.MessageVO;
 import com.loafer.blog.service.MessageService;
 import com.loafer.blog.common.SensitiveWordFilter;
+import com.loafer.blog.model.enumtype.MessageType;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -42,7 +43,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         String filteredContent = sensitiveWordFilter.filter(originalContent);
         message.setOriginalContent(originalContent);
         message.setContent(filteredContent);
-        message.setMessageType(1); // 默认文本消息
+        message.setMessageType(MessageType.TEXT.getCode()); // 默认文本消息
         message.setSendStatus(1); // 默认发送成功
         message.setIsTop(0); // 默认非置顶
 
@@ -57,7 +58,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         String filteredContent = sensitiveWordFilter.filter(originalContent);
         message.setOriginalContent(originalContent);
         message.setContent(filteredContent);
-        message.setMessageType(1); // 默认文本消息
+        message.setMessageType(MessageType.TEXT.getCode()); // 默认文本消息
         message.setSendStatus(1); // 默认发送成功
 
         baseMapper.insert(message);

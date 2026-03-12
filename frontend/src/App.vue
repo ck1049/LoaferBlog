@@ -102,6 +102,42 @@ body {
   background-color: #f0f8ff;
   background-image: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
   color: #333;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 全局背景动画 */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 30%, rgba(52, 152, 219, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 70%, rgba(142, 68, 173, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 40% 80%, rgba(46, 204, 113, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 70% 20%, rgba(241, 196, 15, 0.1) 0%, transparent 50%);
+  animation: backgroundShift 20s ease-in-out infinite;
+  z-index: -1;
+}
+
+@keyframes backgroundShift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(5%, 5%) scale(1.05);
+  }
+  50% {
+    transform: translate(0, 10%) scale(1.1);
+  }
+  75% {
+    transform: translate(-5%, 5%) scale(1.05);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
 }
 
 .app {

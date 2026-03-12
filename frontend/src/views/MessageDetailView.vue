@@ -1,18 +1,18 @@
 <template>
   <div class="message-detail">
     <h1>聊天窗口</h1>
-    <div class="conversation">
+    <div class="conversation" ref="conversationRef">
       <div v-for="message in messageStore.sortedConversation" :key="message.id" class="message-bubble" :class="{ 'own-message': message.senderId === userStore.user?.id }">
         <div class="message-header">
           <span class="message-sender">{{ message.sender?.nickname || message.sender?.username }}</span>
           <span class="message-time">{{ formatDate(message.createdAt) }}</span>
         </div>
         <div class="message-content">
-          <span v-if="message.messageType === 1">{{ message.filteredContent }}</span>
-          <span v-else-if="message.messageType === 2" class="emoji">{{ message.filteredContent }}</span>
-          <img v-else-if="message.messageType === 3" :src="message.filePath" :alt="message.fileName" class="message-image" />
-          <video v-else-if="message.messageType === 4" :src="message.filePath" :alt="message.fileName" class="message-video" controls></video>
-          <a v-else-if="message.messageType === 5" :href="message.filePath" target="_blank" class="message-file">
+          <span v-if="message.messageType === MessageType.TEXT">{{ message.filteredContent }}</span>
+          <span v-else-if="message.messageType === MessageType.EMOJI" class="emoji">{{ message.filteredContent }}</span>
+          <img v-else-if="message.messageType === MessageType.IMAGE" :src="message.filePath" :alt="message.fileName" class="message-image" @click="openPreview(message)" />
+          <video v-else-if="message.messageType === MessageType.VIDEO" :src="message.filePath" :alt="message.fileName" class="message-video" controls @click="openPreview(message)"></video>
+          <a v-else-if="message.messageType === MessageType.FILE" :href="message.filePath" :download="message.fileName" class="message-file">
             [文件] {{ message.fileName }}
           </a>
         </div>
@@ -43,14 +43,27 @@
         <button @click="sendMessage" class="send-btn">发送</button>
       </div>
     </div>
+    
+    <!-- 预览窗口 -->
+    <div v-if="previewVisible" class="preview-overlay" @click="closePreview">
+      <div class="preview-container" @click.stop>
+        <button class="preview-close" @click="closePreview">×</button>
+        <img v-if="previewMessage?.messageType === MessageType.IMAGE" :src="previewMessage.filePath" :alt="previewMessage.fileName" class="preview-image" />
+        <video v-else-if="previewMessage?.messageType === MessageType.VIDEO" :src="previewMessage.filePath" :alt="previewMessage.fileName" class="preview-video" controls autoplay></video>
+        <div class="preview-actions">
+          <a v-if="previewMessage" :href="previewMessage.filePath" :download="previewMessage.fileName" class="preview-save">保存</a>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { useMessageStore } from '../stores/message';
 import { useUserStore } from '../stores/user';
+import { MessageType } from '../constants/messageType';
 import axios from 'axios';
 
 const route = useRoute();
@@ -58,6 +71,28 @@ const messageStore = useMessageStore();
 const userStore = useUserStore();
 const messageContent = ref('');
 const showEmojiPicker = ref(false);
+const conversationRef = ref<HTMLElement | null>(null);
+const previewVisible = ref(false);
+const previewMessage = ref<any>(null);
+
+const scrollToBottom = async () => {
+  await nextTick();
+  if (conversationRef.value) {
+    conversationRef.value.scrollTop = conversationRef.value.scrollHeight;
+  }
+};
+
+const openPreview = (message: any) => {
+  if (message.messageType === MessageType.IMAGE || message.messageType === MessageType.VIDEO) {
+    previewMessage.value = message;
+    previewVisible.value = true;
+  }
+};
+
+const closePreview = () => {
+  previewVisible.value = false;
+  previewMessage.value = null;
+};
 
 const emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '😘', '😗', '😙', '😚', '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩', '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥴', '😵', '🤯', '🤠', '🥳', '😎', '🤓', '🧐', '🤨', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯', '😦', '😧', '😮', '😲', '🥱', '😴', '🤤', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥴', '😵'];
 
@@ -95,18 +130,18 @@ const handleFileUpload = async (event: Event) => {
 
     const receiverId = Number(route.params.id);
     if (userStore.user) {
-      let messageType = 5; // 默认文件
+      let messageType = MessageType.FILE; // 默认文件
       if (file.type.startsWith('image/')) {
-        messageType = 3;
+        messageType = MessageType.IMAGE;
       } else if (file.type.startsWith('video/')) {
-        messageType = 4;
+        messageType = MessageType.VIDEO;
       }
 
       await messageStore.sendFileMessage({
         receiverId,
         content: messageContent.value || '',
         messageType,
-        filePath: response.data.filePath,
+        filePath: response.data.url,
         fileName: file.name,
         fileSize: file.size,
       });
@@ -131,8 +166,18 @@ const sendMessage = async () => {
     });
     messageContent.value = '';
     showEmojiPicker.value = false;
+    await scrollToBottom();
   }
 };
+
+// 监听消息列表变化，自动滚动到底部
+watch(
+  () => messageStore.currentConversation,
+  async () => {
+    await scrollToBottom();
+  },
+  { deep: true }
+);
 
 onMounted(() => {
   const otherUserId = Number(route.params.id);
@@ -336,5 +381,91 @@ h1 {
 
 .send-btn:hover {
   background-color: #45a049;
+}
+
+/* 预览窗口样式 */
+.preview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.preview-container {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.preview-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #333;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.preview-video {
+  max-width: 100%;
+  max-height: 70vh;
+  border-radius: 4px;
+}
+
+.preview-actions {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.preview-save {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.preview-save:hover {
+  background-color: #45a049;
+}
+
+/* 图片和视频的点击效果 */
+.message-image {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.message-image:hover {
+  transform: scale(1.05);
+}
+
+.message-video {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.message-video:hover {
+  transform: scale(1.05);
 }
 </style>

@@ -14,12 +14,8 @@ import com.loafer.blog.mapper.UserRoleMapper;
 import com.loafer.blog.mapper.RoleMapper;
 import com.loafer.blog.service.AuthService;
 import com.loafer.blog.service.MessageService;
-import com.loafer.blog.utils.JwtUtils;
-import com.loafer.blog.utils.RSAUtils;
-import com.loafer.blog.utils.SensitiveInfoUtils;
-import com.loafer.blog.utils.AvatarGenerator;
+import com.loafer.blog.utils.*;
 import com.loafer.blog.config.BusinessRSAKeyManager;
-import com.loafer.blog.utils.TokenCache;
 import com.loafer.blog.vo.LoginResponseVO;
 import com.loafer.blog.vo.ResponseVO;
 import com.loafer.blog.vo.UserVO;
@@ -64,9 +60,6 @@ public class AuthServiceImpl implements AuthService {
     
     @Value("${file.access.prefix}")
     private String ACCESS_PREFIX;
-    
-    @Value("${file.access.domain}")
-    private String ACCESS_DOMAIN;
 
     @Override
     public ResponseVO<Void> register(RegisterDTO registerDTO) {
@@ -180,9 +173,9 @@ public class AuthServiceImpl implements AuthService {
             
             // 添加默认头像功能
             if (userVO.getAvatar() == null || userVO.getAvatar().isEmpty()) {
-                userVO.setAvatar(ACCESS_DOMAIN + ACCESS_PREFIX + "/avatars/default-avatar.png");
+                userVO.setAvatar(FileUploadUtils.spliceUrl( ACCESS_PREFIX + "/avatars/default-avatar.png"));
             } else {
-                userVO.setAvatar(ACCESS_DOMAIN + userVO.getAvatar());
+                userVO.setAvatar(FileUploadUtils.spliceUrl(userVO.getAvatar()));
             }
 
             // 构建登录响应

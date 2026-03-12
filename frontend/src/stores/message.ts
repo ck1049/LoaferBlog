@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
+import { MessageType } from '../constants/messageType';
 
 interface Message {
   id: number;
@@ -8,7 +9,7 @@ interface Message {
   content: string;
   filteredContent: string;
   originalContent: string;
-  messageType: number;
+  messageType: MessageType;
   filePath?: string;
   fileName?: string;
   fileSize?: number;
@@ -143,7 +144,7 @@ export const useMessageStore = defineStore('message', {
     async sendFileMessage(message: {
       receiverId: number;
       content?: string;
-      messageType: number;
+      messageType: MessageType;
       filePath: string;
       fileName: string;
       fileSize: number;

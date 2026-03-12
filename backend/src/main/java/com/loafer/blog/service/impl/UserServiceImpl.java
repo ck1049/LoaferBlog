@@ -13,6 +13,7 @@ import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.model.vo.UserVO;
 import com.loafer.blog.config.BusinessRSAKeyManager;
 import com.loafer.blog.service.UserService;
+import com.loafer.blog.utils.FileUploadUtils;
 import com.loafer.blog.utils.RSAUtils;
 import com.loafer.blog.utils.SensitiveInfoUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -45,8 +46,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Value("${file.access.prefix}")
     private String ACCESS_PREFIX;
 
-    @Value("${file.access.domain}")
-    private String ACCESS_DOMAIN;
     @Autowired
     private BusinessRSAKeyManager businessRSAKeyManager;
     @Override
@@ -70,9 +69,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         
         // 添加默认头像功能
         if (userVO.getAvatar() == null || userVO.getAvatar().isEmpty()) {
-            userVO.setAvatar(ACCESS_DOMAIN + ACCESS_PREFIX + "/avatars/default-avatar.png");
+            userVO.setAvatar(FileUploadUtils.spliceUrl(ACCESS_PREFIX + "/avatars/default-avatar.png"));
         } else {
-            userVO.setAvatar(ACCESS_DOMAIN + userVO.getAvatar());
+            userVO.setAvatar(FileUploadUtils.spliceUrl(userVO.getAvatar()));
         }
         
         // 添加角色信息的查询和设置
@@ -134,9 +133,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         
         // 添加默认头像功能
         if (userVO.getAvatar() == null || userVO.getAvatar().isEmpty()) {
-            userVO.setAvatar(ACCESS_DOMAIN + ACCESS_PREFIX + "/avatars/default-avatar.png");
+            userVO.setAvatar(FileUploadUtils.spliceUrl(ACCESS_PREFIX + "/avatars/default-avatar.png"));
         } else {
-            userVO.setAvatar(ACCESS_DOMAIN + userVO.getAvatar());
+            userVO.setAvatar(FileUploadUtils.spliceUrl(userVO.getAvatar()));
         }
         
         // 添加角色信息的查询和设置

@@ -1,0 +1,247 @@
+<template>
+  <div class="add-friend">
+    <h1>添加好友</h1>
+    <div class="search-container">
+      <input 
+        v-model="searchUsername" 
+        placeholder="输入用户名搜索" 
+        class="search-input"
+        @keyup.enter="searchUsers"
+      />
+      <button @click="searchUsers" class="search-btn">搜索</button>
+    </div>
+    
+    <div class="user-list" v-if="users.length > 0">
+      <div v-for="user in users" :key="user.id" class="user-item">
+        <div class="user-info">
+          <img :src="user.avatar || '/default-avatar.png'" :alt="user.username" class="user-avatar" />
+          <div class="user-details">
+            <div class="username">{{ user.username }}</div>
+            <div class="nickname">{{ user.nickname || user.username }}</div>
+          </div>
+        </div>
+        <button class="add-btn">添加好友</button>
+      </div>
+      
+      <div v-if="hasMore" class="load-more">
+        <button @click="loadMore" class="load-more-btn">加载更多</button>
+      </div>
+    </div>
+    
+    <div v-else-if="searching" class="loading">搜索中...</div>
+    <div v-else-if="searched" class="no-result">未找到匹配的用户</div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive } from 'vue';
+import axios from 'axios';
+
+const searchUsername = ref('');
+const users = ref<any[]>([]);
+const searching = ref(false);
+const searched = ref(false);
+const hasMore = ref(true);
+const lastId = ref<number | null>(null);
+const pageSize = 10;
+
+const searchUsers = async () => {
+  if (!searchUsername.value.trim()) return;
+  
+  searching.value = true;
+  users.value = [];
+  lastId.value = null;
+  hasMore.value = true;
+  
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.get('/api/users/search', {
+      params: {
+        username: searchUsername.value,
+        size: pageSize
+      },
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    users.value = response.data;
+    if (response.data.length < pageSize) {
+      hasMore.value = false;
+    } else if (response.data.length > 0) {
+      lastId.value = response.data[response.data.length - 1].id;
+    }
+  } catch (error) {
+    console.error('搜索用户失败:', error);
+  } finally {
+    searching.value = false;
+    searched.value = true;
+  }
+};
+
+const loadMore = async () => {
+  if (!lastId.value || !searchUsername.value.trim() || searching.value) return;
+  
+  searching.value = true;
+  
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.get('/api/users/search', {
+      params: {
+        username: searchUsername.value,
+        lastId: lastId.value,
+        size: pageSize
+      },
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    const newUsers = response.data;
+    users.value = [...users.value, ...newUsers];
+    
+    if (newUsers.length < pageSize) {
+      hasMore.value = false;
+    } else if (newUsers.length > 0) {
+      lastId.value = newUsers[newUsers.length - 1].id;
+    }
+  } catch (error) {
+    console.error('加载更多用户失败:', error);
+  } finally {
+    searching.value = false;
+  }
+};
+</script>
+
+<style scoped>
+.add-friend {
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  margin-bottom: 20px;
+  border-bottom: 2px solid #4CAF50;
+  padding-bottom: 10px;
+}
+
+.search-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.search-btn {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.search-btn:hover {
+  background-color: #45a049;
+}
+
+.user-list {
+  margin-top: 20px;
+}
+
+.user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.user-item:hover {
+  background-color: #f9f9f9;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-weight: bold;
+  font-size: 16px;
+  color: #333;
+}
+
+.nickname {
+  font-size: 14px;
+  color: #999;
+  margin-top: 2px;
+}
+
+.add-btn {
+  padding: 8px 16px;
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.add-btn:hover {
+  background-color: #0b7dda;
+}
+
+.load-more {
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.load-more-btn {
+  padding: 10px 20px;
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.load-more-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.no-result {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-size: 16px;
+}
+</style>

@@ -73,13 +73,10 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
             if (post == null) {
                 return ResponseVO.error("技术贴不存在");
             }
-            // 增加阅读量
-            post.setViewCount(post.getViewCount() + 1);
             // 确保 favoriteCount 不为 null
             if (post.getFavoriteCount() == null) {
                 post.setFavoriteCount(0);
             }
-            updateById(post);
             PostVO postVO = convertToPostVO(post);
             return ResponseVO.success(postVO);
         } catch (Exception e) {
