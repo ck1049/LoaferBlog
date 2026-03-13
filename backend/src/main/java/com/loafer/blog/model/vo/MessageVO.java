@@ -21,6 +21,7 @@ public class MessageVO {
     private Integer sendStatus;
     private String errorMessage;
     private Integer isTop;
+    private Integer isRead;
     private LocalDateTime createdAt;
     private UserVO sender;
     private UserVO receiver;
@@ -38,6 +39,7 @@ public class MessageVO {
         this.sendStatus = message.getSendStatus();
         this.errorMessage = message.getErrorMessage();
         this.isTop = message.getIsTop();
+        this.isRead = message.getIsRead();
         this.createdAt = message.getCreateTime();
         // filteredContent暂时使用content
         this.filteredContent = message.getContent();

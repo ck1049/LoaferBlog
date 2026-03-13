@@ -7,6 +7,7 @@ import com.loafer.blog.service.UserService;
 import com.loafer.blog.service.PostInteractionService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.Map;
 
 
 @RestController
@@ -72,5 +73,36 @@ public class UserController {
     @DeleteMapping("/history/{postId}")
     public ResponseVO<Void> deleteViewHistory(@RequestAttribute("userId") Long userId, @PathVariable Long postId) {
         return postInteractionService.deleteViewHistory(userId, postId);
+    }
+
+    // 发送好友请求
+    @PostMapping("/add-friend")
+    public ResponseVO<Void> sendFriendRequest(@RequestAttribute("userId") Long userId, @RequestBody Map<String, Long> request) {
+        Long friendId = request.get("userId");
+        return userService.sendFriendRequest(userId, friendId);
+    }
+
+    // 获取好友请求列表
+    @GetMapping("/friend-requests")
+    public ResponseVO<?> getFriendRequests(@RequestAttribute("userId") Long userId) {
+        return userService.getFriendRequests(userId);
+    }
+
+    // 接受好友请求
+    @PutMapping("/friend-requests/{requestId}/accept")
+    public ResponseVO<Void> acceptFriendRequest(@RequestAttribute("userId") Long userId, @PathVariable Long requestId) {
+        return userService.acceptFriendRequest(userId, requestId);
+    }
+
+    // 拒绝好友请求
+    @PutMapping("/friend-requests/{requestId}/decline")
+    public ResponseVO<Void> declineFriendRequest(@RequestAttribute("userId") Long userId, @PathVariable Long requestId) {
+        return userService.declineFriendRequest(userId, requestId);
+    }
+
+    // 获取好友列表
+    @GetMapping("/friends")
+    public ResponseVO<?> getFriends(@RequestAttribute("userId") Long userId) {
+        return userService.getFriends(userId);
     }
 }

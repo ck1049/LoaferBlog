@@ -179,10 +179,12 @@ watch(
   { deep: true }
 );
 
-onMounted(() => {
+onMounted(async () => {
   const otherUserId = Number(route.params.id);
   if (userStore.user) {
-    messageStore.fetchMessageHistory(userStore.user.id, otherUserId);
+    await messageStore.fetchMessageHistory(userStore.user.id, otherUserId);
+    // Mark messages as read when conversation is opened
+    await messageStore.markMessagesAsRead(otherUserId);
   }
 });
 </script>

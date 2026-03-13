@@ -48,6 +48,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         message.setMessageType(MessageType.TEXT.getCode()); // 默认文本消息
         message.setSendStatus(1); // 默认发送成功
         message.setIsTop(0); // 默认非置顶
+        message.setIsRead(0); // 默认未读
 
         baseMapper.insert(message);
         return message;
@@ -62,6 +63,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         message.setContent(filteredContent);
         message.setMessageType(MessageType.TEXT.getCode()); // 默认文本消息
         message.setSendStatus(1); // 默认发送成功
+        message.setIsRead(0); // 默认未读
 
         baseMapper.insert(message);
         
@@ -141,6 +143,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
                 .and(w -> w.eq("sender_id", userId).or().eq("receiver_id", userId)));
 
         Map<Long, ContactVO> contactMap = new HashMap<>();
+        Map<Long, Integer> unreadCountMap = new HashMap<>();
 
         for (Message message : messages) {
             Long contactId = message.getSenderId().equals(userId) ? message.getReceiverId() : message.getSenderId();
@@ -152,11 +155,6 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
                 // 获取用户信息
                 User user = userMapper.selectById(contactId);
                 if (user != null) {
-                    // 为头像地址拼接域名前缀
-                    String avatar = user.getAvatar();
-                    if (avatar != null && !avatar.startsWith("http")) {
-                        user.setAvatar(FileUploadUtils.spliceUrl(avatar));
-                    }
                     contactVO.setUser(new UserVO(user));
                 }
                 
@@ -174,6 +172,18 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
                     existingInfo.setLastMessageTime(currentTime);
                 }
             }
+
+            // 统计未读消息数
+            if (message.getReceiverId().equals(userId) && message.getIsRead() == 0) {
+                unreadCountMap.put(contactId, unreadCountMap.getOrDefault(contactId, 0) + 1);
+            }
+        }
+
+        // 设置未读消息数
+        for (Map.Entry<Long, ContactVO> entry : contactMap.entrySet()) {
+            Long contactId = entry.getKey();
+            ContactVO contactVO = entry.getValue();
+            contactVO.setUnreadCount(unreadCountMap.getOrDefault(contactId, 0));
         }
 
         // 转换为列表并按时间排序
@@ -212,6 +222,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
         }
         message.setSendStatus(1); // 默认发送成功
         message.setIsTop(0); // 默认非置顶
+        message.setIsRead(0); // 默认未读
 
         baseMapper.insert(message);
         
@@ -240,5 +251,44 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
             messageVO.setReceiver(new UserVO(receiver));
         }
         return messageVO;
+    }
+
+    @Override
+    public void markMessagesAsRead(Long receiverId, Long senderId) {
+        QueryWrapper<Message> wrapper = new QueryWrapper<>();
+        wrapper.eq("receiver_id", receiverId)
+                .eq("sender_id", senderId)
+                .eq("is_read", 0);
+        Message updateMessage = new Message();
+        updateMessage.setIsRead(1);
+        baseMapper.update(updateMessage, wrapper);
+    }
+
+    @Override
+    public List<Map<String, Object>> getUnreadCounts(Long userId) {
+        // 获取所有与该用户有消息往来的用户ID
+        List<Message> messages = baseMapper.selectList(new QueryWrapper<Message>()
+                .and(w -> w.eq("sender_id", userId).or().eq("receiver_id", userId)));
+
+        Map<Long, Integer> unreadCountMap = new HashMap<>();
+
+        for (Message message : messages) {
+            // 只统计发给当前用户且未读的消息
+            if (message.getReceiverId().equals(userId) && message.getIsRead() == 0) {
+                Long senderId = message.getSenderId();
+                unreadCountMap.put(senderId, unreadCountMap.getOrDefault(senderId, 0) + 1);
+            }
+        }
+
+        // 转换为列表
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<Long, Integer> entry : unreadCountMap.entrySet()) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("userId", entry.getKey());
+            item.put("unreadCount", entry.getValue());
+            result.add(item);
+        }
+
+        return result;
     }
 }

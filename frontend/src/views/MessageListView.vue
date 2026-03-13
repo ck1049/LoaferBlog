@@ -20,7 +20,10 @@
             <div class="contact-info">
               <div class="contact-name-row">
                 <span class="contact-name">{{ contact.user?.nickname || contact.user?.username || '未知用户' }}</span>
-                <span class="contact-time">{{ formatDate(contact.lastMessageTime) }}</span>
+                <div class="contact-time-and-unread">
+                  <span class="contact-time">{{ formatDate(contact.lastMessageTime) }}</span>
+                  <span v-if="contact.unreadCount > 0" class="unread-badge">{{ contact.unreadCount }}</span>
+                </div>
               </div>
               <div class="contact-bio" v-if="contact.user?.bio">
                 {{ contact.user.bio }}
@@ -126,9 +129,10 @@ const deleteContact = async (messageId: number) => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   if (userStore.user) {
-    messageStore.fetchContactList(userStore.user.id);
+    await messageStore.fetchContactList(userStore.user.id);
+    await messageStore.fetchUnreadCounts();
   }
 });
 </script>
@@ -236,9 +240,26 @@ h1 {
   font-size: 16px;
 }
 
+.contact-time-and-unread {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .contact-time {
   color: #999;
   font-size: 14px;
+}
+
+.unread-badge {
+  background-color: #f44336;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
 }
 
 .contact-bio {

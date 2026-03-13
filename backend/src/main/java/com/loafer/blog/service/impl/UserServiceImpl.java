@@ -5,10 +5,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.loafer.blog.mapper.UserMapper;
 import com.loafer.blog.mapper.UserRoleMapper;
 import com.loafer.blog.mapper.RoleMapper;
+import com.loafer.blog.mapper.FriendMapper;
 import com.loafer.blog.model.dto.UserDTO;
 import com.loafer.blog.model.entity.User;
 import com.loafer.blog.model.entity.UserRole;
 import com.loafer.blog.model.entity.Role;
+import com.loafer.blog.model.entity.Friend;
 import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.model.vo.UserVO;
 import com.loafer.blog.config.BusinessRSAKeyManager;
@@ -24,6 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +42,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private UserRoleMapper userRoleMapper;
     @Autowired
     private RoleMapper roleMapper;
+    @Autowired
+    private FriendMapper friendMapper;
     
     // 文件上传路径配置
     @Value("${file.upload.avatar-dir}")
@@ -218,5 +224,125 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             log.error(e.getMessage());
             return ResponseVO.error("头像上传失败");
         }
+    }
+
+    @Override
+    public ResponseVO<Void> sendFriendRequest(Long userId, Long friendId) {
+        // 检查好友是否存在
+        User friend = getById(friendId);
+        if (friend == null) {
+            return ResponseVO.error("用户不存在");
+        }
+
+        // 检查是否已经发送过好友请求
+        QueryWrapper<Friend> wrapper = new QueryWrapper<>();
+        wrapper.eq("user_id", userId)
+                .eq("friend_id", friendId)
+                .eq("deleted", 0);
+        Friend existingRequest = friendMapper.selectOne(wrapper);
+        if (existingRequest != null) {
+            return ResponseVO.error("已经发送过好友请求");
+        }
+
+        // 发送好友请求
+        Friend friendRequest = new Friend();
+        friendRequest.setUserId(userId);
+        friendRequest.setFriendId(friendId);
+        friendRequest.setStatus(0); // 0-待确认
+        friendMapper.insert(friendRequest);
+
+        return ResponseVO.success();
+    }
+
+    @Override
+    public ResponseVO<?> getFriendRequests(Long userId) {
+        // 获取收到的好友请求
+        QueryWrapper<Friend> wrapper = new QueryWrapper<>();
+        wrapper.eq("friend_id", userId)
+                .eq("status", 0)
+                .eq("deleted", 0);
+        List<Friend> friendRequests = friendMapper.selectList(wrapper);
+
+        // 转换为包含用户信息的请求列表
+        List<Map<String, Object>> requests = new ArrayList<>();
+        for (Friend request : friendRequests) {
+            User user = getById(request.getUserId());
+            if (user != null) {
+                Map<String, Object> requestInfo = new HashMap<>();
+                requestInfo.put("id", request.getId());
+                requestInfo.put("userId", user.getId());
+                requestInfo.put("username", user.getUsername());
+                requestInfo.put("nickname", user.getNickname());
+                requestInfo.put("avatar", user.getAvatar());
+                requestInfo.put("createTime", request.getCreateTime());
+                requests.add(requestInfo);
+            }
+        }
+
+        return ResponseVO.success(requests);
+    }
+
+    @Override
+    public ResponseVO<Void> acceptFriendRequest(Long userId, Long requestId) {
+        // 检查请求是否存在且是发给当前用户的
+        Friend request = friendMapper.selectById(requestId);
+        if (request == null || !request.getFriendId().equals(userId) || request.getStatus() != 0) {
+            return ResponseVO.error("好友请求不存在或已处理");
+        }
+
+        // 更新请求状态为已确认
+        request.setStatus(1);
+        request.setUpdateTime(LocalDateTime.now());
+        friendMapper.updateById(request);
+
+        // 创建反向好友关系
+        Friend reverseFriend = new Friend();
+        reverseFriend.setUserId(userId);
+        reverseFriend.setFriendId(request.getUserId());
+        reverseFriend.setStatus(1); // 直接设为已确认
+        friendMapper.insert(reverseFriend);
+
+        return ResponseVO.success();
+    }
+
+    @Override
+    public ResponseVO<Void> declineFriendRequest(Long userId, Long requestId) {
+        // 检查请求是否存在且是发给当前用户的
+        Friend request = friendMapper.selectById(requestId);
+        if (request == null || !request.getFriendId().equals(userId) || request.getStatus() != 0) {
+            return ResponseVO.error("好友请求不存在或已处理");
+        }
+
+        // 删除请求
+        friendMapper.deleteById(requestId);
+
+        return ResponseVO.success();
+    }
+
+    @Override
+    public ResponseVO<?> getFriends(Long userId) {
+        // 获取用户的好友列表
+        QueryWrapper<Friend> wrapper = new QueryWrapper<>();
+        wrapper.eq("user_id", userId)
+                .eq("status", 1)
+                .eq("deleted", 0);
+        List<Friend> friends = friendMapper.selectList(wrapper);
+
+        // 转换为包含用户信息的好友列表
+        List<Map<String, Object>> friendList = new ArrayList<>();
+        for (Friend friend : friends) {
+            User user = getById(friend.getFriendId());
+            if (user != null) {
+                Map<String, Object> friendInfo = new HashMap<>();
+                friendInfo.put("userId", user.getId());
+                friendInfo.put("username", user.getUsername());
+                friendInfo.put("nickname", user.getNickname());
+                friendInfo.put("avatar", user.getAvatar());
+                friendInfo.put("bio", user.getBio());
+                friendList.add(friendInfo);
+            }
+        }
+
+        return ResponseVO.success(friendList);
     }
 }

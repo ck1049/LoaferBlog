@@ -16,6 +16,7 @@ interface Message {
   sendStatus: number;
   errorMessage?: string;
   isTop: number;
+  isRead: number;
   createdAt: string;
   sender?: {
     id: number;
@@ -33,6 +34,7 @@ interface Contact {
   userId: number;
   lastMessage: Message;
   lastMessageTime: string;
+  unreadCount: number;
   user?: {
     id: number;
     username: string;
@@ -47,6 +49,7 @@ export const useMessageStore = defineStore('message', {
     messages: [] as Message[],
     currentConversation: [] as Message[],
     contacts: [] as Contact[],
+    totalUnreadCount: 0,
   }),
   getters: {
     sortedMessages: (state) => {
@@ -196,6 +199,57 @@ export const useMessageStore = defineStore('message', {
       } catch (error) {
         console.error('Failed to delete message:', error);
         return false;
+      }
+    },
+    async markMessagesAsRead(senderId: number) {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.put(`/api/messages/read/${senderId}`, {}, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        // 更新本地消息状态
+        this.currentConversation.forEach(message => {
+          if (message.senderId === senderId && message.isRead === 0) {
+            message.isRead = 1;
+          }
+        });
+        // 更新联系人的未读计数
+        const contact = this.contacts.find(c => c.userId === senderId);
+        if (contact) {
+          contact.unreadCount = 0;
+        }
+        // 重新计算总未读计数
+        this.calculateTotalUnreadCount();
+        return true;
+      } catch (error) {
+        console.error('Failed to mark messages as read:', error);
+        return false;
+      }
+    },
+    calculateTotalUnreadCount() {
+      this.totalUnreadCount = this.contacts.reduce((total, contact) => total + contact.unreadCount, 0);
+    },
+    async fetchUnreadCounts() {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('/api/messages/unread-counts', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        // 更新联系人的未读计数
+        response.data.forEach((item: { userId: number; unreadCount: number }) => {
+          const contact = this.contacts.find(c => c.userId === item.userId);
+          if (contact) {
+            contact.unreadCount = item.unreadCount;
+          }
+        });
+        // 计算总未读计数
+        this.calculateTotalUnreadCount();
+      } catch (error) {
+        console.error('Failed to fetch unread counts:', error);
       }
     },
   },

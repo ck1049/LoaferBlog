@@ -11,6 +11,7 @@ DROP TABLE IF EXISTS post_category;
 DROP TABLE IF EXISTS tag;
 DROP TABLE IF EXISTS category;
 DROP TABLE IF EXISTS message;
+DROP TABLE IF EXISTS friend;
 DROP TABLE IF EXISTS comment;
 DROP TABLE IF EXISTS post;
 DROP TABLE IF EXISTS announcement;
@@ -294,6 +295,7 @@ CREATE TABLE IF NOT EXISTS message (
     send_status INTEGER DEFAULT 1,      -- 发送状态：1-发送成功, 0-发送失败
     error_message TEXT,                 -- 发送失败原因
     is_top INTEGER DEFAULT 0,           -- 是否置顶：1-置顶, 0-普通
+    is_read INTEGER DEFAULT 0,           -- 是否已读：1-已读, 0-未读
     status INTEGER DEFAULT 1,           -- 状态：1-正常，0-禁用
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
@@ -315,11 +317,36 @@ COMMENT ON COLUMN message.file_size IS '存储文件大小';
 COMMENT ON COLUMN message.send_status IS '发送状态：1-发送成功, 0-发送失败';
 COMMENT ON COLUMN message.error_message IS '发送失败原因';
 COMMENT ON COLUMN message.is_top IS '是否置顶：1-置顶, 0-普通';
+COMMENT ON COLUMN message.is_read IS '是否已读：1-已读, 0-未读';
 COMMENT ON COLUMN message.status IS '状态：1-正常，0-禁用';
 COMMENT ON COLUMN message.create_time IS '创建时间';
 COMMENT ON COLUMN message.update_time IS '更新时间';
 COMMENT ON COLUMN message.deleted IS '逻辑删除标记：0-未删除，1-已删除';
 COMMENT ON COLUMN message.delete_time IS '删除时间';
+
+-- 创建好友表
+CREATE TABLE IF NOT EXISTS friend (
+    id SERIAL PRIMARY KEY,              -- 好友关系ID
+    user_id INTEGER NOT NULL,            -- 用户ID
+    friend_id INTEGER NOT NULL,          -- 好友ID
+    status INTEGER DEFAULT 0,            -- 状态：0-待确认，1-已确认
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 更新时间
+    deleted INTEGER DEFAULT 0,           -- 逻辑删除标记：0-未删除，1-已删除
+    delete_time TIMESTAMP DEFAULT '00001-01-01 00:00:00', -- 删除时间
+    UNIQUE(user_id, friend_id, deleted, delete_time) -- 唯一约束：用户与好友的组合
+);
+
+-- 表注释
+COMMENT ON TABLE friend IS '好友表';
+COMMENT ON COLUMN friend.id IS '好友关系ID';
+COMMENT ON COLUMN friend.user_id IS '用户ID';
+COMMENT ON COLUMN friend.friend_id IS '好友ID';
+COMMENT ON COLUMN friend.status IS '状态：0-待确认，1-已确认';
+COMMENT ON COLUMN friend.create_time IS '创建时间';
+COMMENT ON COLUMN friend.update_time IS '更新时间';
+COMMENT ON COLUMN friend.deleted IS '逻辑删除标记：0-未删除，1-已删除';
+COMMENT ON COLUMN friend.delete_time IS '删除时间';
 
 -- 创建帖子点赞表
 CREATE TABLE IF NOT EXISTS post_like (

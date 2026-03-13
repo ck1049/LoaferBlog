@@ -78,4 +78,18 @@ public class MessageController {
         com.loafer.blog.model.vo.MessageVO sentMessage = messageService.sendFileMessage(message);
         return new ResponseEntity<>(sentMessage, HttpStatus.CREATED);
     }
+
+    @PutMapping("/read/{senderId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<Void> markMessagesAsRead(@PathVariable Long senderId, @RequestAttribute("userId") Long userId) {
+        messageService.markMessagesAsRead(userId, senderId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/unread-counts")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<List<Map<String, Object>>> getUnreadCounts(@RequestAttribute("userId") Long userId) {
+        List<Map<String, Object>> unreadCounts = messageService.getUnreadCounts(userId);
+        return ResponseEntity.ok(unreadCounts);
+    }
 }

@@ -176,5 +176,87 @@ export const useUserStore = defineStore('user', {
         this.logout();
       }
     },
+
+    // 发送好友请求
+    async sendFriendRequest(friendId: number) {
+      if (!this.token) return false;
+      try {
+        const response = await axios.post('/api/users/add-friend', {
+          userId: friendId
+        }, {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+          },
+        });
+        return response.data.code === 200;
+      } catch (error) {
+        console.error('Failed to send friend request:', error);
+        return false;
+      }
+    },
+
+    // 获取好友请求列表
+    async getFriendRequests() {
+      if (!this.token) return [];
+      try {
+        const response = await axios.get('/api/users/friend-requests', {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+          },
+        });
+        return response.data.code === 200 ? response.data.data : [];
+      } catch (error) {
+        console.error('Failed to get friend requests:', error);
+        return [];
+      }
+    },
+
+    // 接受好友请求
+    async acceptFriendRequest(requestId: number) {
+      if (!this.token) return false;
+      try {
+        const response = await axios.put(`/api/users/friend-requests/${requestId}/accept`, {}, {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+          },
+        });
+        return response.data.code === 200;
+      } catch (error) {
+        console.error('Failed to accept friend request:', error);
+        return false;
+      }
+    },
+
+    // 拒绝好友请求
+    async declineFriendRequest(requestId: number) {
+      if (!this.token) return false;
+      try {
+        const response = await axios.put(`/api/users/friend-requests/${requestId}/decline`, {}, {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+          },
+        });
+        return response.data.code === 200;
+      } catch (error) {
+        console.error('Failed to decline friend request:', error);
+        return false;
+      }
+    },
+
+    // 获取好友列表
+    async getFriends() {
+      if (!this.token) return [];
+      try {
+        const response = await axios.get('/api/users/friends', {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+          },
+        });
+        return response.data.code === 200 ? response.data.data : [];
+      } catch (error) {
+        console.error('Failed to get friends:', error);
+        return [];
+      }
+    },
   },
 });

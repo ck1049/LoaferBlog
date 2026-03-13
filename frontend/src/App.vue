@@ -18,7 +18,10 @@
               <span class="nav-text">管理</span>
             </router-link>
             <router-link to="/messages" class="nav-link message-btn">
-              <img src="./assets/icons/message.svg" alt="消息" class="nav-svg-icon">
+              <div class="message-icon-container">
+                <img src="./assets/icons/message.svg" alt="消息" class="nav-svg-icon">
+                <span v-if="messageStore.totalUnreadCount > 0" class="message-unread-badge">{{ messageStore.totalUnreadCount }}</span>
+              </div>
               <span class="nav-text">消息</span>
             </router-link>
             <div class="user-section">
@@ -67,9 +70,11 @@
 import { onMounted, ref } from 'vue';
 import { useUserStore } from './stores/user';
 import { useAnnouncementStore } from './stores/announcement';
+import { useMessageStore } from './stores/message';
 
 const userStore = useUserStore();
 const announcementStore = useAnnouncementStore();
+const messageStore = useMessageStore();
 const showAnnouncements = ref(false);
 
 const logout = () => {
@@ -83,9 +88,13 @@ const toggleAnnouncements = () => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   if (userStore.token) {
-    userStore.fetchUserInfo();
+    await userStore.fetchUserInfo();
+    if (userStore.user) {
+      await messageStore.fetchContactList(userStore.user.id);
+      await messageStore.fetchUnreadCounts();
+    }
   }
 });
 </script>
@@ -238,6 +247,27 @@ body::after {
   height: 20px;
   fill: currentColor;
   transition: all 0.3s ease;
+}
+
+.message-icon-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.message-unread-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #f44336;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  border: 2px solid white;
 }
 
 .nav-link:hover .nav-svg-icon {

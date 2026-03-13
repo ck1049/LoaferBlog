@@ -16,4 +16,6 @@ public interface MessageService extends IService<Message> {
     void topMessage(Long messageId, Integer isTop);
     void deleteMessage(Long messageId);
     MessageVO sendFileMessage(Message message);
+    void markMessagesAsRead(Long receiverId, Long senderId);
+    List<Map<String, Object>> getUnreadCounts(Long userId);
 }

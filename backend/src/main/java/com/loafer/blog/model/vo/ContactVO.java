@@ -11,4 +11,5 @@ public class ContactVO {
     private UserVO user;
     private Message lastMessage;
     private LocalDateTime lastMessageTime;
+    private Integer unreadCount;
 }

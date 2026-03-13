@@ -26,18 +26,12 @@ public class AuthController {
         try {
             // 解密敏感信息
             String password = rsaUtils.decrypt(request.getPassword());
-            String email = null;
+            request.setPassword(password);
             if (request.getEmail() != null && !request.getEmail().isEmpty()) {
-                email = rsaUtils.decrypt(request.getEmail());
+                String email = rsaUtils.decrypt(request.getEmail());
+                request.setEmail(email);
             }
-            
-            RegisterDTO registerDTO = new RegisterDTO();
-            registerDTO.setUsername(request.getUsername());
-            registerDTO.setPassword(password);
-            registerDTO.setEmail(email);
-            registerDTO.setNickname(request.getNickname());
-            
-            return authService.register(registerDTO);
+            return authService.register(request);
         } catch (Exception e) {
             log.error("注册失败\n", e);
             return ResponseVO.error("注册失败: " + e.getMessage());

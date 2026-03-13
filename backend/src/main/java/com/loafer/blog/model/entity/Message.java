@@ -37,6 +37,8 @@ public class Message {
     private String errorMessage;
     @TableField("is_top")
     private Integer isTop;
+    @TableField("is_read")
+    private Integer isRead;
     private Integer status;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
