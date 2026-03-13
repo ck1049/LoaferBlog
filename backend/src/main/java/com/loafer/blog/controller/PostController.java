@@ -6,6 +6,7 @@ import com.loafer.blog.model.vo.PostVO;
 import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,18 +36,21 @@ public class PostController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseVO<PostVO> createPost(@RequestBody PostDTO postDTO, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         return postService.createPost(postDTO, userId);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseVO<PostVO> updatePost(@PathVariable Long id, @RequestBody PostDTO postDTO, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         return postService.updatePost(id, postDTO, userId);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseVO<Void> deletePost(@PathVariable Long id) {
         return postService.deletePost(id);
     }
