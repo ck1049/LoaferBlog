@@ -25,7 +25,7 @@
               <span class="nav-text">消息</span>
             </router-link>
             <router-link to="/add-friend" class="nav-link add-friend-btn">
-              <img src="./assets/icons/settings.svg" alt="通讯录" class="nav-svg-icon">
+              <img src="./assets/icons/contacts.svg" alt="通讯录" class="nav-svg-icon">
               <span class="nav-text">通讯录</span>
             </router-link>
             <div class="user-section">
@@ -429,6 +429,16 @@ body::after {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .app {
+    max-width: 100%;
+    padding: 0;
+  }
+  
+  .content {
+    max-width: 100%;
+    padding: 0 1rem 2rem;
+  }
+  
   .nav-text {
     display: none;
   }
@@ -439,6 +449,7 @@ body::after {
   }
   
   .navbar-container {
+    max-width: 100%;
     padding: 0 0.5rem;
   }
   

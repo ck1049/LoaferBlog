@@ -12,8 +12,8 @@
     </div>
     
     <!-- 好友列表 -->
-    <div class="section-title" v-if="!searchUsername.value">好友列表</div>
-    <div class="user-list" v-if="!searchUsername.value && friends.length > 0">
+    <div class="section-title" v-if="!searchUsername">好友列表</div>
+    <div class="user-list" v-if="!searchUsername && friends.length > 0">
       <div v-for="friend in friends" :key="friend.userId" class="user-item" @click="viewMessage(friend.userId)">
         <div class="user-info">
           <img :src="friend.avatar || '/default-avatar.png'" :alt="friend.username" class="user-avatar" />
@@ -27,13 +27,13 @@
         </button>
       </div>
     </div>
-    <div v-else-if="!searchUsername.value && friends.length === 0" class="no-friends">
+    <div v-else-if="!searchUsername && friends.length === 0" class="no-friends">
       暂无好友，点击上方搜索添加好友
     </div>
     
     <!-- 搜索结果 -->
-    <div class="section-title" v-if="searchUsername.value && searched">搜索结果</div>
-    <div class="user-list" v-if="searchUsername.value && users.length > 0">
+    <div class="section-title" v-if="searchUsername && searched">搜索结果</div>
+    <div class="user-list" v-if="searchUsername && users.length > 0">
       <div v-for="user in users" :key="user.id" class="user-item">
         <div class="user-info">
           <img :src="user.avatar || '/default-avatar.png'" :alt="user.username" class="user-avatar" />
@@ -65,7 +65,7 @@
     </div>
     
     <div v-else-if="searching" class="loading">搜索中...</div>
-    <div v-else-if="searchUsername.value && searched && users.length === 0" class="no-result">未找到匹配的用户</div>
+    <div v-else-if="searchUsername && searched && users.length === 0" class="no-result">未找到匹配的用户</div>
   </div>
 </template>
 
@@ -101,7 +101,7 @@ const fetchFriends = async () => {
 
 // 搜索用户
 const searchUsers = async () => {
-  if (!searchUsername.value) return;
+  if (!searchUsername) return;
   
   searching.value = true;
   users.value = [];
@@ -112,7 +112,7 @@ const searchUsers = async () => {
     const token = localStorage.getItem('token');
     const response = await axios.get('/api/users/search', {
       params: {
-        username: searchUsername.value,
+        username: searchUsername,
         size: pageSize
       },
       headers: {
@@ -136,7 +136,7 @@ const searchUsers = async () => {
 
 // 加载更多
 const loadMore = async () => {
-  if (!lastId.value || !searchUsername.value || searching.value) return;
+  if (!lastId.value || !searchUsername || searching.value) return;
   
   searching.value = true;
   
@@ -144,7 +144,7 @@ const loadMore = async () => {
     const token = localStorage.getItem('token');
     const response = await axios.get('/api/users/search', {
       params: {
-        username: searchUsername.value,
+        username: searchUsername,
         lastId: lastId.value,
         size: pageSize
       },

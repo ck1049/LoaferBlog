@@ -8,11 +8,8 @@
       暂无联系人
     </div>
     <div v-else class="contact-items">
-      <div v-for="contact in filteredContacts" :key="contact.userId" class="contact-item" 
-           @touchstart="touchStart($event, contact.userId)" 
-           @touchmove="touchMove($event)" 
-           @touchend="touchEnd(contact.userId)">
-        <div class="contact-content" :style="{ transform: contactSlide[contact.userId] ? 'translateX(-80px)' : 'translateX(0)' }" @click="viewMessage(contact.userId)">
+      <div v-for="contact in filteredContacts" :key="contact.userId" class="contact-item" @click="viewMessage(contact.userId)">
+        <div class="contact-content">
           <div class="contact-header">
             <div class="contact-avatar">
               <img :src="contact.user?.avatar || ''" alt="用户头像" />
@@ -22,33 +19,21 @@
                 <span class="contact-name">{{ contact.user?.nickname || contact.user?.username || '未知用户' }}</span>
                 <div class="contact-time-and-unread">
                   <span class="contact-time">{{ formatDate(contact.lastMessageTime) }}</span>
-                  <span v-if="contact.unreadCount > 0" class="unread-badge">{{ contact.unreadCount }}</span>
+                  <span v-if="contact.unreadCount && contact.unreadCount > 0" class="unread-badge">{{ contact.unreadCount }}</span>
                 </div>
               </div>
               <div class="contact-bio" v-if="contact.user?.bio">
                 {{ contact.user.bio }}
               </div>
               <div class="contact-last-message">
-                <span v-if="contact.lastMessage.messageType === 1">{{ contact.lastMessage.filteredContent }}</span>
-                <span v-else-if="contact.lastMessage.messageType === 2">[表情]</span>
-                <span v-else-if="contact.lastMessage.messageType === 3">[图片]</span>
-                <span v-else-if="contact.lastMessage.messageType === 4">[视频]</span>
-                <span v-else-if="contact.lastMessage.messageType === 5">[文件] {{ contact.lastMessage.fileName }}</span>
+                <span v-if="contact.lastMessage && contact.lastMessage.messageType === 1">{{ contact.lastMessage.filteredContent }}</span>
+                <span v-else-if="contact.lastMessage && contact.lastMessage.messageType === 2">[表情]</span>
+                <span v-else-if="contact.lastMessage && contact.lastMessage.messageType === 3">[图片]</span>
+                <span v-else-if="contact.lastMessage && contact.lastMessage.messageType === 4">[视频]</span>
+                <span v-else-if="contact.lastMessage && contact.lastMessage.messageType === 5">[文件] {{ contact.lastMessage.fileName }}</span>
               </div>
             </div>
           </div>
-          <div class="contact-actions" v-if="contact.lastMessage.isTop === 1">
-            <span class="top-badge">置顶</span>
-          </div>
-        </div>
-        <div class="contact-slide-actions">
-          <button @click="topContact(contact.lastMessage.id, contact.lastMessage.isTop === 1 ? 0 : 1)" 
-                  class="slide-btn top-btn">
-            {{ contact.lastMessage.isTop === 1 ? '取消置顶' : '置顶' }}
-          </button>
-          <button @click="deleteContact(contact.lastMessage.id)" class="slide-btn delete-btn">
-            删除
-          </button>
         </div>
       </div>
     </div>
@@ -56,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, reactive, computed, watch } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMessageStore } from '../stores/message';
 import { useUserStore } from '../stores/user';
@@ -65,8 +50,6 @@ const router = useRouter();
 const messageStore = useMessageStore();
 const userStore = useUserStore();
 
-const contactSlide = reactive<Record<number, boolean>>({});
-const touchStartX = ref(0);
 const searchQuery = ref('');
 
 const filteredContacts = computed(() => {
@@ -89,61 +72,12 @@ const viewMessage = (userId: number) => {
   router.push(`/messages/${userId}`);
 };
 
-const touchStart = (e: TouchEvent, userId: number) => {
-  touchStartX.value = e.touches[0].clientX;
-};
-
-const touchMove = (e: TouchEvent) => {
-  const touchX = e.touches[0].clientX;
-  const diff = touchStartX.value - touchX;
-  // 只处理左滑
-  if (diff > 0) {
-    // 可以在这里添加滑动效果
-  }
-};
-
-const touchEnd = (e: TouchEvent, userId: number) => {
-  const touchX = e.changedTouches[0].clientX;
-  const diff = touchStartX.value - touchX;
-  // 左滑超过50px显示操作按钮
-  if (diff > 50) {
-    contactSlide[userId] = true;
-  } else {
-    contactSlide[userId] = false;
-  }
-};
-
-const topContact = async (messageId: number, isTop: number) => {
-  await messageStore.topMessage(messageId, isTop);
-  // 刷新联系人列表
-  if (userStore.user) {
-    messageStore.fetchContactList(userStore.user.id);
-  }
-};
-
-const deleteContact = async (messageId: number) => {
-  await messageStore.deleteMessage(messageId);
-  // 刷新联系人列表
-  if (userStore.user) {
-    messageStore.fetchContactList(userStore.user.id);
-  }
-};
-
 onMounted(async () => {
   if (userStore.user) {
     await messageStore.fetchContactList(userStore.user.id);
     await messageStore.fetchUnreadCounts();
   }
 });
-
-// 监听联系人列表变化，确保未读计数正确
-watch(
-  () => messageStore.contacts,
-  async () => {
-    await messageStore.fetchUnreadCounts();
-  },
-  { deep: true }
-);
 </script>
 
 <style scoped>
@@ -194,19 +128,16 @@ h1 {
 }
 
 .contact-item {
-  position: relative;
   background-color: #f9f9f9;
   border-radius: 8px;
-  overflow: hidden;
+  cursor: pointer;
 }
 
 .contact-content {
   padding: 15px;
-  transition: transform 0.3s ease;
-  cursor: pointer;
 }
 
-.contact-content:hover {
+.contact-item:hover {
   background-color: #f0f0f0;
 }
 
@@ -287,51 +218,5 @@ h1 {
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 5px;
-}
-
-.contact-actions {
-  display: flex;
-  align-items: center;
-}
-
-.top-badge {
-  background-color: #4CAF50;
-  color: white;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 10px;
-}
-
-.contact-slide-actions {
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 100%;
-  display: flex;
-}
-
-.slide-btn {
-  width: 80px;
-  height: 100%;
-  border: none;
-  color: white;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.top-btn {
-  background-color: #2196F3;
-}
-
-.delete-btn {
-  background-color: #f44336;
-}
-
-.top-btn:hover {
-  background-color: #1976D2;
-}
-
-.delete-btn:hover {
-  background-color: #d32f2f;
 }
 </style>
