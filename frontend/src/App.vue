@@ -24,6 +24,10 @@
               </div>
               <span class="nav-text">消息</span>
             </router-link>
+            <router-link to="/add-friend" class="nav-link add-friend-btn">
+              <img src="./assets/icons/settings.svg" alt="通讯录" class="nav-svg-icon">
+              <span class="nav-text">通讯录</span>
+            </router-link>
             <div class="user-section">
               <router-link to="/user" class="nav-link user-btn">
                 <span class="user-avatar" :style="{ backgroundImage: `url(${userStore.user?.avatar})` }"></span>
@@ -356,6 +360,8 @@ body::after {
 
 .content {
   padding: 0 1rem 2rem;
+  margin: 0 auto;
+  max-width: 1200px;
 }
 
 /* 公告按钮样式 */

@@ -1,6 +1,6 @@
 <template>
   <div class="add-friend">
-    <h1>添加好友</h1>
+    <h1>通讯录</h1>
     <div class="search-container">
       <input 
         v-model="searchUsername" 
@@ -11,7 +11,29 @@
       <button @click="searchUsers" class="search-btn">搜索</button>
     </div>
     
-    <div class="user-list" v-if="users.length > 0">
+    <!-- 好友列表 -->
+    <div class="section-title" v-if="!searchUsername.value">好友列表</div>
+    <div class="user-list" v-if="!searchUsername.value && friends.length > 0">
+      <div v-for="friend in friends" :key="friend.userId" class="user-item" @click="viewMessage(friend.userId)">
+        <div class="user-info">
+          <img :src="friend.avatar || '/default-avatar.png'" :alt="friend.username" class="user-avatar" />
+          <div class="user-details">
+            <div class="username">{{ friend.username }}</div>
+            <div class="nickname">{{ friend.nickname || friend.username }}</div>
+          </div>
+        </div>
+        <button class="message-btn" @click.stop="viewMessage(friend.userId)">
+          发消息
+        </button>
+      </div>
+    </div>
+    <div v-else-if="!searchUsername.value && friends.length === 0" class="no-friends">
+      暂无好友，点击上方搜索添加好友
+    </div>
+    
+    <!-- 搜索结果 -->
+    <div class="section-title" v-if="searchUsername.value && searched">搜索结果</div>
+    <div class="user-list" v-if="searchUsername.value && users.length > 0">
       <div v-for="user in users" :key="user.id" class="user-item">
         <div class="user-info">
           <img :src="user.avatar || '/default-avatar.png'" :alt="user.username" class="user-avatar" />
@@ -21,6 +43,14 @@
           </div>
         </div>
         <button 
+          v-if="isFriend(user.id)" 
+          class="message-btn" 
+          @click="viewMessage(user.id)"
+        >
+          发消息
+        </button>
+        <button 
+          v-else 
           class="add-btn" 
           :disabled="user.adding"
           @click="addFriend(user.id, user.username)"
@@ -35,24 +65,43 @@
     </div>
     
     <div v-else-if="searching" class="loading">搜索中...</div>
-    <div v-else-if="searched" class="no-result">未找到匹配的用户</div>
+    <div v-else-if="searchUsername.value && searched && users.length === 0" class="no-result">未找到匹配的用户</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 
+const router = useRouter();
 const searchUsername = ref('');
 const users = ref<any[]>([]);
+const friends = ref<any[]>([]);
 const searching = ref(false);
 const searched = ref(false);
 const hasMore = ref(true);
 const lastId = ref<number | null>(null);
 const pageSize = 10;
 
+// 获取好友列表
+const fetchFriends = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await axios.get('/api/users/friends', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    friends.value = response.data.data;
+  } catch (error) {
+    console.error('获取好友列表失败:', error);
+  }
+};
+
+// 搜索用户
 const searchUsers = async () => {
-  if (!searchUsername.value.trim()) return;
+  if (!searchUsername.value) return;
   
   searching.value = true;
   users.value = [];
@@ -85,8 +134,9 @@ const searchUsers = async () => {
   }
 };
 
+// 加载更多
 const loadMore = async () => {
-  if (!lastId.value || !searchUsername.value.trim() || searching.value) return;
+  if (!lastId.value || !searchUsername.value || searching.value) return;
   
   searching.value = true;
   
@@ -118,6 +168,7 @@ const loadMore = async () => {
   }
 };
 
+// 添加好友
 const addFriend = async (userId: number, username: string) => {
   // 找到用户并设置添加状态
   const user = users.value.find(u => u.id === userId);
@@ -140,6 +191,9 @@ const addFriend = async (userId: number, username: string) => {
     
     // 从列表中移除该用户
     users.value = users.value.filter(u => u.id !== userId);
+    
+    // 重新获取好友列表
+    await fetchFriends();
   } catch (error: any) {
     console.error('添加好友失败:', error);
     alert(`添加好友失败: ${error.response?.data?.message || '未知错误'}`);
@@ -149,6 +203,21 @@ const addFriend = async (userId: number, username: string) => {
     }
   }
 };
+
+// 判断是否为好友
+const isFriend = (userId: number) => {
+  return friends.value.some(friend => friend.userId === userId);
+};
+
+// 查看消息
+const viewMessage = (userId: number) => {
+  router.push(`/messages/${userId}`);
+};
+
+// 页面加载时获取好友列表
+onMounted(async () => {
+  await fetchFriends();
+});
 </script>
 
 <style scoped>
@@ -192,8 +261,18 @@ h1 {
   background-color: #45a049;
 }
 
-.user-list {
+.section-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
   margin-top: 20px;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.user-list {
+  margin-top: 10px;
 }
 
 .user-item {
@@ -202,6 +281,7 @@ h1 {
   align-items: center;
   padding: 15px;
   border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
 }
 
 .user-item:hover {
@@ -251,6 +331,19 @@ h1 {
   background-color: #0b7dda;
 }
 
+.message-btn {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.message-btn:hover {
+  background-color: #45a049;
+}
+
 .load-more {
   text-align: center;
   margin-top: 20px;
@@ -281,5 +374,15 @@ h1 {
   padding: 20px;
   color: #999;
   font-size: 16px;
+}
+
+.no-friends {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-size: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-top: 20px;
 }
 </style>

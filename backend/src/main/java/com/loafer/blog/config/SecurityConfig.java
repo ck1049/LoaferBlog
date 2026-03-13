@@ -47,7 +47,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/tags").permitAll()
                         .requestMatchers("/api/tags/**").permitAll()
                         .requestMatchers("/api/sensitive-words/**").hasRole("ADMIN")
-                        .requestMatchers("/api/files/**").hasRole("ADMIN")
+                        .requestMatchers("/api/files/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtils, tokenCache), UsernamePasswordAuthenticationFilter.class);

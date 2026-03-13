@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, reactive, computed } from 'vue';
+import { onMounted, ref, reactive, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMessageStore } from '../stores/message';
 import { useUserStore } from '../stores/user';
@@ -135,6 +135,15 @@ onMounted(async () => {
     await messageStore.fetchUnreadCounts();
   }
 });
+
+// 监听联系人列表变化，确保未读计数正确
+watch(
+  () => messageStore.contacts,
+  async () => {
+    await messageStore.fetchUnreadCounts();
+  },
+  { deep: true }
+);
 </script>
 
 <style scoped>

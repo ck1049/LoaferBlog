@@ -20,7 +20,7 @@ export const useUserStore = defineStore('user', {
   getters: {
     isAuthenticated: (state) => !!state.token,
     isAdmin: (state) => state.user?.roles.some(role => role.toLowerCase() === 'admin') || false,
-    isUser: (state) => state.user?.roles.includes('USER') || false,
+    isUser: (state) => state.user?.roles.some(role => role.toLowerCase() === 'user') || false,
   },
   actions: {
     // 获取公钥
