@@ -24,7 +24,7 @@
                 {{ contact.user.bio }}
               </div>
               <div class="contact-last-message">
-                <span v-if="contact.lastMessage && contact.lastMessage.messageType === 1">{{ contact.lastMessage.filteredContent }}</span>
+                <span v-if="contact.lastMessage && contact.lastMessage.messageType === 1">{{ contact.lastMessage.content }}</span>
                 <span v-else-if="contact.lastMessage && contact.lastMessage.messageType === 2">[表情]</span>
                 <span v-else-if="contact.lastMessage && contact.lastMessage.messageType === 3">[图片] {{ contact.lastMessage.fileName }}</span>
                 <span v-else-if="contact.lastMessage && contact.lastMessage.messageType === 4">[视频] {{ contact.lastMessage.fileName }}</span>
@@ -149,16 +149,18 @@ h1 {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  overflow: hidden;
   margin-right: 15px;
   flex-shrink: 0;
   position: relative;
+  /* 移除overflow: hidden，确保红点完整显示 */
 }
 
 .contact-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
+  /* 确保图片在圆形区域内显示 */
 }
 
 .contact-avatar .unread-badge {

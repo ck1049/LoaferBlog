@@ -433,7 +433,7 @@ body::after {
 @media (max-width: 768px) {
   .app {
     max-width: 100%;
-    padding: 0;
+    padding: 0 1rem;
   }
   
   .content {
@@ -443,14 +443,13 @@ body::after {
   }
   
   .navbar {
-    padding: 0.5rem 0;
+    padding: 0.8rem 0;
   }
   
   .navbar-container {
     max-width: 100%;
     padding: 0 1rem;
     margin: 0 auto;
-    box-sizing: border-box;
   }
   
   .nav-text {
@@ -458,29 +457,29 @@ body::after {
   }
   
   .nav-link {
-    padding: 0.4rem;
-    border-radius: 12px;
+    padding: 0.6rem;
+    border-radius: 16px;
   }
   
   .nav-links {
-    gap: 0.3rem;
+    gap: 0.5rem;
   }
   
   .auth-nav {
-    gap: 0.3rem;
+    gap: 0.5rem;
   }
   
   .guest-nav {
-    gap: 0.3rem;
+    gap: 0.5rem;
   }
   
   .user-section {
-    padding: 0.1rem 0.2rem;
-    border-radius: 15px;
+    padding: 0.3rem 0.5rem;
+    border-radius: 20px;
   }
   
   .user-btn {
-    padding: 0.1rem 0.3rem;
+    padding: 0.3rem 0.6rem;
   }
   
   .username {
@@ -489,12 +488,12 @@ body::after {
   
   .user-avatar {
     display: block;
-    width: 22px;
-    height: 22px;
+    width: 28px;
+    height: 28px;
   }
   
   .logout-btn {
-    padding: 0.1rem 0.3rem;
+    padding: 0.3rem 0.6rem;
   }
   
   .logout-btn .nav-text {
@@ -503,7 +502,7 @@ body::after {
   
   .logout-btn::after {
     content: '🚪';
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
   
   /* 确保导航栏在移动端居中 */
@@ -516,18 +515,7 @@ body::after {
   }
   
   .logo {
-    font-size: 1.5rem;
-  }
-  
-  /* 修复左右留白平衡 */
-  body {
-    padding: 0;
-    margin: 0;
-  }
-  
-  /* 确保所有元素都使用盒模型 */
-  * {
-    box-sizing: border-box;
+    font-size: 1.6rem;
   }
 }
 
