@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import request from '../api/request';
 import { MessageType } from '../constants/messageType';
 
 interface Message {
@@ -74,7 +74,7 @@ export const useMessageStore = defineStore('message', {
   actions: {
     async fetchMessagesByReceiverId(receiverId: number) {
       try {
-        const response = await axios.get(`/api/messages/receiver/${receiverId}`, {
+        const response = await request.get(`/messages/receiver/${receiverId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -86,7 +86,7 @@ export const useMessageStore = defineStore('message', {
     },
     async fetchMessageHistory(userId1: number, userId2: number) {
       try {
-        const response = await axios.get(`/api/messages/history/${userId1}/${userId2}`, {
+        const response = await request.get(`/messages/history/${userId1}/${userId2}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -98,7 +98,7 @@ export const useMessageStore = defineStore('message', {
     },
     async fetchContactList(userId: number) {
       try {
-        const response = await axios.get(`/api/messages/contacts/${userId}`, {
+        const response = await request.get(`/messages/contacts/${userId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -114,7 +114,7 @@ export const useMessageStore = defineStore('message', {
     }) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.post('/api/messages', message, {
+        const response = await request.post('/messages', message, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -132,7 +132,7 @@ export const useMessageStore = defineStore('message', {
     }) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.post('/api/messages/reply', message, {
+        const response = await request.post('/messages/reply', message, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -154,7 +154,7 @@ export const useMessageStore = defineStore('message', {
     }) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.post('/api/messages/file', message, {
+        const response = await request.post('/messages/file', message, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -169,7 +169,7 @@ export const useMessageStore = defineStore('message', {
     async topMessage(messageId: number, isTop: number) {
       try {
         const token = localStorage.getItem('token');
-        await axios.put(`/api/messages/top/${messageId}/${isTop}`, {}, {
+        await request.put(`/messages/top/${messageId}/${isTop}`, {}, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -188,7 +188,7 @@ export const useMessageStore = defineStore('message', {
     async deleteMessage(messageId: number) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`/api/messages/${messageId}`, {
+        await request.delete(`/messages/${messageId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -204,7 +204,7 @@ export const useMessageStore = defineStore('message', {
     async markMessagesAsRead(senderId: number) {
       try {
         const token = localStorage.getItem('token');
-        await axios.put(`/api/messages/read/${senderId}`, {}, {
+        await request.put(`/messages/read/${senderId}`, {}, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -234,7 +234,7 @@ export const useMessageStore = defineStore('message', {
     async fetchUnreadCounts() {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('/api/messages/unread-counts', {
+        const response = await request.get('/messages/unread-counts', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

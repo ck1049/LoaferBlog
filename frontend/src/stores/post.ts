@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import request from '../api/request';
 
 interface Post {
   id: number;
@@ -42,7 +42,7 @@ export const usePostStore = defineStore('post', {
   actions: {
     async fetchPosts() {
       try {
-        const response = await axios.get('/api/posts');
+        const response = await request.get('/posts');
         this.posts = response.data.data;
         // 设置分页信息
         this.pagination.current = 1;
@@ -55,7 +55,7 @@ export const usePostStore = defineStore('post', {
     },
     async fetchPostById(id: number) {
       try {
-        const response = await axios.get(`/api/posts/${id}`);
+        const response = await request.get(`/posts/${id}`);
         if (response.data.data) {
           this.currentPost = response.data.data;
           return true;
@@ -71,7 +71,7 @@ export const usePostStore = defineStore('post', {
     },
     async searchPosts(keyword: string, page: number = 1, size: number = 10) {
       try {
-        const response = await axios.get(`/api/posts/search`, {
+        const response = await request.get(`/posts/search`, {
           params: {
             keyword,
             page,
@@ -95,7 +95,7 @@ export const usePostStore = defineStore('post', {
     async createPost(title: string, content: string, categoryIds: number[], tagIds: number[]) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.post('/api/posts', {
+        const response = await request.post('/posts', {
           title,
           content,
           categoryIds,
@@ -115,7 +115,7 @@ export const usePostStore = defineStore('post', {
     async updatePost(id: number, title: string, content: string, categoryIds: number[], tagIds: number[]) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.put(`/api/posts/${id}`, {
+        const response = await request.put(`/posts/${id}`, {
           title,
           content,
           categoryIds,
@@ -138,7 +138,7 @@ export const usePostStore = defineStore('post', {
     async deletePost(id: number) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`/api/posts/${id}`, {
+        await request.delete(`/posts/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

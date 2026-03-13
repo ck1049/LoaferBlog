@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import request from '../api/request';
 
 interface User {
   id: number;
@@ -26,7 +26,7 @@ export const useUserStore = defineStore('user', {
     // 获取公钥
     async getPublicKey() {
       try {
-        const response = await axios.get('/api/rsa/public-key');
+        const response = await request.get('/rsa/public-key');
         if (response.data.code === 200) {
           this.publicKey = response.data.data.publicKey;
           return response.data.data.publicKey;
@@ -109,7 +109,7 @@ export const useUserStore = defineStore('user', {
         // 加密密码
         const encryptedPassword = await this.encrypt(password);
         
-        const response = await axios.post('/api/auth/login', {
+        const response = await request.post('/auth/login', {
           username,
           password: encryptedPassword,
         });
@@ -134,7 +134,7 @@ export const useUserStore = defineStore('user', {
         const encryptedPassword = await this.encrypt(password);
         const encryptedEmail = await this.encrypt(email);
         
-        const response = await axios.post('/api/auth/register', {
+        const response = await request.post('/auth/register', {
           username,
           email: encryptedEmail,
           password: encryptedPassword,
@@ -160,7 +160,7 @@ export const useUserStore = defineStore('user', {
     async fetchUserInfo() {
       if (!this.token) return;
       try {
-        const response = await axios.get('/api/users/me', {
+        const response = await request.get('/users/me', {
           headers: {
             Authorization: `Bearer ${this.token}`,
           },
@@ -181,7 +181,7 @@ export const useUserStore = defineStore('user', {
     async sendFriendRequest(friendId: number) {
       if (!this.token) return false;
       try {
-        const response = await axios.post('/api/users/add-friend', {
+        const response = await request.post('/users/add-friend', {
           userId: friendId
         }, {
           headers: {
@@ -199,7 +199,7 @@ export const useUserStore = defineStore('user', {
     async getFriendRequests() {
       if (!this.token) return [];
       try {
-        const response = await axios.get('/api/users/friend-requests', {
+        const response = await request.get('/users/friend-requests', {
           headers: {
             Authorization: `Bearer ${this.token}`,
           },
@@ -215,7 +215,7 @@ export const useUserStore = defineStore('user', {
     async acceptFriendRequest(requestId: number) {
       if (!this.token) return false;
       try {
-        const response = await axios.put(`/api/users/friend-requests/${requestId}/accept`, {}, {
+        const response = await request.put(`/users/friend-requests/${requestId}/accept`, {}, {
           headers: {
             Authorization: `Bearer ${this.token}`,
           },
@@ -231,7 +231,7 @@ export const useUserStore = defineStore('user', {
     async declineFriendRequest(requestId: number) {
       if (!this.token) return false;
       try {
-        const response = await axios.put(`/api/users/friend-requests/${requestId}/decline`, {}, {
+        const response = await request.put(`/users/friend-requests/${requestId}/decline`, {}, {
           headers: {
             Authorization: `Bearer ${this.token}`,
           },
@@ -247,7 +247,7 @@ export const useUserStore = defineStore('user', {
     async getFriends() {
       if (!this.token) return [];
       try {
-        const response = await axios.get('/api/users/friends', {
+        const response = await request.get('/users/friends', {
           headers: {
             Authorization: `Bearer ${this.token}`,
           },

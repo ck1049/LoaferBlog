@@ -64,7 +64,7 @@ import { useRoute } from 'vue-router';
 import { useMessageStore } from '../stores/message';
 import { useUserStore } from '../stores/user';
 import { MessageType } from '../constants/messageType';
-import axios from 'axios';
+import request from '../api/request';
 
 const route = useRoute();
 const messageStore = useMessageStore();
@@ -121,7 +121,7 @@ const handleFileUpload = async (event: Event) => {
 
   try {
     const token = localStorage.getItem('token');
-    const response = await axios.post('/api/files/upload', formData, {
+    const response = await request.post('/files/upload', formData, {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'multipart/form-data',

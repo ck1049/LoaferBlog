@@ -262,7 +262,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import request from '../api/request'
 import { useAnnouncementStore } from '../stores/announcement'
 import { useCategoryStore } from '../stores/category'
 import { useTagStore } from '../stores/tag'
@@ -348,7 +348,7 @@ const deleteAnnouncement = async (id: number) => {
 // 获取技术贴
 const fetchPosts = async () => {
   try {
-    const response = await axios.get('/api/posts')
+    const response = await request.get('/posts')
     posts.value = response.data.data
   } catch (error) {
     console.error('获取技术贴失败:', error)
@@ -358,7 +358,7 @@ const fetchPosts = async () => {
 // 添加技术贴
 const addPost = async () => {
   try {
-    await axios.post('/api/posts', newPost.value, {
+    await request.post('/posts', newPost.value, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
@@ -395,7 +395,7 @@ const editPost = (post: any) => {
 const deletePost = async (id: number) => {
   if (!confirm('确定要删除这个技术贴吗？')) return
   try {
-    await axios.delete(`/api/posts/${id}`, {
+    await request.delete(`/posts/${id}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
@@ -485,7 +485,7 @@ const saveAnnouncement = async () => {
 const savePost = async () => {
   if (!editingPost.value) return
   try {
-    await axios.put(`/api/posts/${editingPost.value.id}`, editingPost.value, {
+    await request.put(`/posts/${editingPost.value.id}`, editingPost.value, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
@@ -555,7 +555,7 @@ const reloadSensitiveWords = async () => {
 // 获取文件大小限制
 const fetchFileLimits = async () => {
   try {
-    const response = await axios.get('/api/admin/file-limits', {
+    const response = await request.get('/admin/file-limits', {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
@@ -581,7 +581,7 @@ const updateFileLimits = async () => {
       otherMaxSize: fileLimits.value.other * 1024 * 1024,
     }
 
-    const response = await axios.put('/api/admin/file-limits', req, {
+    const response = await request.put('/admin/file-limits', req, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`
       }
@@ -623,7 +623,7 @@ const uploadFile = async (file: File, isImage: boolean) => {
     const formData = new FormData()
     formData.append('file', file)
 
-    const response = await axios.post('/api/files/upload', formData, {
+    const response = await request.post('/files/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
         Authorization: `Bearer ${localStorage.getItem('token')}`

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import request from '../api/request';
 
 interface Comment {
   id: number;
@@ -34,7 +34,7 @@ export const useCommentStore = defineStore('comment', {
   actions: {
     async fetchCommentsByPostId(postId: number) {
       try {
-        const response = await axios.get(`/api/comments/post/${postId}`);
+        const response = await request.get(`/comments/post/${postId}`);
         this.comments = response.data;
         // 为每个评论获取回复
         for (const comment of this.comments) {
@@ -51,7 +51,7 @@ export const useCommentStore = defineStore('comment', {
         if (lastCommentId !== null) {
           params.lastCommentId = lastCommentId;
         }
-        const response = await axios.get(`/api/comments/post/${postId}/pagination`, {
+        const response = await request.get(`/comments/post/${postId}/pagination`, {
           params
         });
         const newComments = response.data;
@@ -64,7 +64,7 @@ export const useCommentStore = defineStore('comment', {
     },
     async getCommentsCountByPostId(postId: number, parentId: number) {
       try {
-        const response = await axios.get(`/api/comments/post/${postId}/count`, {
+        const response = await request.get(`/comments/post/${postId}/count`, {
           params: { parentId }
         });
         return response.data;
@@ -75,7 +75,7 @@ export const useCommentStore = defineStore('comment', {
     },
     async fetchRepliesByCommentId(commentId: number, parentComment?: Comment) {
       try {
-        const response = await axios.get(`/api/comments/replies/${commentId}`);
+        const response = await request.get(`/comments/replies/${commentId}`);
         const replies = response.data;
         if (parentComment) {
           parentComment.replies = replies;
@@ -97,7 +97,7 @@ export const useCommentStore = defineStore('comment', {
     }) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.post('/api/comments', comment, {
+        const response = await request.post('/comments', comment, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -124,7 +124,7 @@ export const useCommentStore = defineStore('comment', {
     async deleteComment(id: number, parentId?: number) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`/api/comments/${id}`, {
+        await request.delete(`/comments/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -152,7 +152,7 @@ export const useCommentStore = defineStore('comment', {
         if (lastCommentId !== null) {
           params.lastCommentId = lastCommentId;
         }
-        const response = await axios.get(`/api/comments/top-level/${postId}/pagination`, {
+        const response = await request.get(`/comments/top-level/${postId}/pagination`, {
           params
         });
         return response.data;
@@ -163,7 +163,7 @@ export const useCommentStore = defineStore('comment', {
     },
     async getCommentsCountByTopLevelId(postId: number, topLevelId: number) {
       try {
-        const response = await axios.get(`/api/comments/top-level/${postId}/count`, {
+        const response = await request.get(`/comments/top-level/${postId}/count`, {
           params: { topLevelId }
         });
         return response.data;

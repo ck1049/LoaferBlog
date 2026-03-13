@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import request from '../api/request';
 
 interface Announcement {
   id: number;
@@ -25,7 +25,7 @@ export const useAnnouncementStore = defineStore('announcement', {
   actions: {
     async fetchAnnouncements() {
       try {
-        const response = await axios.get('/api/announcements');
+        const response = await request.get('/announcements');
         this.announcements = response.data.data;
       } catch (error) {
         console.error('Failed to fetch announcements:', error);
@@ -33,7 +33,7 @@ export const useAnnouncementStore = defineStore('announcement', {
     },
     async fetchAnnouncementById(id: number) {
       try {
-        const response = await axios.get(`/api/announcements/${id}`);
+        const response = await request.get(`/announcements/${id}`);
         this.currentAnnouncement = response.data.data;
       } catch (error) {
         console.error(`Failed to fetch announcement ${id}:`, error);
@@ -42,7 +42,7 @@ export const useAnnouncementStore = defineStore('announcement', {
     async createAnnouncement(title: string, content: string) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.post('/api/announcements', {
+        const response = await request.post('/announcements', {
           title,
           content,
         }, {
@@ -60,7 +60,7 @@ export const useAnnouncementStore = defineStore('announcement', {
     async updateAnnouncement(id: number, title: string, content: string) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.put(`/api/announcements/${id}`, {
+        const response = await request.put(`/announcements/${id}`, {
           title,
           content,
         }, {
@@ -81,7 +81,7 @@ export const useAnnouncementStore = defineStore('announcement', {
     async deleteAnnouncement(id: number) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`/api/announcements/${id}`, {
+        await request.delete(`/announcements/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

@@ -94,7 +94,7 @@ const filteredPosts = computed(() => {
   // 按分类筛选
   if (selectedCategoryId.value > 0) {
     posts = posts.filter(post => 
-      post.categories.some(category => category.id === selectedCategoryId.value)
+      (post.categories?.some(category => category.id === selectedCategoryId.value)) ?? false
     );
   }
   

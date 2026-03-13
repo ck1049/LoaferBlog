@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import request from '../api/request';
 
 interface Category {
   id: number;
@@ -23,7 +23,7 @@ export const useCategoryStore = defineStore('category', {
   actions: {
     async fetchCategories() {
       try {
-        const response = await axios.get('/api/categories');
+        const response = await request.get('/categories');
         this.categories = response.data.data;
       } catch (error) {
         console.error('Failed to fetch categories:', error);
@@ -35,7 +35,7 @@ export const useCategoryStore = defineStore('category', {
     }) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.post('/api/categories', category, {
+        const response = await request.post('/categories', category, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -53,7 +53,7 @@ export const useCategoryStore = defineStore('category', {
     }) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.put(`/api/categories/${id}`, category, {
+        const response = await request.put(`/categories/${id}`, category, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -71,7 +71,7 @@ export const useCategoryStore = defineStore('category', {
     async deleteCategory(id: number) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`/api/categories/${id}`, {
+        await request.delete(`/categories/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -86,7 +86,7 @@ export const useCategoryStore = defineStore('category', {
     async addCategoryToPost(postId: number, categoryIds: number[]) {
       try {
         const token = localStorage.getItem('token');
-        await axios.post(`/api/categories/post/${postId}`, categoryIds, {
+        await request.post(`/categories/post/${postId}`, categoryIds, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import request from '../api/request';
 
 interface SensitiveWord {
   id: number;
@@ -22,7 +22,7 @@ export const useSensitiveWordStore = defineStore('sensitiveWord', {
   actions: {
     async fetchSensitiveWords() {
       try {
-        const response = await axios.get('/api/sensitive-words', {
+        const response = await request.get('/sensitive-words', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -35,7 +35,7 @@ export const useSensitiveWordStore = defineStore('sensitiveWord', {
     async createSensitiveWord(word: string) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.post('/api/sensitive-words', { word }, {
+        const response = await request.post('/sensitive-words', { word }, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -50,7 +50,7 @@ export const useSensitiveWordStore = defineStore('sensitiveWord', {
     async deleteSensitiveWord(id: number) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`/api/sensitive-words/${id}`, {
+        await request.delete(`/sensitive-words/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -65,7 +65,7 @@ export const useSensitiveWordStore = defineStore('sensitiveWord', {
     async reloadSensitiveWords() {
       try {
         const token = localStorage.getItem('token');
-        await axios.post('/api/sensitive-words/reload', {}, {
+        await request.post('/sensitive-words/reload', {}, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

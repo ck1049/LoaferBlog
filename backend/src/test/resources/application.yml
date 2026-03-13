@@ -13,8 +13,9 @@ spring:
   # 文件上传配置
   servlet:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: 2048MB  # 单个文件最大大小
+      max-request-size: 2048MB  # 整个请求最大大小
+      file-size-threshold: 20MB  # 文件超过该大小会写入磁盘（否则在内存）
 
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*.xml
@@ -32,7 +33,7 @@ server:
   port: 8080
   # 静态资源配置
   servlet:
-    context-path: /
+    context-path: /loafer-blog
 
 jwt:
   secret: loafer_blog_high_strength_jwt_secret_key
@@ -46,3 +47,10 @@ file:
   access:
     prefix: /uploads
     domain: http://localhost:8080
+  rsa:
+    business:
+      private-key-path: /rsa/business/private.key
+      public-key-path: /rsa/business/public.key
+    communication:
+      private-key-path: /rsa/communication/private.key
+      public-key-path: /rsa/communication/public.key

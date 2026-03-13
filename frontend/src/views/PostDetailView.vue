@@ -148,6 +148,7 @@ import { usePostStore } from '../stores/post'
 import { useUserStore } from '../stores/user'
 import { useCommentStore } from '../stores/comment'
 import MarkdownRenderer from '../components/MarkdownRenderer.vue'
+import request from '../api/request'
 
 const route = useRoute()
 const postStore = usePostStore()
@@ -217,7 +218,7 @@ const fetchComments = async () => {
     // 更新最后一条评论的ID（现在是最小的ID，因为按时间倒序排序）
     if (comments.length > 0) {
       // 找到最小的ID
-      lastCommentId.value = Math.min(...comments.map(comment => comment.id))
+      lastCommentId.value = Math.min(...comments.map((comment: any) => comment.id))
     }
     // 检查是否需要显示"查看更多"按钮
     showLoadMore.value = comments.length > 0 && comments.length < totalComments.value
@@ -253,7 +254,7 @@ const loadMoreComments = async () => {
       // 添加到现有评论列表
       commentStore.comments = [...commentStore.comments, ...moreComments]
       // 更新最后一条评论的ID（现在是最小的ID，因为按时间倒序排序）
-      lastCommentId.value = Math.min(...moreComments.map(comment => comment.id))
+      lastCommentId.value = Math.min(...moreComments.map((comment: any) => comment.id))
       // 检查是否还有更多评论
       hasMoreComments.value = moreComments.length === pageSize.value
     } else {
@@ -281,11 +282,11 @@ const loadMoreReplies = async (commentId: number) => {
     
     // 找到对应评论并添加回复
     const comment = commentStore.comments.find(c => c.id === commentId)
-    if (comment && moreReplies.length > 0) {
+      if (comment && moreReplies.length > 0) {
       // 添加到现有回复列表
       comment.replies = [...(comment.replies || []), ...moreReplies]
       // 更新最后一条回复的ID（现在是最小的ID，因为按时间倒序排序）
-      replyLastCommentIds.value[commentId] = Math.min(...moreReplies.map(reply => reply.id))
+      replyLastCommentIds.value[commentId] = Math.min(...moreReplies.map((reply: any) => reply.id))
       // 检查是否还有更多回复
       replyHasMoreComments.value[commentId] = moreReplies.length === pageSize.value
       // 检查是否需要显示"查看更多"按钮
@@ -387,8 +388,8 @@ const toggleReplies = async (commentId: number) => {
       if (comment) {
         comment.replies = replies
         // 更新最后一条评论的ID（现在是最小的ID，因为按时间倒序排序）
-        if (replies.length > 0) {
-          replyLastCommentIds.value[commentId] = Math.min(...replies.map(reply => reply.id))
+      if (replies.length > 0) {
+          replyLastCommentIds.value[commentId] = Math.min(...replies.map((reply: any) => reply.id))
         }
         // 检查是否需要显示"查看更多"按钮
         replyShowLoadMore.value[commentId] = replies.length === pageSize.value
@@ -411,20 +412,16 @@ const likePost = async () => {
 
   try {
     const id = Number(route.params.id)
-    let method = isLiked.value ? 'DELETE' : 'POST'
-    const response = await fetch(`/api/posts/${id}/like`, {
-      method: method,
+    const method = isLiked.value ? 'delete' : 'post'
+    await request[method](`/posts/${id}/like`, {}, {
       headers: {
         'Authorization': `Bearer ${userStore.token}`,
         'Content-Type': 'application/json'
       }
     })
-    
-    if (response.ok) {
-      isLiked.value = !isLiked.value
-      if (postStore.currentPost) {
-        postStore.currentPost.likeCount = (postStore.currentPost.likeCount || 0) + (isLiked.value ? 1 : -1)
-      }
+    isLiked.value = !isLiked.value
+    if (postStore.currentPost) {
+      postStore.currentPost.likeCount = (postStore.currentPost.likeCount || 0) + (isLiked.value ? 1 : -1)
     }
   } catch (error) {
     console.error('点赞操作失败:', error)
@@ -439,20 +436,16 @@ const favoritePost = async () => {
 
   try {
     const id = Number(route.params.id)
-    let method = isFavorited.value ? 'DELETE' : 'POST'
-    const response = await fetch(`/api/posts/${id}/favorite`, {
-      method: method,
+    const method = isFavorited.value ? 'delete' : 'post'
+    await request[method](`/posts/${id}/favorite`, {}, {
       headers: {
         'Authorization': `Bearer ${userStore.token}`,
         'Content-Type': 'application/json'
       }
     })
-    
-    if (response.ok) {
-      isFavorited.value = !isFavorited.value
-      if (postStore.currentPost) {
-        postStore.currentPost.favoriteCount = (postStore.currentPost.favoriteCount || 0) + (isFavorited.value ? 1 : -1)
-      }
+    isFavorited.value = !isFavorited.value
+    if (postStore.currentPost) {
+      postStore.currentPost.favoriteCount = (postStore.currentPost.favoriteCount || 0) + (isFavorited.value ? 1 : -1)
     }
   } catch (error) {
     console.error('收藏操作失败:', error)
@@ -464,30 +457,11 @@ const checkLikeAndFavoriteStatus = async () => {
 
   try {
     const id = Number(route.params.id)
-    
-    // 检查点赞状态
-    const likeResponse = await fetch(`/api/posts/${id}/like/check`, {
-      headers: {
-        'Authorization': `Bearer ${userStore.token}`
-      }
-    })
-    
-    if (likeResponse.ok) {
-      const likeData = await likeResponse.json()
-      isLiked.value = likeData.data
-    }
-    
-    // 检查收藏状态
-    const favoriteResponse = await fetch(`/api/posts/${id}/favorite/check`, {
-      headers: {
-        'Authorization': `Bearer ${userStore.token}`
-      }
-    })
-    
-    if (favoriteResponse.ok) {
-      const favoriteData = await favoriteResponse.json()
-      isFavorited.value = favoriteData.data
-    }
+    const headers = { Authorization: `Bearer ${userStore.token}` }
+    const likeRes = await request.get(`/posts/${id}/like/check`, { headers })
+    if (likeRes.data?.data !== undefined) isLiked.value = likeRes.data.data
+    const favoriteRes = await request.get(`/posts/${id}/favorite/check`, { headers })
+    if (favoriteRes.data?.data !== undefined) isFavorited.value = favoriteRes.data.data
   } catch (error) {
     console.error('检查点赞和收藏状态失败:', error)
   }
@@ -498,10 +472,7 @@ const recordViewHistory = async () => {
 
   try {
     const id = Number(route.params.id)
-    // 这里需要调用后端API记录浏览历史
-    // 假设后端提供了 /api/posts/{id}/view 接口
-    await fetch(`/api/posts/${id}/view`, {
-      method: 'POST',
+    await request.post(`/posts/${id}/view`, {}, {
       headers: {
         'Authorization': `Bearer ${userStore.token}`,
         'Content-Type': 'application/json'
@@ -577,9 +548,10 @@ const formatValidDate = (date: Date) => {
   }
 }
 
-const getReplyToUser = (parentId: number, replies: any[]) => {
+const getReplyToUser = (parentId: number, replies: any[] | undefined) => {
   // 查找父评论
-  const parentReply = replies.find(reply => reply.id === parentId)
+  const list = replies ?? []
+  const parentReply = list.find((reply: any) => reply.id === parentId)
   return parentReply?.user?.nickname || '未知用户'
 }
 

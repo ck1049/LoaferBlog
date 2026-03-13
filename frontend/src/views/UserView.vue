@@ -166,7 +166,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
-import axios from 'axios'
+import request from '../api/request'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -224,7 +224,7 @@ watch(() => userStore.user, (newUser) => {
   }
 }, { deep: true })
 
-const startSwipe = (event: TouchEvent, postId: number, tab: string) => {
+const startSwipe = (event: TouchEvent, _postId: number, tab: string) => {
   startX.value = event.touches[0].clientX
   activeTabForSwipe.value = tab
 }
@@ -265,7 +265,7 @@ const handleAvatarUpload = async (event: Event) => {
     const formData = new FormData()
     formData.append('avatar', file)
     
-    const response = await axios.post('/api/users/avatar', formData, {
+    const response = await request.post('/users/avatar', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
         'Authorization': `Bearer ${userStore.token}`
@@ -289,7 +289,7 @@ const handleAvatarUpload = async (event: Event) => {
 
 const updateProfile = async () => {
   try {
-    const response = await axios.put('/api/users/me', profileForm.value, {
+    const response = await request.put('/users/me', profileForm.value, {
       headers: {
         'Authorization': `Bearer ${userStore.token}`
       }
@@ -319,7 +319,7 @@ const changePassword = async () => {
     const encryptedOldPassword = await userStore.encrypt(securityForm.value.currentPassword)
     const encryptedNewPassword = await userStore.encrypt(securityForm.value.newPassword)
     
-    const response = await axios.put('/api/auth/password', {
+    const response = await request.put('/auth/password', {
       oldPassword: encryptedOldPassword,
       newPassword: encryptedNewPassword
     }, {
@@ -352,7 +352,7 @@ const confirmDeleteAccount = () => {
 
 const deleteAccount = async () => {
   try {
-    const response = await axios.delete('/api/users/me', {
+    const response = await request.delete('/users/me', {
       headers: {
         'Authorization': `Bearer ${userStore.token}`
       }
@@ -374,7 +374,7 @@ const deleteAccount = async () => {
 const loadFavorites = async (page: number = 1) => {
   try {
     loading.value.favorites = true
-    const response = await axios.get('/api/users/favorites', {
+    const response = await request.get('/users/favorites', {
       headers: {
         'Authorization': `Bearer ${userStore.token}`
       },
@@ -397,7 +397,7 @@ const loadFavorites = async (page: number = 1) => {
 
 const removeFavorite = async (postId: number) => {
   try {
-    const response = await axios.delete(`/api/users/favorites/${postId}`, {
+    const response = await request.delete(`/users/favorites/${postId}`, {
       headers: {
         'Authorization': `Bearer ${userStore.token}`
       }
@@ -418,7 +418,7 @@ const removeFavorite = async (postId: number) => {
 const loadHistory = async (page: number = 1) => {
   try {
     loading.value.history = true
-    const response = await axios.get('/api/users/history', {
+    const response = await request.get('/users/history', {
       headers: {
         'Authorization': `Bearer ${userStore.token}`
       },
@@ -441,7 +441,7 @@ const loadHistory = async (page: number = 1) => {
 
 const removeHistory = async (postId: number) => {
   try {
-    const response = await axios.delete(`/api/users/history/${postId}`, {
+    const response = await request.delete(`/users/history/${postId}`, {
       headers: {
         'Authorization': `Bearer ${userStore.token}`
       }
@@ -462,7 +462,7 @@ const removeHistory = async (postId: number) => {
 const loadLikes = async (page: number = 1) => {
   try {
     loading.value.likes = true
-    const response = await axios.get('/api/users/likes', {
+    const response = await request.get('/users/likes', {
       headers: {
         'Authorization': `Bearer ${userStore.token}`
       },
@@ -485,7 +485,7 @@ const loadLikes = async (page: number = 1) => {
 
 const removeLike = async (postId: number) => {
   try {
-    const response = await axios.delete(`/api/posts/${postId}/like`, {
+    const response = await request.delete(`/posts/${postId}/like`, {
       headers: {
         'Authorization': `Bearer ${userStore.token}`
       }

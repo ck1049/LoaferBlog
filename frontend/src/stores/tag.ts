@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import request from '../api/request';
 
 interface Tag {
   id: number;
@@ -22,7 +22,7 @@ export const useTagStore = defineStore('tag', {
   actions: {
     async fetchTags() {
       try {
-        const response = await axios.get('/api/tags');
+        const response = await request.get('/tags');
         this.tags = response.data.data;
       } catch (error) {
         console.error('Failed to fetch tags:', error);
@@ -33,7 +33,7 @@ export const useTagStore = defineStore('tag', {
     }) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.post('/api/tags', tag, {
+        const response = await request.post('/tags', tag, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -50,7 +50,7 @@ export const useTagStore = defineStore('tag', {
     }) {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.put(`/api/tags/${id}`, tag, {
+        const response = await request.put(`/tags/${id}`, tag, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -68,7 +68,7 @@ export const useTagStore = defineStore('tag', {
     async deleteTag(id: number) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`/api/tags/${id}`, {
+        await request.delete(`/tags/${id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -83,7 +83,7 @@ export const useTagStore = defineStore('tag', {
     async addTagToPost(postId: number, tagIds: number[]) {
       try {
         const token = localStorage.getItem('token');
-        await axios.post(`/api/tags/post/${postId}`, tagIds, {
+        await request.post(`/tags/post/${postId}`, tagIds, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

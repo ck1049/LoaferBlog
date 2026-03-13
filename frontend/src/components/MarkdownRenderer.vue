@@ -13,14 +13,16 @@ const props = defineProps<{
 }>();
 
 // 配置marked
-marked.setOptions({
-  highlight: function(code, lang) {
+const markedOptions: any = {
+  highlight: function(code: string, lang: string) {
     const language = hljs.getLanguage(lang) ? lang : 'plaintext';
     return hljs.highlight(code, { language }).value;
   },
   breaks: true,
   gfm: true,
-});
+};
+
+marked.setOptions(markedOptions);
 
 const renderedContent = computed(() => {
   return marked(props.content);

@@ -68,7 +68,7 @@ const router = createRouter({
 })
 
 // 路由守卫
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const userStore = useUserStore()
 
   // 如果有token但没有用户信息，先加载用户信息

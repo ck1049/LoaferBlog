@@ -27,6 +27,7 @@
 <script setup lang="ts">
 import { ref, onMounted, defineExpose } from 'vue';
 import { useUserStore } from '../stores/user';
+import request from '../api/request';
 
 const userStore = useUserStore();
 const friendRequests = ref<any[]>([]);
@@ -37,12 +38,12 @@ const formatDate = (dateString: string) => {
 
 const fetchFriendRequests = async () => {
   try {
-    const response = await fetch('/api/users/friend-requests', {
+    const response = await request.get('/users/friend-requests', {
       headers: {
         'Authorization': `Bearer ${userStore.token}`
       }
     });
-    const data = await response.json();
+    const data = response.data;
     if (data.code === 200) {
       friendRequests.value = data.data;
     }
@@ -53,15 +54,13 @@ const fetchFriendRequests = async () => {
 
 const acceptRequest = async (requestId: number) => {
   try {
-    const response = await fetch(`/api/users/friend-requests/${requestId}/accept`, {
-      method: 'PUT',
+    const response = await request.put(`/users/friend-requests/${requestId}/accept`, {}, {
       headers: {
         'Authorization': `Bearer ${userStore.token}`
       }
     });
-    const data = await response.json();
+    const data = response.data;
     if (data.code === 200) {
-      // 从列表中移除已处理的请求
       friendRequests.value = friendRequests.value.filter(req => req.id !== requestId);
     }
   } catch (error) {
@@ -71,15 +70,13 @@ const acceptRequest = async (requestId: number) => {
 
 const declineRequest = async (requestId: number) => {
   try {
-    const response = await fetch(`/api/users/friend-requests/${requestId}/decline`, {
-      method: 'PUT',
+    const response = await request.put(`/users/friend-requests/${requestId}/decline`, {}, {
       headers: {
         'Authorization': `Bearer ${userStore.token}`
       }
     });
-    const data = await response.json();
+    const data = response.data;
     if (data.code === 200) {
-      // 从列表中移除已处理的请求
       friendRequests.value = friendRequests.value.filter(req => req.id !== requestId);
     }
   } catch (error) {

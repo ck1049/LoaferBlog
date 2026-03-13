@@ -72,7 +72,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import request from '../api/request';
 
 const router = useRouter();
 const searchUsername = ref('');
@@ -88,7 +88,7 @@ const pageSize = 10;
 const fetchFriends = async () => {
   try {
     const token = localStorage.getItem('token');
-    const response = await axios.get('/api/users/friends', {
+    const response = await request.get('/users/friends', {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -110,7 +110,7 @@ const searchUsers = async () => {
   
   try {
     const token = localStorage.getItem('token');
-    const response = await axios.get('/api/users/search', {
+    const response = await request.get('/users/search', {
       params: {
         username: searchUsername.value,
         size: pageSize
@@ -142,7 +142,7 @@ const loadMore = async () => {
   
   try {
     const token = localStorage.getItem('token');
-    const response = await axios.get('/api/users/search', {
+    const response = await request.get('/users/search', {
       params: {
         username: searchUsername.value,
         lastId: lastId.value,
@@ -178,7 +178,7 @@ const addFriend = async (userId: number, username: string) => {
   
   try {
     const token = localStorage.getItem('token');
-    await axios.post('/api/users/add-friend', {
+    await request.post('/users/add-friend', {
       userId: userId
     }, {
       headers: {
