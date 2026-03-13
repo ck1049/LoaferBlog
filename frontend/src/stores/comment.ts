@@ -9,7 +9,7 @@ interface Comment {
   filteredContent: string;
   parentId: number;
   topLevelId: number;
-  createdAt: string;
+  createTime: string;
   user?: {
     id: number;
     username: string;
@@ -27,7 +27,7 @@ export const useCommentStore = defineStore('comment', {
   getters: {
     sortedComments: (state) => {
       return [...state.comments].sort((a, b) => {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        return new Date(b.createTime).getTime() - new Date(a.createTime).getTime();
       });
     },
   },

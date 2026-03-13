@@ -55,15 +55,15 @@
       <div class="comment-list">
         <div v-for="comment in commentStore.sortedComments" :key="comment.id" class="comment-item">
           <div class="comment-header">
-            <div class="comment-user-info">
-              <img v-if="comment.user?.avatar" :src="comment.user.avatar" class="comment-avatar" alt="用户头像" />
-              <div v-else class="comment-avatar-placeholder">
-                <span>{{ comment.user?.nickname?.charAt(0) || '?' }}</span>
+                <div class="comment-user-info">
+                  <img v-if="comment.user?.avatar" :src="comment.user.avatar" class="comment-avatar" alt="用户头像" />
+                  <div v-else class="comment-avatar-placeholder">
+                    <span>{{ comment.user?.nickname?.charAt(0) || '?' }}</span>
+                  </div>
+                  <span class="comment-author">{{ comment.user?.nickname }}</span>
+                </div>
+                <span class="comment-time">{{ formatDate(comment.createTime) }}</span>
               </div>
-              <span class="comment-author">{{ comment.user?.nickname }}</span>
-            </div>
-            <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
-          </div>
           <div class="comment-body">{{ comment.content }}</div>
           <div class="comment-actions">
             <button @click="replyComment(comment.id)">回复</button>
@@ -98,7 +98,7 @@
                   <span class="reply-author">{{ reply.user?.nickname }}</span>
                   <span v-if="reply.parentId !== reply.topLevelId" class="reply-to">回复 @{{ getReplyToUser(reply.parentId, comment.replies) }}</span>
                 </div>
-                <span class="reply-time">{{ formatDate(reply.createdAt) }}</span>
+                <span class="reply-time">{{ formatDate(reply.createTime) }}</span>
               </div>
               <div class="reply-body">{{ reply.content }}</div>
             <div class="reply-actions">
@@ -111,6 +111,17 @@
               <button @click="submitReply(reply.id)">提交回复</button>
               <button @click="cancelReply">取消</button>
             </div>
+            </div>
+            <!-- 子评论查看更多按钮 -->
+            <div v-if="replyShowLoadMore[comment.id]" class="load-more-container">
+              <button 
+                @click="loadMoreReplies(comment.id)" 
+                class="load-more-btn"
+                :disabled="isLoadingMoreReplies[comment.id]"
+              >
+                <span v-if="isLoadingMoreReplies[comment.id]">加载中...</span>
+                <span v-else>查看更多</span>
+              </button>
             </div>
           </div>
         </div>
@@ -160,6 +171,11 @@ const hasMoreComments = ref(true)
 // 回复展开/折叠状态
 const expandedComments = ref<Set<number>>(new Set())
 const isLoadingReplies = ref<Record<number, boolean>>({})
+// 子评论分页相关
+const replyLastCommentIds = ref<Record<number, number | null>>({})
+const replyHasMoreComments = ref<Record<number, boolean>>({})
+const replyShowLoadMore = ref<Record<number, boolean>>({})
+const isLoadingMoreReplies = ref<Record<number, boolean>>({})
 
 const fetchPost = async () => {
   try {
@@ -254,6 +270,38 @@ const loadMoreComments = async () => {
   }
 }
 
+const loadMoreReplies = async (commentId: number) => {
+  if (isLoadingMoreReplies.value[commentId] || !replyHasMoreComments.value[commentId]) return
+  
+  try {
+    isLoadingMoreReplies.value[commentId] = true
+    const id = Number(route.params.id)
+    // 获取下一页子评论（更旧的评论）
+    const moreReplies = await commentStore.fetchCommentsByTopLevelIdWithPagination(id, commentId, replyLastCommentIds.value[commentId], pageSize.value)
+    
+    // 找到对应评论并添加回复
+    const comment = commentStore.comments.find(c => c.id === commentId)
+    if (comment && moreReplies.length > 0) {
+      // 添加到现有回复列表
+      comment.replies = [...(comment.replies || []), ...moreReplies]
+      // 更新最后一条回复的ID（现在是最小的ID，因为按时间倒序排序）
+      replyLastCommentIds.value[commentId] = Math.min(...moreReplies.map(reply => reply.id))
+      // 检查是否还有更多回复
+      replyHasMoreComments.value[commentId] = moreReplies.length === pageSize.value
+      // 检查是否需要显示"查看更多"按钮
+      replyShowLoadMore.value[commentId] = replyHasMoreComments.value[commentId]
+    } else {
+      // 没有更多回复了
+      replyHasMoreComments.value[commentId] = false
+      replyShowLoadMore.value[commentId] = false
+    }
+  } catch (error) {
+    console.error(`加载更多回复失败:`, error)
+  } finally {
+    isLoadingMoreReplies.value[commentId] = false
+  }
+}
+
 const submitComment = async () => {
   if (!commentContent.value.trim()) return
 
@@ -328,12 +376,23 @@ const toggleReplies = async (commentId: number) => {
     try {
       isLoadingReplies.value[commentId] = true
       const id = Number(route.params.id)
-      // 使用新的按顶级评论ID查询评论的方法
-      const replies = await commentStore.fetchCommentsByTopLevelIdWithPagination(id, commentId, null, 10)
+      // 初始化子评论分页状态
+      replyLastCommentIds.value[commentId] = null
+      replyHasMoreComments.value[commentId] = true
+      replyShowLoadMore.value[commentId] = false
+      // 使用新的按顶级评论ID查询评论的方法，保持与顶级评论一致的分页大小
+      const replies = await commentStore.fetchCommentsByTopLevelIdWithPagination(id, commentId, null, pageSize.value)
       // 找到对应评论并设置回复
       const comment = commentStore.comments.find(c => c.id === commentId)
       if (comment) {
         comment.replies = replies
+        // 更新最后一条评论的ID（现在是最小的ID，因为按时间倒序排序）
+        if (replies.length > 0) {
+          replyLastCommentIds.value[commentId] = Math.min(...replies.map(reply => reply.id))
+        }
+        // 检查是否需要显示"查看更多"按钮
+        replyShowLoadMore.value[commentId] = replies.length === pageSize.value
+        replyHasMoreComments.value[commentId] = replies.length === pageSize.value
       }
       expandedComments.value.add(commentId)
     } catch (error) {
