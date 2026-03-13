@@ -16,6 +16,7 @@ interface Comment {
     avatar: string;
   };
   replies?: Comment[];
+  replyCount?: number;
 }
 
 export const useCommentStore = defineStore('comment', {

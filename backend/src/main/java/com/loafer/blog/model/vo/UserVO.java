@@ -2,6 +2,7 @@ package com.loafer.blog.model.vo;
 
 import cn.hutool.extra.spring.SpringUtil;
 import com.loafer.blog.config.BusinessRSAKeyManager;
+import com.loafer.blog.model.entity.User;
 import com.loafer.blog.utils.FileUploadUtils;
 import com.loafer.blog.utils.RSAUtils;
 import com.loafer.blog.utils.SensitiveInfoUtils;
@@ -21,7 +22,7 @@ public class UserVO {
     private String email;
     private List<String> roles;
 
-    public UserVO(com.loafer.blog.model.entity.User user) {
+    public UserVO(User user) {
         this.id = user.getId();
         this.username = user.getUsername();
         this.nickname = user.getNickname();

@@ -57,23 +57,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(user, userVO);
-        // 对邮箱进行脱敏处理
-        if (userVO.getEmail() != null && !userVO.getEmail().isEmpty()) {
-            try {
-                byte[] decryptedEmail = RSAUtils.decrypt(RSAUtils.base64Decode(userVO.getEmail()), businessRSAKeyManager.getPrivateKey());
-                userVO.setEmail(SensitiveInfoUtils.maskEmail(new String(decryptedEmail)));
-            } catch (Exception e) {
-                userVO.setEmail("");
-            }
-        }
-        
-        // 添加默认头像功能
-        if (userVO.getAvatar() == null || userVO.getAvatar().isEmpty()) {
-            userVO.setAvatar(FileUploadUtils.spliceUrl(ACCESS_PREFIX + "/avatars/default-avatar.png"));
-        } else {
-            userVO.setAvatar(FileUploadUtils.spliceUrl(userVO.getAvatar()));
-        }
-        
+
         // 添加角色信息的查询和设置
         List<String> roles = new ArrayList<>();
         QueryWrapper<UserRole> userRoleWrapper = new QueryWrapper<>();

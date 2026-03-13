@@ -67,7 +67,7 @@
           <div class="comment-body">{{ comment.content }}</div>
           <div class="comment-actions">
             <button @click="replyComment(comment.id)">回复</button>
-            <button v-if="userStore.isAdmin" @click="deleteComment(comment.id)">删除</button>
+            <button v-if="userStore.isAdmin || (userStore.isAuthenticated && userStore.user?.id === comment.userId)" @click="deleteComment(comment.id)">删除</button>
           </div>
           <div v-if="replyingTo === comment.id" class="reply-form">
             <textarea v-model="replyContent" placeholder="写下你的回复..." rows="3"></textarea>
@@ -75,15 +75,15 @@
             <button @click="cancelReply">取消</button>
           </div>
           <!-- 回复数和展开/折叠按钮 -->
-          <div v-if="comment.replies && comment.replies.length > 0" class="comment-replies-info">
+          <div v-if="comment.replyCount && comment.replyCount > 0 || (comment.replies && comment.replies.length > 0)" class="comment-replies-info">
             <button 
               @click="toggleReplies(comment.id)" 
               class="toggle-replies-btn"
               :disabled="isLoadingReplies[comment.id]"
             >
               <span v-if="isLoadingReplies[comment.id]">加载中...</span>
-              <span v-else-if="expandedComments.has(comment.id)">收起回复 ({{ comment.replies.length }})</span>
-              <span v-else>查看回复 ({{ comment.replies.length }})</span>
+              <span v-else-if="expandedComments.has(comment.id)">收起回复 ({{ comment.replies?.length || comment.replyCount }})</span>
+              <span v-else>查看回复 ({{ comment.replies?.length || comment.replyCount }})</span>
             </button>
           </div>
           <!-- 回复列表 -->
@@ -100,9 +100,10 @@
                 <span class="reply-time">{{ formatDate(reply.createdAt) }}</span>
               </div>
               <div class="reply-body">{{ reply.content }}</div>
-              <div class="reply-actions">
-                <button v-if="userStore.isAdmin" @click="deleteComment(reply.id, comment.id)">删除</button>
-              </div>
+            <div class="reply-actions">
+              <button @click="replyComment(reply.id)">回复</button>
+              <button v-if="userStore.isAdmin || (userStore.isAuthenticated && userStore.user?.id === reply.userId)" @click="deleteComment(reply.id, comment.id)">删除</button>
+            </div>
             </div>
           </div>
         </div>
@@ -178,6 +179,17 @@ const fetchComments = async () => {
     totalComments.value = await commentStore.getCommentsCountByPostId(id, parentId)
     // 获取第一页评论（最新的评论），默认不加载回复
     const comments = await commentStore.fetchCommentsByPostIdWithPagination(id, parentId, lastCommentId.value, pageSize.value)
+    
+    // 为每个评论获取回复数
+    for (const comment of comments) {
+      try {
+        comment.replyCount = await commentStore.getCommentsCountByPostId(id, comment.id)
+      } catch (error) {
+        console.error(`获取评论 ${comment.id} 的回复数失败:`, error)
+        comment.replyCount = 0
+      }
+    }
+    
     commentStore.comments = comments
     // 更新最后一条评论的ID（现在是最小的ID，因为按时间倒序排序）
     if (comments.length > 0) {
@@ -203,6 +215,16 @@ const loadMoreComments = async () => {
     const parentId = 0 // 顶级评论的父ID为0
     // 获取下一页评论（更旧的评论）
     const moreComments = await commentStore.fetchCommentsByPostIdWithPagination(id, parentId, lastCommentId.value, pageSize.value)
+    
+    // 为每个新评论获取回复数
+    for (const comment of moreComments) {
+      try {
+        comment.replyCount = await commentStore.getCommentsCountByPostId(id, comment.id)
+      } catch (error) {
+        console.error(`获取评论 ${comment.id} 的回复数失败:`, error)
+        comment.replyCount = 0
+      }
+    }
     
     if (moreComments.length > 0) {
       // 添加到现有评论列表
@@ -418,7 +440,44 @@ const recordViewHistory = async () => {
 }
 
 const formatDate = (dateString: string) => {
+  // 检查 dateString 是否有效
+  if (!dateString) {
+    return '未知时间'
+  }
+  
+  // 尝试解析日期
   const date = new Date(dateString)
+  
+  // 检查日期是否有效
+  if (isNaN(date.getTime())) {
+    // 尝试处理不同格式的日期字符串
+    try {
+      // 处理 yyyy-MM-dd HH:mm:ss 格式
+      const parts = dateString.match(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/)
+      if (parts) {
+        const [, year, month, day, hours, minutes, seconds] = parts
+        const parsedDate = new Date(
+          parseInt(year),
+          parseInt(month) - 1,
+          parseInt(day),
+          parseInt(hours),
+          parseInt(minutes),
+          parseInt(seconds)
+        )
+        if (!isNaN(parsedDate.getTime())) {
+          return formatValidDate(parsedDate)
+        }
+      }
+    } catch (error) {
+      console.error('日期解析失败:', error)
+    }
+    return '未知时间'
+  }
+  
+  return formatValidDate(date)
+}
+
+const formatValidDate = (date: Date) => {
   const now = new Date()
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
   
@@ -656,31 +715,41 @@ onMounted(async () => {
 }
 
 .toggle-replies-btn {
-  padding: 6px 12px;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 20px;
+  padding: 8px 16px;
+  background-color: #f0f8ff;
+  border: 1px solid #3498db;
+  border-radius: 25px;
   cursor: pointer;
   font-size: 14px;
-  color: #6c757d;
+  font-weight: 500;
+  color: #3498db;
   transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .toggle-replies-btn:hover:not(:disabled) {
-  background-color: #e9ecef;
-  color: #495057;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: #3498db;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
 }
 
 .toggle-replies-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+  color: #6c757d;
 }
 
 .toggle-replies-btn:disabled:hover {
   transform: none;
   box-shadow: none;
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+  color: #6c757d;
 }
 
 .reply-form {

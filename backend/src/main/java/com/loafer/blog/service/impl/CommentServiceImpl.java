@@ -98,16 +98,13 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             comment.setUser(new UserVO(user));
         }
         
-        // 更新帖子评论数
-        if (comment.getParentId() == 0L) {
-            // 只统计顶级评论
-            Post post = postMapper.selectById(comment.getPostId());
-            if (post != null) {
-                UpdateWrapper<Post> wrapper = new UpdateWrapper<>();
-                wrapper.eq("id", comment.getPostId())
-                        .set("comment_count", post.getCommentCount() != null ? post.getCommentCount() + 1 : 1);
-                postMapper.update(null, wrapper);
-            }
+        // 更新帖子评论数（所有评论都计入，包括回复）
+        Post post = postMapper.selectById(comment.getPostId());
+        if (post != null) {
+            UpdateWrapper<Post> wrapper = new UpdateWrapper<>();
+            wrapper.eq("id", comment.getPostId())
+                    .set("comment_count", post.getCommentCount() != null ? post.getCommentCount() + 1 : 1);
+            postMapper.update(null, wrapper);
         }
         
         return comment;
@@ -124,18 +121,20 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         // 先删除回复
         QueryWrapper<Comment> replyWrapper = new QueryWrapper<>();
         replyWrapper.eq("parent_id", id);
-        baseMapper.delete(replyWrapper);
+        int replyCount = baseMapper.delete(replyWrapper);
         
         // 再删除评论
         boolean result = baseMapper.deleteById(id) > 0;
         
-        // 更新帖子评论数
-        if (result && comment.getParentId() == 0) { // 只统计顶级评论
+        // 更新帖子评论数（所有评论都计入，包括回复）
+        if (result) {
             Post post = postMapper.selectById(comment.getPostId());
             if (post != null) {
+                // 计算要减少的评论数（当前评论 + 所有回复）
+                int totalDeleteCount = 1 + replyCount;
                 UpdateWrapper<Post> wrapper = new UpdateWrapper<>();
                 wrapper.eq("id", comment.getPostId())
-                        .set("comment_count", Math.max(0, post.getCommentCount() != null ? post.getCommentCount() - 1 : 0));
+                        .set("comment_count", Math.max(0, post.getCommentCount() != null ? post.getCommentCount() - totalDeleteCount : 0));
                 postMapper.update(null, wrapper);
             }
         }

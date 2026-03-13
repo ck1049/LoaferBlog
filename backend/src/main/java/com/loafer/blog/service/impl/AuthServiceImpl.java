@@ -19,16 +19,20 @@ import com.loafer.blog.utils.*;
 import com.loafer.blog.config.BusinessRSAKeyManager;
 import com.loafer.blog.model.vo.LoginResponseVO;
 import com.loafer.blog.model.vo.UserVO;
+import io.micrometer.common.util.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
 
+@Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
     @Autowired
@@ -57,11 +61,12 @@ public class AuthServiceImpl implements AuthService {
     // 文件上传路径配置
     @Value("${file.upload.avatar-dir}")
     private String AVATAR_DIR;
-    
+
     @Value("${file.access.prefix}")
     private String ACCESS_PREFIX;
 
     @Override
+    @Transactional
     public ResponseVO<Void> register(RegisterDTO registerDTO) {
         try {
             // 检查用户名是否已存在
@@ -75,9 +80,10 @@ public class AuthServiceImpl implements AuthService {
             User user = new User();
             user.setUsername(registerDTO.getUsername());
             // 加密邮箱
-            if (registerDTO.getEmail() != null && !registerDTO.getEmail().isEmpty()) {
+            String explainEmail = registerDTO.getEmail();
+            if (StringUtils.isNotBlank(explainEmail)) {
                 try {
-                    byte[] encryptedEmail = RSAUtils.encrypt(registerDTO.getEmail().getBytes(), businessRSAKeyManager.getPublicKey());
+                    byte[] encryptedEmail = RSAUtils.encrypt(explainEmail.getBytes(), businessRSAKeyManager.getPublicKey());
                     user.setEmail(RSAUtils.base64Encode(encryptedEmail));
                 } catch (Exception e) {
                     return ResponseVO.error("邮箱加密失败: " + e.getMessage());
@@ -86,35 +92,38 @@ public class AuthServiceImpl implements AuthService {
             user.setPassword(passwordEncoder.encode(registerDTO.getPassword()));
             user.setNickname(registerDTO.getNickname());
             user.setStatus(1);
-            userMapper.insert(user);
-            
+
             // 为新用户生成默认头像
             try {
                 String fileName = AvatarGenerator.generateAvatar(user.getUsername(), AVATAR_DIR);
                 String avatarUrl = ACCESS_PREFIX + "/avatars/" + fileName;
                 user.setAvatar(avatarUrl);
-                userMapper.updateById(user);
             } catch (Exception e) {
                 // 头像生成失败不影响注册流程，只记录日志
-                System.out.println("生成默认头像失败: " + e.getMessage());
+                log.error("生成默认头像失败: ", e);
             }
+            userMapper.insert(user);
 
             // 为新用户分配默认角色（普通用户）
             UserRole userRole = new UserRole();
             userRole.setUserId(user.getId());
-            userRole.setRoleId(2L); // 普通用户角色ID
+            // 普通用户角色ID
+            userRole.setRoleId(2L);
             userRoleMapper.insert(userRole);
 
             // 发送欢迎消息
             Message welcomeMessage = new Message();
-            welcomeMessage.setSenderId(1L); // 管理员ID
+            // 管理员ID
+            welcomeMessage.setSenderId(1L);
             welcomeMessage.setReceiverId(user.getId());
             welcomeMessage.setContent("Hi，欢迎加入LoaferBlog。");
-            welcomeMessage.setMessageType(1); // 文本消息
-            welcomeMessage.setSendStatus(1); // 发送成功
-            welcomeMessage.setIsTop(0); // 非置顶
+            // 文本消息
+            welcomeMessage.setMessageType(1);
+            // 发送成功
+            welcomeMessage.setSendStatus(1);
+            // 非置顶
+            welcomeMessage.setIsTop(0);
             messageService.createMessage(welcomeMessage);
-
             return ResponseVO.success(null);
         } catch (Exception e) {
             return ResponseVO.error("注册失败: " + e.getMessage());
@@ -154,29 +163,8 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 构建用户信息
-            UserVO userVO = new UserVO();
-            userVO.setId(existingUser.getId());
-            userVO.setUsername(existingUser.getUsername());
-            // 解密邮箱后脱敏
-            if (existingUser.getEmail() != null && !existingUser.getEmail().isEmpty()) {
-                try {
-                    byte[] decryptedEmail = RSAUtils.decrypt(RSAUtils.base64Decode(existingUser.getEmail()), businessRSAKeyManager.getPrivateKey());
-                    userVO.setEmail(SensitiveInfoUtils.maskEmail(new String(decryptedEmail)));
-                } catch (Exception e) {
-                    userVO.setEmail("邮箱解密失败");
-                }
-            }
-            userVO.setNickname(existingUser.getNickname());
-            userVO.setAvatar(existingUser.getAvatar());
-            userVO.setBio(existingUser.getBio());
+            UserVO userVO = new UserVO(existingUser);
             userVO.setRoles(roles);
-            
-            // 添加默认头像功能
-            if (userVO.getAvatar() == null || userVO.getAvatar().isEmpty()) {
-                userVO.setAvatar(FileUploadUtils.spliceUrl( ACCESS_PREFIX + "/avatars/default-avatar.png"));
-            } else {
-                userVO.setAvatar(FileUploadUtils.spliceUrl(userVO.getAvatar()));
-            }
 
             // 构建登录响应
             LoginResponseVO loginResponseVO = new LoginResponseVO();
