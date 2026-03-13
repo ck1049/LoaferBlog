@@ -118,14 +118,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 userVO.setEmail("邮箱解密失败");
             }
         }
-        
-        // 添加默认头像功能
-        if (userVO.getAvatar() == null || userVO.getAvatar().isEmpty()) {
-            userVO.setAvatar(FileUploadUtils.spliceUrl(ACCESS_PREFIX + "/avatars/default-avatar.png"));
-        } else {
-            userVO.setAvatar(FileUploadUtils.spliceUrl(userVO.getAvatar()));
-        }
-        
+
         // 添加角色信息的查询和设置
         List<String> roles = new ArrayList<>();
         QueryWrapper<UserRole> userRoleWrapper = new QueryWrapper<>();

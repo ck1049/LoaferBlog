@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '../stores/user'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory('/loafer-blog'),
   routes: [
     {
       path: '/',

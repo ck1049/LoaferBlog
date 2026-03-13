@@ -33,7 +33,7 @@ server:
   port: 8080
   # 静态资源配置
   servlet:
-    context-path: /
+    context-path: /loafer-blog
 
 jwt:
   secret: loafer_blog_high_strength_jwt_secret_key
@@ -46,7 +46,7 @@ file:
     avatar-dir: /uploads/avatars
   access:
     prefix: /uploads
-    domain: http://localhost:8080
+    domain: http://localhost:8080/loafer-blog
   rsa:
     business:
       private-key-path: /rsa/business/private.key

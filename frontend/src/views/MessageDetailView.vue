@@ -129,6 +129,10 @@ const handleFileUpload = async (event: Event) => {
     });
 
     const receiverId = Number(route.params.id);
+    if (isNaN(receiverId)) {
+      console.error('Invalid user ID for file upload:', route.params.id);
+      return;
+    }
     if (userStore.user) {
       let messageType = MessageType.FILE; // 默认文件
       if (file.type.startsWith('image/')) {
@@ -159,6 +163,10 @@ const sendMessage = async () => {
   if (!messageContent.value.trim()) return;
   
   const receiverId = Number(route.params.id);
+  if (isNaN(receiverId)) {
+    console.error('Invalid user ID for sending message:', route.params.id);
+    return;
+  }
   if (userStore.user) {
     await messageStore.replyMessage({
       receiverId,
@@ -181,6 +189,10 @@ watch(
 
 onMounted(async () => {
   const otherUserId = Number(route.params.id);
+  if (isNaN(otherUserId)) {
+    console.error('Invalid user ID:', route.params.id);
+    return;
+  }
   if (userStore.user) {
     await messageStore.fetchMessageHistory(userStore.user.id, otherUserId);
     // Mark messages as read when conversation is opened

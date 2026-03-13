@@ -5,7 +5,7 @@ import axios from 'axios'
  * 例如：request.get('/posts') 实际请求 /loafer-blog/api/posts
  */
 export const request = axios.create({
-  baseURL: '/api',
+  baseURL: '/loafer-blog/api',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',

@@ -14,15 +14,15 @@
     <!-- 好友列表 -->
     <div class="section-title" v-if="!searchUsername">好友列表</div>
     <div class="user-list" v-if="!searchUsername && friends.length > 0">
-      <div v-for="friend in friends" :key="friend.userId" class="user-item" @click="viewMessage(friend.userId)">
+      <div v-for="friend in friends" :key="friend.id" class="user-item" @click="viewMessage(friend.id)">
         <div class="user-info">
-          <img :src="friend.avatar || '/default-avatar.png'" :alt="friend.username" class="user-avatar" />
+          <img :src="friend.avatar" :alt="friend.username" class="user-avatar" />
           <div class="user-details">
             <div class="username">{{ friend.username }}</div>
             <div class="nickname">{{ friend.nickname || friend.username }}</div>
           </div>
         </div>
-        <button class="message-btn" @click.stop="viewMessage(friend.userId)">
+        <button class="message-btn" @click.stop="viewMessage(friend.id)">
           发消息
         </button>
       </div>
@@ -36,7 +36,7 @@
     <div class="user-list" v-if="searchUsername && users.length > 0">
       <div v-for="user in users" :key="user.id" class="user-item">
         <div class="user-info">
-          <img :src="user.avatar || '/default-avatar.png'" :alt="user.username" class="user-avatar" />
+          <img :src="user.avatar" :alt="user.username" class="user-avatar" />
           <div class="user-details">
             <div class="username">{{ user.username }}</div>
             <div class="nickname">{{ user.nickname || user.username }}</div>
@@ -206,12 +206,17 @@ const addFriend = async (userId: number, username: string) => {
 
 // 判断是否为好友
 const isFriend = (userId: number) => {
-  return friends.value.some(friend => friend.userId === userId);
+  return friends.value.some(friend => friend.id === userId);
 };
 
 // 查看消息
-const viewMessage = (userId: number) => {
-  router.push(`/messages/${userId}`);
+const viewMessage = (userId: number | string) => {
+  const parsedId = Number(userId);
+  if (!isNaN(parsedId)) {
+    router.push(`/messages/${parsedId}`);
+  } else {
+    console.error('Invalid userId:', userId);
+  }
 };
 
 // 页面加载时获取好友列表
