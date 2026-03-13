@@ -22,6 +22,8 @@ public class Comment {
     private Long userId;
     @TableField("parent_id")
     private Long parentId;
+    @TableField("top_level_id")
+    private Long topLevelId;
     private String content;
     @TableField("original_content")
     private String originalContent;

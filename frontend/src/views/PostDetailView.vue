@@ -96,6 +96,7 @@
                     <span>{{ reply.user?.nickname?.charAt(0) || '?' }}</span>
                   </div>
                   <span class="reply-author">{{ reply.user?.nickname }}</span>
+                  <span v-if="reply.parentId !== reply.topLevelId" class="reply-to">回复 @{{ getReplyToUser(reply.parentId, comment.replies) }}</span>
                 </div>
                 <span class="reply-time">{{ formatDate(reply.createdAt) }}</span>
               </div>
@@ -103,6 +104,12 @@
             <div class="reply-actions">
               <button @click="replyComment(reply.id)">回复</button>
               <button v-if="userStore.isAdmin || (userStore.isAuthenticated && userStore.user?.id === reply.userId)" @click="deleteComment(reply.id, comment.id)">删除</button>
+            </div>
+            <!-- 子评论的回复表单 -->
+            <div v-if="replyingTo === reply.id" class="reply-form">
+              <textarea v-model="replyContent" placeholder="写下你的回复..." rows="3"></textarea>
+              <button @click="submitReply(reply.id)">提交回复</button>
+              <button @click="cancelReply">取消</button>
             </div>
             </div>
           </div>
@@ -183,7 +190,7 @@ const fetchComments = async () => {
     // 为每个评论获取回复数
     for (const comment of comments) {
       try {
-        comment.replyCount = await commentStore.getCommentsCountByPostId(id, comment.id)
+        comment.replyCount = await commentStore.getCommentsCountByTopLevelId(id, comment.id)
       } catch (error) {
         console.error(`获取评论 ${comment.id} 的回复数失败:`, error)
         comment.replyCount = 0
@@ -219,7 +226,7 @@ const loadMoreComments = async () => {
     // 为每个新评论获取回复数
     for (const comment of moreComments) {
       try {
-        comment.replyCount = await commentStore.getCommentsCountByPostId(id, comment.id)
+        comment.replyCount = await commentStore.getCommentsCountByTopLevelId(id, comment.id)
       } catch (error) {
         console.error(`获取评论 ${comment.id} 的回复数失败:`, error)
         comment.replyCount = 0
@@ -320,7 +327,14 @@ const toggleReplies = async (commentId: number) => {
     // 展开回复
     try {
       isLoadingReplies.value[commentId] = true
-      await commentStore.fetchRepliesByCommentId(commentId)
+      const id = Number(route.params.id)
+      // 使用新的按顶级评论ID查询评论的方法
+      const replies = await commentStore.fetchCommentsByTopLevelIdWithPagination(id, commentId, null, 10)
+      // 找到对应评论并设置回复
+      const comment = commentStore.comments.find(c => c.id === commentId)
+      if (comment) {
+        comment.replies = replies
+      }
       expandedComments.value.add(commentId)
     } catch (error) {
       console.error('获取回复失败:', error)
@@ -504,6 +518,12 @@ const formatValidDate = (date: Date) => {
   }
 }
 
+const getReplyToUser = (parentId: number, replies: any[]) => {
+  // 查找父评论
+  const parentReply = replies.find(reply => reply.id === parentId)
+  return parentReply?.user?.nickname || '未知用户'
+}
+
 onMounted(async () => {
   await fetchPost()
   await fetchComments()
@@ -685,6 +705,12 @@ onMounted(async () => {
 
 .reply-author {
   font-weight: bold;
+}
+
+.reply-to {
+  color: #999;
+  font-size: 12px;
+  margin-left: 5px;
 }
 
 .reply-time {

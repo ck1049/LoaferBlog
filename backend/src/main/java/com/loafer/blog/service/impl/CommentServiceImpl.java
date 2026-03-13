@@ -89,6 +89,27 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         if (comment.getParentId() == null) {
             comment.setParentId(0L);
         }
+        
+        // 设置顶级评论ID
+        if (comment.getParentId() == 0) {
+            // 顶级评论的顶级评论ID为0
+            comment.setTopLevelId(0L);
+        } else {
+            // 子评论的顶级评论ID为父评论的顶级评论ID
+            Comment parentComment = baseMapper.selectById(comment.getParentId());
+            if (parentComment != null) {
+                if (parentComment.getTopLevelId() == 0) {
+                    // 父评论是顶级评论
+                    comment.setTopLevelId(parentComment.getId());
+                } else {
+                    // 父评论是子评论
+                    comment.setTopLevelId(parentComment.getTopLevelId());
+                }
+            } else {
+                // 如果父评论不存在，设置为0
+                comment.setTopLevelId(0L);
+            }
+        }
 
         baseMapper.insert(comment);
         
@@ -108,6 +129,51 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         }
         
         return comment;
+    }
+
+    @Override
+    public List<Comment> getCommentsByTopLevelIdWithPagination(Long postId, Long topLevelId, Long lastCommentId, int size) {
+        QueryWrapper<Comment> wrapper = new QueryWrapper<>();
+        wrapper.eq("post_id", postId)
+                .eq("top_level_id", topLevelId)
+                .orderByDesc("create_time");
+        
+        // 如果提供了lastCommentId，则查询ID小于该值的记录
+        if (lastCommentId != null) {
+            wrapper.lt("id", lastCommentId);
+        }
+        
+        // 限制返回记录数
+        wrapper.last("LIMIT " + size);
+        
+        List<Comment> comments = baseMapper.selectList(wrapper);
+        
+        // 批量加载用户信息
+        if (!comments.isEmpty()) {
+            // 提取所有userId
+            List<Long> userIds = comments.stream().map(Comment::getUserId).distinct().collect(Collectors.toList());
+            // 批量查询用户
+            List<User> users = userMapper.selectByIds(userIds);
+            // 转换为Map，方便查找
+            Map<Long, User> userMap = users.stream().collect(Collectors.toMap(User::getId, user -> user));
+            // 为每个评论设置用户信息（转换为UserVO）
+            for (Comment comment : comments) {
+                User user = userMap.get(comment.getUserId());
+                if (user != null) {
+                    comment.setUser(new UserVO(user));
+                }
+            }
+        }
+        
+        return comments;
+    }
+
+    @Override
+    public int getCommentsCountByTopLevelId(Long postId, Long topLevelId) {
+        QueryWrapper<Comment> wrapper = new QueryWrapper<>();
+        wrapper.eq("post_id", postId)
+                .eq("top_level_id", topLevelId);
+        return baseMapper.selectCount(wrapper).intValue();
     }
 
     @Override

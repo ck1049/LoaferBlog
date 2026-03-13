@@ -48,6 +48,24 @@ public class CommentController {
         return ResponseEntity.ok(replies);
     }
 
+    @GetMapping("/top-level/{postId}/pagination")
+    public ResponseEntity<List<Comment>> getCommentsByTopLevelIdWithPagination(
+            @PathVariable Long postId,
+            @RequestParam Long topLevelId,
+            @RequestParam(required = false) Long lastCommentId,
+            @RequestParam(defaultValue = "5") int size) {
+        List<Comment> comments = commentService.getCommentsByTopLevelIdWithPagination(postId, topLevelId, lastCommentId, size);
+        return ResponseEntity.ok(comments);
+    }
+
+    @GetMapping("/top-level/{postId}/count")
+    public ResponseEntity<Integer> getCommentsCountByTopLevelId(
+            @PathVariable Long postId,
+            @RequestParam Long topLevelId) {
+        int count = commentService.getCommentsCountByTopLevelId(postId, topLevelId);
+        return ResponseEntity.ok(count);
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Comment> createComment(@RequestBody Comment comment, @RequestAttribute("userId") Long userId) {

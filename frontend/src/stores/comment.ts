@@ -8,6 +8,7 @@ interface Comment {
   content: string;
   filteredContent: string;
   parentId: number;
+  topLevelId: number;
   createdAt: string;
   user?: {
     id: number;
@@ -142,6 +143,33 @@ export const useCommentStore = defineStore('comment', {
       } catch (error) {
         console.error(`Failed to delete comment ${id}:`, error);
         return false;
+      }
+    },
+    async fetchCommentsByTopLevelIdWithPagination(postId: number, topLevelId: number, lastCommentId: number | null, size: number) {
+      try {
+        // 构建参数对象，只包含非 null 的值
+        const params: any = { topLevelId, size };
+        if (lastCommentId !== null) {
+          params.lastCommentId = lastCommentId;
+        }
+        const response = await axios.get(`/api/comments/top-level/${postId}/pagination`, {
+          params
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Failed to fetch comments by top level id with pagination:', error);
+        return [];
+      }
+    },
+    async getCommentsCountByTopLevelId(postId: number, topLevelId: number) {
+      try {
+        const response = await axios.get(`/api/comments/top-level/${postId}/count`, {
+          params: { topLevelId }
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Failed to get comments count by top level id:', error);
+        return 0;
       }
     },
   },

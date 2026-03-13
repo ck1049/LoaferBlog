@@ -255,6 +255,7 @@ CREATE TABLE IF NOT EXISTS comment (
     post_id INTEGER NOT NULL,            -- 帖子ID
     user_id INTEGER NOT NULL,            -- 用户ID
     parent_id INTEGER,                   -- 父评论ID（用于回复）
+    top_level_id INTEGER DEFAULT 0,      -- 顶级评论ID（用于存储所属的顶级评论）
     content TEXT NOT NULL,              -- 过滤后的评论内容
     original_content TEXT,              -- 原始评论内容
     status INTEGER DEFAULT 1,           -- 状态：1-正常，0-禁用
@@ -270,6 +271,7 @@ COMMENT ON COLUMN comment.id IS '评论ID';
 COMMENT ON COLUMN comment.post_id IS '帖子ID';
 COMMENT ON COLUMN comment.user_id IS '用户ID';
 COMMENT ON COLUMN comment.parent_id IS '父评论ID（用于回复）';
+COMMENT ON COLUMN comment.top_level_id IS '顶级评论ID（用于存储所属的顶级评论）';
 COMMENT ON COLUMN comment.content IS '过滤后的评论内容';
 COMMENT ON COLUMN comment.original_content IS '原始评论内容';
 COMMENT ON COLUMN comment.status IS '状态：1-正常，0-禁用';

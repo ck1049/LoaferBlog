@@ -13,4 +13,6 @@ public interface CommentService extends IService<Comment> {
     Comment createComment(Comment comment);
     boolean deleteComment(Long id, UserVO userVO);
     List<Comment> getRepliesByCommentId(Long commentId);
+    List<Comment> getCommentsByTopLevelIdWithPagination(Long postId, Long topLevelId, Long lastCommentId, int size);
+    int getCommentsCountByTopLevelId(Long postId, Long topLevelId);
 }
