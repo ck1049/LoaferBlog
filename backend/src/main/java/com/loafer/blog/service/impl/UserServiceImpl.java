@@ -109,15 +109,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         updateById(user);
 
         UserVO userVO = new UserVO(user);
-        // 对邮箱进行脱敏处理
-        if (userVO.getEmail() != null && !userVO.getEmail().isEmpty()) {
-            try {
-                byte[] decryptedEmail = RSAUtils.decrypt(RSAUtils.base64Decode(userVO.getEmail()), businessRSAKeyManager.getPrivateKey());
-                userVO.setEmail(SensitiveInfoUtils.maskEmail(new String(decryptedEmail)));
-            } catch (Exception e) {
-                userVO.setEmail("邮箱解密失败");
-            }
-        }
 
         // 添加角色信息的查询和设置
         List<String> roles = new ArrayList<>();
@@ -189,15 +180,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             
             // 返回更新后的用户信息
             UserVO userVO = new UserVO(user);
-            // 对邮箱进行脱敏处理
-            if (userVO.getEmail() != null && !userVO.getEmail().isEmpty()) {
-                try {
-                    byte[] decryptedEmail = RSAUtils.decrypt(RSAUtils.base64Decode(userVO.getEmail()), businessRSAKeyManager.getPrivateKey());
-                    userVO.setEmail(SensitiveInfoUtils.maskEmail(new String(decryptedEmail)));
-                } catch (Exception e) {
-                    userVO.setEmail("邮箱解密失败");
-                }
-            }
             
             // 添加角色信息的查询和设置
             List<String> roles = new ArrayList<>();
