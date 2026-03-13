@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.loafer.blog.model.vo.UserVO;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -34,4 +35,8 @@ public class Comment {
     private Integer deleted;
     @TableField(fill = FieldFill.UPDATE)
     private LocalDateTime deleteTime;
+    
+    // 关联用户信息（非数据库字段）
+    @TableField(exist = false)
+    private UserVO user;
 }

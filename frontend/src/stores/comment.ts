@@ -13,6 +13,7 @@ interface Comment {
     id: number;
     username: string;
     nickname: string;
+    avatar: string;
   };
   replies?: Comment[];
 }
@@ -32,7 +33,7 @@ export const useCommentStore = defineStore('comment', {
     async fetchCommentsByPostId(postId: number) {
       try {
         const response = await axios.get(`/api/comments/post/${postId}`);
-        this.comments = response.data.data;
+        this.comments = response.data;
         // 为每个评论获取回复
         for (const comment of this.comments) {
           await this.fetchRepliesByCommentId(comment.id, comment);
@@ -51,11 +52,8 @@ export const useCommentStore = defineStore('comment', {
         const response = await axios.get(`/api/comments/post/${postId}/pagination`, {
           params
         });
-        const newComments = response.data.data;
-        // 为每个新评论获取回复
-        for (const comment of newComments) {
-          await this.fetchRepliesByCommentId(comment.id, comment);
-        }
+        const newComments = response.data;
+        // 默认不加载回复，由展开/折叠功能触发
         return newComments;
       } catch (error) {
         console.error('Failed to fetch comments with pagination:', error);
@@ -67,7 +65,7 @@ export const useCommentStore = defineStore('comment', {
         const response = await axios.get(`/api/comments/post/${postId}/count`, {
           params: { parentId }
         });
-        return response.data.data;
+        return response.data;
       } catch (error) {
         console.error('Failed to get comments count:', error);
         return 0;
@@ -76,7 +74,7 @@ export const useCommentStore = defineStore('comment', {
     async fetchRepliesByCommentId(commentId: number, parentComment?: Comment) {
       try {
         const response = await axios.get(`/api/comments/replies/${commentId}`);
-        const replies = response.data.data;
+        const replies = response.data;
         if (parentComment) {
           parentComment.replies = replies;
         } else {
@@ -109,11 +107,11 @@ export const useCommentStore = defineStore('comment', {
             if (!parentComment.replies) {
               parentComment.replies = [];
             }
-            parentComment.replies.push(response.data.data);
+            parentComment.replies.push(response.data);
           }
         } else {
           // 如果是新评论，添加到评论列表
-          this.comments.push(response.data.data);
+          this.comments.push(response.data);
         }
         return true;
       } catch (error) {

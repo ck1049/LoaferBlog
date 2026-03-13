@@ -39,7 +39,7 @@ public class SensitiveWordFilter {
         List<com.loafer.blog.model.entity.SensitiveWord> sensitiveWords = sensitiveWordService.list();
         List<String> words = sensitiveWords.stream()
                 .map(com.loafer.blog.model.entity.SensitiveWord::getWord)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
         reloadWords(words);
     }
 

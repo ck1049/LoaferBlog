@@ -5,14 +5,19 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.loafer.blog.model.entity.Comment;
 import com.loafer.blog.model.entity.Post;
+import com.loafer.blog.model.entity.User;
 import com.loafer.blog.mapper.CommentMapper;
 import com.loafer.blog.mapper.PostMapper;
+import com.loafer.blog.mapper.UserMapper;
+import com.loafer.blog.model.vo.UserVO;
 import com.loafer.blog.service.CommentService;
 import com.loafer.blog.common.SensitiveWordFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {
@@ -21,18 +26,12 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     
     @Autowired
     private PostMapper postMapper;
+    
+    @Autowired
+    private UserMapper userMapper;
 
     public CommentServiceImpl(SensitiveWordFilter sensitiveWordFilter) {
         this.sensitiveWordFilter = sensitiveWordFilter;
-    }
-
-    @Override
-    public List<Comment> getCommentsByPostId(Long postId) {
-        QueryWrapper<Comment> wrapper = new QueryWrapper<>();
-        wrapper.eq("post_id", postId)
-                .eq("parent_id", 0)
-                .orderByAsc("create_time");
-        return baseMapper.selectList(wrapper);
     }
 
     @Override
@@ -50,7 +49,26 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         // 限制返回记录数
         wrapper.last("LIMIT " + size);
         
-        return baseMapper.selectList(wrapper);
+        List<Comment> comments = baseMapper.selectList(wrapper);
+        
+        // 批量加载用户信息
+        if (!comments.isEmpty()) {
+            // 提取所有userId
+            List<Long> userIds = comments.stream().map(Comment::getUserId).distinct().collect(Collectors.toList());
+            // 批量查询用户
+            List<User> users = userMapper.selectByIds(userIds);
+            // 转换为Map，方便查找
+            Map<Long, User> userMap = users.stream().collect(Collectors.toMap(User::getId, user -> user));
+            // 为每个评论设置用户信息（转换为UserVO）
+            for (Comment comment : comments) {
+                User user = userMap.get(comment.getUserId());
+                if (user != null) {
+                    comment.setUser(new UserVO(user));
+                }
+            }
+        }
+        
+        return comments;
     }
 
     @Override
@@ -74,8 +92,15 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
         baseMapper.insert(comment);
         
+        // 加载用户信息并转换为UserVO
+        User user = userMapper.selectById(comment.getUserId());
+        if (user != null) {
+            comment.setUser(new UserVO(user));
+        }
+        
         // 更新帖子评论数
-        if (comment.getParentId() == 0) { // 只统计顶级评论
+        if (comment.getParentId() == 0L) {
+            // 只统计顶级评论
             Post post = postMapper.selectById(comment.getPostId());
             if (post != null) {
                 UpdateWrapper<Post> wrapper = new UpdateWrapper<>();
@@ -123,6 +148,26 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         QueryWrapper<Comment> wrapper = new QueryWrapper<>();
         wrapper.eq("parent_id", commentId)
                 .orderByAsc("create_time");
-        return baseMapper.selectList(wrapper);
+        
+        List<Comment> replies = baseMapper.selectList(wrapper);
+        
+        // 批量加载用户信息
+        if (!replies.isEmpty()) {
+            // 提取所有userId
+            List<Long> userIds = replies.stream().map(Comment::getUserId).distinct().collect(Collectors.toList());
+            // 批量查询用户
+            List<User> users = userMapper.selectBatchIds(userIds);
+            // 转换为Map，方便查找
+            java.util.Map<Long, User> userMap = users.stream().collect(Collectors.toMap(User::getId, user -> user));
+            // 为每个回复设置用户信息（转换为UserVO）
+            for (Comment reply : replies) {
+                User user = userMap.get(reply.getUserId());
+                if (user != null) {
+                    reply.setUser(new UserVO(user));
+                }
+            }
+        }
+        
+        return replies;
     }
 }

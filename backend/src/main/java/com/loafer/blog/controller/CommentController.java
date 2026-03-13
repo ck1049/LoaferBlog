@@ -19,11 +19,7 @@ public class CommentController {
         this.commentService = commentService;
     }
 
-    @GetMapping("/post/{postId}")
-    public ResponseEntity<List<Comment>> getCommentsByPostId(@PathVariable Long postId) {
-        List<Comment> comments = commentService.getCommentsByPostId(postId);
-        return ResponseEntity.ok(comments);
-    }
+
 
     @GetMapping("/post/{postId}/pagination")
     public ResponseEntity<List<Comment>> getCommentsByPostIdWithPagination(

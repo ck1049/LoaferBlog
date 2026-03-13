@@ -2,8 +2,8 @@ package com.loafer.blog.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
-import com.loafer.blog.dto.LoginDTO;
-import com.loafer.blog.dto.RegisterDTO;
+import com.loafer.blog.model.dto.LoginDTO;
+import com.loafer.blog.model.dto.RegisterDTO;
 import com.loafer.blog.model.dto.ChangePasswordDTO;
 import com.loafer.blog.model.entity.User;
 import com.loafer.blog.model.entity.UserRole;
@@ -12,13 +12,13 @@ import com.loafer.blog.model.entity.Message;
 import com.loafer.blog.mapper.UserMapper;
 import com.loafer.blog.mapper.UserRoleMapper;
 import com.loafer.blog.mapper.RoleMapper;
+import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.service.AuthService;
 import com.loafer.blog.service.MessageService;
 import com.loafer.blog.utils.*;
 import com.loafer.blog.config.BusinessRSAKeyManager;
-import com.loafer.blog.vo.LoginResponseVO;
-import com.loafer.blog.vo.ResponseVO;
-import com.loafer.blog.vo.UserVO;
+import com.loafer.blog.model.vo.LoginResponseVO;
+import com.loafer.blog.model.vo.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;

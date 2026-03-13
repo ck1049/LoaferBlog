@@ -55,8 +55,14 @@
       <div class="comment-list">
         <div v-for="comment in commentStore.sortedComments" :key="comment.id" class="comment-item">
           <div class="comment-header">
-            <span class="comment-author">{{ comment.user?.nickname }}</span>
-            <span class="comment-time">{{ comment.createdAt }}</span>
+            <div class="comment-user-info">
+              <img v-if="comment.user?.avatar" :src="comment.user.avatar" class="comment-avatar" alt="用户头像" />
+              <div v-else class="comment-avatar-placeholder">
+                <span>{{ comment.user?.nickname?.charAt(0) || '?' }}</span>
+              </div>
+              <span class="comment-author">{{ comment.user?.nickname }}</span>
+            </div>
+            <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
           </div>
           <div class="comment-body">{{ comment.content }}</div>
           <div class="comment-actions">
@@ -68,11 +74,30 @@
             <button @click="submitReply(comment.id)">提交回复</button>
             <button @click="cancelReply">取消</button>
           </div>
-          <div class="replies">
+          <!-- 回复数和展开/折叠按钮 -->
+          <div v-if="comment.replies && comment.replies.length > 0" class="comment-replies-info">
+            <button 
+              @click="toggleReplies(comment.id)" 
+              class="toggle-replies-btn"
+              :disabled="isLoadingReplies[comment.id]"
+            >
+              <span v-if="isLoadingReplies[comment.id]">加载中...</span>
+              <span v-else-if="expandedComments.has(comment.id)">收起回复 ({{ comment.replies.length }})</span>
+              <span v-else>查看回复 ({{ comment.replies.length }})</span>
+            </button>
+          </div>
+          <!-- 回复列表 -->
+          <div v-if="expandedComments.has(comment.id)" class="replies">
             <div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
               <div class="reply-header">
-                <span class="reply-author">{{ reply.user?.nickname }}</span>
-                <span class="reply-time">{{ reply.createdAt }}</span>
+                <div class="reply-user-info">
+                  <img v-if="reply.user?.avatar" :src="reply.user.avatar" class="reply-avatar" alt="用户头像" />
+                  <div v-else class="reply-avatar-placeholder">
+                    <span>{{ reply.user?.nickname?.charAt(0) || '?' }}</span>
+                  </div>
+                  <span class="reply-author">{{ reply.user?.nickname }}</span>
+                </div>
+                <span class="reply-time">{{ formatDate(reply.createdAt) }}</span>
               </div>
               <div class="reply-body">{{ reply.content }}</div>
               <div class="reply-actions">
@@ -124,6 +149,10 @@ const isLoadingComments = ref(false)
 const showLoadMore = ref(false)
 const hasMoreComments = ref(true)
 
+// 回复展开/折叠状态
+const expandedComments = ref<Set<number>>(new Set())
+const isLoadingReplies = ref<Record<number, boolean>>({})
+
 const fetchPost = async () => {
   try {
     const id = Number(route.params.id)
@@ -147,7 +176,7 @@ const fetchComments = async () => {
     hasMoreComments.value = true
     // 获取评论总数
     totalComments.value = await commentStore.getCommentsCountByPostId(id, parentId)
-    // 获取第一页评论（最新的评论）
+    // 获取第一页评论（最新的评论），默认不加载回复
     const comments = await commentStore.fetchCommentsByPostIdWithPagination(id, parentId, lastCommentId.value, pageSize.value)
     commentStore.comments = comments
     // 更新最后一条评论的ID（现在是最小的ID，因为按时间倒序排序）
@@ -158,6 +187,8 @@ const fetchComments = async () => {
     // 检查是否需要显示"查看更多"按钮
     showLoadMore.value = comments.length > 0 && comments.length < totalComments.value
     hasMoreComments.value = comments.length === pageSize.value
+    // 重置展开状态
+    expandedComments.value = new Set()
   } catch (error) {
     console.error('获取评论失败:', error)
   }
@@ -256,6 +287,24 @@ const deleteComment = async (commentId: number, parentId?: number) => {
     }
   } catch (error) {
     console.error('删除评论失败:', error)
+  }
+}
+
+const toggleReplies = async (commentId: number) => {
+  if (expandedComments.value.has(commentId)) {
+    // 折叠回复
+    expandedComments.value.delete(commentId)
+  } else {
+    // 展开回复
+    try {
+      isLoadingReplies.value[commentId] = true
+      await commentStore.fetchRepliesByCommentId(commentId)
+      expandedComments.value.add(commentId)
+    } catch (error) {
+      console.error('获取回复失败:', error)
+    } finally {
+      isLoadingReplies.value[commentId] = false
+    }
   }
 }
 
@@ -370,13 +419,30 @@ const recordViewHistory = async () => {
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  const seconds = String(date.getSeconds()).padStart(2, '0')
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+  const now = new Date()
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  
+  // 相对时间显示
+  if (diffInSeconds < 60) {
+    return '刚刚'
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60)
+    return `${minutes}分钟前`
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600)
+    return `${hours}小时前`
+  } else if (diffInSeconds < 604800) {
+    const days = Math.floor(diffInSeconds / 86400)
+    return `${days}天前`
+  } else {
+    // 绝对时间显示
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    return `${year}-${month}-${day} ${hours}:${minutes}`
+  }
 }
 
 onMounted(async () => {
@@ -485,7 +551,34 @@ onMounted(async () => {
 .comment-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   margin-bottom: 10px;
+}
+
+.comment-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.comment-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #666;
+  font-size: 16px;
 }
 
 .comment-author {
@@ -495,6 +588,49 @@ onMounted(async () => {
 .comment-time {
   color: #999;
   font-size: 14px;
+}
+
+.reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.reply-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reply-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.reply-avatar-placeholder {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #666;
+  font-size: 12px;
+}
+
+.reply-author {
+  font-weight: bold;
+}
+
+.reply-time {
+  color: #999;
+  font-size: 12px;
 }
 
 .comment-actions {
@@ -513,6 +649,38 @@ onMounted(async () => {
 
 .comment-actions button:hover {
   background-color: #e0e0e0;
+}
+
+.comment-replies-info {
+  margin-top: 10px;
+}
+
+.toggle-replies-btn {
+  padding: 6px 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #6c757d;
+  transition: all 0.3s ease;
+}
+
+.toggle-replies-btn:hover:not(:disabled) {
+  background-color: #e9ecef;
+  color: #495057;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-replies-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.toggle-replies-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .reply-form {

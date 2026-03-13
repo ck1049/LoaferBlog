@@ -22,7 +22,15 @@ public class ResponseVO<T> {
         return new ResponseVO<>(200, "success", data);
     }
 
+    public static <T> ResponseVO<T> success(String message, T data) {
+        return new ResponseVO<>(200, message, data);
+    }
+
     public static <T> ResponseVO<T> error(String message) {
         return new ResponseVO<>(400, message, null);
+    }
+
+    public static <T> ResponseVO<T> error(int code, String message) {
+        return new ResponseVO<>(code, message, null);
     }
 }

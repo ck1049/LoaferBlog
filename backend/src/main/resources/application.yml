@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: dev
+    active: test
   datasource:
     url: jdbc:postgresql://localhost:5432/loafer_blog
     username: postgres

@@ -1,4 +1,4 @@
-package com.loafer.blog.dto;
+package com.loafer.blog.model.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

@@ -1,13 +1,12 @@
 package com.loafer.blog.controller;
 
 import com.loafer.blog.common.RsaUtilsBean;
-import com.loafer.blog.dto.LoginDTO;
-import com.loafer.blog.dto.RegisterDTO;
+import com.loafer.blog.model.dto.LoginDTO;
+import com.loafer.blog.model.dto.RegisterDTO;
 import com.loafer.blog.model.dto.ChangePasswordDTO;
+import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.service.AuthService;
-import com.loafer.blog.vo.LoginResponseVO;
-import com.loafer.blog.vo.ResponseVO;
-import com.loafer.blog.vo.UserVO;
+import com.loafer.blog.model.vo.LoginResponseVO;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

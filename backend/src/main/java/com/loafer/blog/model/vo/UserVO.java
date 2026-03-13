@@ -2,6 +2,7 @@ package com.loafer.blog.model.vo;
 
 import cn.hutool.extra.spring.SpringUtil;
 import com.loafer.blog.config.BusinessRSAKeyManager;
+import com.loafer.blog.utils.FileUploadUtils;
 import com.loafer.blog.utils.RSAUtils;
 import com.loafer.blog.utils.SensitiveInfoUtils;
 import io.micrometer.common.util.StringUtils;
@@ -44,5 +45,9 @@ public class UserVO {
 
         }
         return this.email;
+    }
+
+    public String getAvatar() {
+        return FileUploadUtils.spliceUrl(this.avatar);
     }
 }

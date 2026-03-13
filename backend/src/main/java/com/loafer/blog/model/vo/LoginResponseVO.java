@@ -1,4 +1,4 @@
-package com.loafer.blog.vo;
+package com.loafer.blog.model.vo;
 
 import lombok.Data;
 
