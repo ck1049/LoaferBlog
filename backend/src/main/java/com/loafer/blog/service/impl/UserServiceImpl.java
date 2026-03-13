@@ -320,7 +320,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public ResponseVO<?> getFriends(Long userId) {
+    public ResponseVO<List<UserVO>> getFriends(Long userId) {
         // 获取用户的好友列表
         QueryWrapper<Friend> wrapper = new QueryWrapper<>();
         wrapper.eq("user_id", userId)
@@ -329,17 +329,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         List<Friend> friends = friendMapper.selectList(wrapper);
 
         // 转换为包含用户信息的好友列表
-        List<Map<String, Object>> friendList = new ArrayList<>();
+        List<UserVO> friendList = new ArrayList<>();
         for (Friend friend : friends) {
             User user = getById(friend.getFriendId());
             if (user != null) {
-                Map<String, Object> friendInfo = new HashMap<>();
-                friendInfo.put("userId", user.getId());
-                friendInfo.put("username", user.getUsername());
-                friendInfo.put("nickname", user.getNickname());
-                friendInfo.put("avatar", user.getAvatar());
-                friendInfo.put("bio", user.getBio());
-                friendList.add(friendInfo);
+                UserVO userVO = new UserVO(user);
+                
+                // 添加角色信息的查询和设置
+                List<String> roles = new ArrayList<>();
+                QueryWrapper<UserRole> userRoleWrapper = new QueryWrapper<>();
+                userRoleWrapper.eq("user_id", user.getId());
+                List<UserRole> userRoles = userRoleMapper.selectList(userRoleWrapper);
+                for (UserRole userRole : userRoles) {
+                    Role role = roleMapper.selectById(userRole.getRoleId());
+                    if (role != null) {
+                        roles.add(role.getName());
+                    }
+                }
+                userVO.setRoles(roles);
+                
+                friendList.add(userVO);
             }
         }
 

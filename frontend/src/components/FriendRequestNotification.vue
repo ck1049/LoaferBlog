@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, defineExpose } from 'vue';
 import { useUserStore } from '../stores/user';
 
 const userStore = useUserStore();
@@ -95,6 +95,10 @@ onMounted(() => {
   if (userStore.token) {
     fetchFriendRequests();
   }
+});
+
+defineExpose({
+  fetchFriendRequests
 });
 </script>
 

@@ -4,7 +4,7 @@
       <div class="navbar-container">
         <router-link to="/" class="logo">LoaferBlog</router-link>
         <div class="nav-links">
-          <router-link to="/" class="nav-link home-btn">
+          <router-link to="/" class="nav-link home-btn" @click="handleNavClick">
             <img src="./assets/icons/home.svg" alt="首页" class="nav-svg-icon">
             <span class="nav-text">首页</span>
           </router-link>
@@ -17,14 +17,14 @@
               <img src="./assets/icons/settings.svg" alt="管理" class="nav-svg-icon">
               <span class="nav-text">管理</span>
             </router-link>
-            <router-link to="/messages" class="nav-link message-btn">
+            <router-link to="/messages" class="nav-link message-btn" @click="handleNavClick">
               <div class="message-icon-container">
                 <img src="./assets/icons/message.svg" alt="消息" class="nav-svg-icon">
                 <span v-if="messageStore.totalUnreadCount > 0" class="message-unread-badge">{{ messageStore.totalUnreadCount }}</span>
               </div>
               <span class="nav-text">消息</span>
             </router-link>
-            <router-link to="/add-friend" class="nav-link add-friend-btn">
+            <router-link to="/add-friend" class="nav-link add-friend-btn" @click="handleNavClick">
               <img src="./assets/icons/contacts.svg" alt="通讯录" class="nav-svg-icon">
               <span class="nav-text">通讯录</span>
             </router-link>
@@ -67,7 +67,7 @@
       </div>
       <router-view />
     </div>
-    <FriendRequestNotification />
+    <FriendRequestNotification ref="friendRequestNotificationRef" />
   </div>
 </template>
 
@@ -82,6 +82,7 @@ const userStore = useUserStore();
 const announcementStore = useAnnouncementStore();
 const messageStore = useMessageStore();
 const showAnnouncements = ref(false);
+const friendRequestNotificationRef = ref<InstanceType<typeof FriendRequestNotification>>();
 
 const logout = () => {
   userStore.logout();
@@ -91,6 +92,13 @@ const toggleAnnouncements = () => {
   showAnnouncements.value = !showAnnouncements.value;
   if (showAnnouncements.value) {
     announcementStore.fetchAnnouncements();
+  }
+};
+
+const handleNavClick = () => {
+  // 调用好友请求通知组件的fetchFriendRequests方法
+  if (friendRequestNotificationRef.value) {
+    friendRequestNotificationRef.value.fetchFriendRequests();
   }
 };
 

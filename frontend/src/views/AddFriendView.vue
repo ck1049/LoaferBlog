@@ -187,7 +187,7 @@ const addFriend = async (userId: number, username: string) => {
     });
     
     // 显示成功消息
-    alert(`成功添加 ${username} 为好友`);
+    alert(`请求发送成功，等待 ${username} 验证通过`);
     
     // 从列表中移除该用户
     users.value = users.value.filter(u => u.id !== userId);

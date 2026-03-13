@@ -3,6 +3,7 @@ package com.loafer.blog.controller;
 import com.loafer.blog.model.dto.UserDTO;
 import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.model.vo.UserVO;
+import java.util.List;
 import com.loafer.blog.service.UserService;
 import com.loafer.blog.service.PostInteractionService;
 import org.springframework.web.bind.annotation.*;
@@ -102,7 +103,7 @@ public class UserController {
 
     // 获取好友列表
     @GetMapping("/friends")
-    public ResponseVO<?> getFriends(@RequestAttribute("userId") Long userId) {
+    public ResponseVO<List<UserVO>> getFriends(@RequestAttribute("userId") Long userId) {
         return userService.getFriends(userId);
     }
 }

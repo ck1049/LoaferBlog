@@ -5,6 +5,7 @@ import com.loafer.blog.model.dto.UserDTO;
 import com.loafer.blog.model.entity.User;
 import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.model.vo.UserVO;
+import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService extends IService<User> {
@@ -16,5 +17,5 @@ public interface UserService extends IService<User> {
     ResponseVO<?> getFriendRequests(Long userId);
     ResponseVO<Void> acceptFriendRequest(Long userId, Long requestId);
     ResponseVO<Void> declineFriendRequest(Long userId, Long requestId);
-    ResponseVO<?> getFriends(Long userId);
+    ResponseVO<List<UserVO>> getFriends(Long userId);
 }
