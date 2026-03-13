@@ -6,6 +6,7 @@ import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.service.AnnouncementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,17 +28,20 @@ public class AnnouncementController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseVO<AnnouncementVO> createAnnouncement(@RequestBody AnnouncementDTO announcementDTO, HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         return announcementService.createAnnouncement(announcementDTO, userId);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseVO<AnnouncementVO> updateAnnouncement(@PathVariable Long id, @RequestBody AnnouncementDTO announcementDTO) {
         return announcementService.updateAnnouncement(id, announcementDTO);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseVO<Void> deleteAnnouncement(@PathVariable Long id) {
         return announcementService.deleteAnnouncement(id);
     }
