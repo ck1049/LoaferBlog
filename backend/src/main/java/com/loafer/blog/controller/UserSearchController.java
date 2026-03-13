@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.loafer.blog.model.entity.User;
 import com.loafer.blog.model.vo.UserVO;
 import com.loafer.blog.service.UserService;
-import com.loafer.blog.utils.SensitiveInfoUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -54,13 +53,6 @@ public class UserSearchController {
         List<User> users = userService.list(wrapper);
 
         // 转换为 UserVO
-        return users.stream().map(user -> {
-            UserVO userVO = new UserVO();
-            userVO.setId(user.getId());
-            userVO.setUsername(user.getUsername());
-            userVO.setNickname(user.getNickname());
-            userVO.setAvatar(user.getAvatar());
-            return userVO;
-        }).collect(Collectors.toList());
+        return users.stream().map(UserVO::new).collect(Collectors.toList());
     }
 }

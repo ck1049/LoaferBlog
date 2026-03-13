@@ -55,8 +55,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return ResponseVO.error("用户不存在");
         }
 
-        UserVO userVO = new UserVO();
-        BeanUtils.copyProperties(user, userVO);
+        UserVO userVO = new UserVO(user);
 
         // 添加角色信息的查询和设置
         List<String> roles = new ArrayList<>();
@@ -103,8 +102,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         updateById(user);
 
-        UserVO userVO = new UserVO();
-        BeanUtils.copyProperties(user, userVO);
+        UserVO userVO = new UserVO(user);
         // 对邮箱进行脱敏处理
         if (userVO.getEmail() != null && !userVO.getEmail().isEmpty()) {
             try {
@@ -191,8 +189,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             updateById(user);
             
             // 返回更新后的用户信息
-            UserVO userVO = new UserVO();
-            BeanUtils.copyProperties(user, userVO);
+            UserVO userVO = new UserVO(user);
             // 对邮箱进行脱敏处理
             if (userVO.getEmail() != null && !userVO.getEmail().isEmpty()) {
                 try {

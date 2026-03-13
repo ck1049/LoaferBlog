@@ -147,9 +147,6 @@ public class AuthServiceImpl implements AuthService {
                 return ResponseVO.error(400, "用户名或密码错误");
             }
 
-            // 生成JWT token
-            String token = jwtUtils.generateToken(existingUser.getId());
-
             // 获取用户角色
             List<String> roles = new ArrayList<>();
             QueryWrapper<UserRole> userRoleWrapper = new QueryWrapper<>();
@@ -165,6 +162,9 @@ public class AuthServiceImpl implements AuthService {
             // 构建用户信息
             UserVO userVO = new UserVO(existingUser);
             userVO.setRoles(roles);
+
+            // 生成JWT token，包含角色列表
+            String token = jwtUtils.generateToken(userVO);
 
             // 构建登录响应
             LoginResponseVO loginResponseVO = new LoginResponseVO();

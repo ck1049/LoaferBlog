@@ -1,15 +1,19 @@
 package com.loafer.blog.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.loafer.blog.model.vo.UserVO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class JwtUtils {
@@ -19,12 +23,13 @@ public class JwtUtils {
     @Value("${jwt.expiration}")
     private long expiration;
 
-    public String generateToken(Long userId) {
+    public String generateToken(UserVO userVO) {
         Date now = new Date();
         Date expireDate = new Date(now.getTime() + expiration * 1000);
 
         return Jwts.builder()
-                .setSubject(userId.toString())
+                .setSubject(userVO.getId().toString())
+                .claim("user", userVO)
                 .setIssuedAt(now)
                 .setExpiration(expireDate)
                 .signWith(getSecretKey(), SignatureAlgorithm.HS256)
@@ -39,9 +44,10 @@ public class JwtUtils {
                 .getBody();
     }
 
-    public Long getUserIdFromToken(String token) {
+    public UserVO getUserIdAndRolesFromToken(String token) throws JsonProcessingException {
         Claims claims = getClaimsFromToken(token);
-        return Long.parseLong(claims.getSubject());
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(mapper.writeValueAsString(claims.get("user")), UserVO.class);
     }
 
     public boolean isTokenExpired(String token) {

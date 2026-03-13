@@ -1,13 +1,22 @@
 package com.loafer.blog.config;
 
+import com.loafer.blog.model.security.LoaferUser;
+import com.loafer.blog.model.vo.UserVO;
 import com.loafer.blog.utils.JwtUtils;
 import com.loafer.blog.utils.TokenCache;
+import io.jsonwebtoken.lang.Collections;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -29,15 +38,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = getTokenFromRequest(request);
 
         if (token != null && jwtUtils.validateToken(token) && !tokenCache.containsToken(token)) {
-            Long userId = jwtUtils.getUserIdFromToken(token);
-            // 这里需要实现UserDetailsService来加载用户信息
-            // UserDetails userDetails = userDetailsService.loadUserByUsername(userId.toString());
-            // 暂时使用一个简单的实现 - 假设所有登录用户都是管理员
-            // TODO: 实现真正的角色管理
-            UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
-                    .username(userId.toString())
+            // 解析用户信息
+            UserVO userVO = jwtUtils.getUserIdAndRolesFromToken(token);
+            List<String> roleList = userVO.getRoles();
+            String[] roles = new String[0];
+            if (!Collections.isEmpty(roleList)) {
+                roles = new String[roleList.size()];
+                for (int i = 0; i < roleList.size(); i++) {
+                    roles[i] = roleList.get(i).toUpperCase();
+                }
+            }
+
+            // 构建用户详情
+            UserDetails userDetails = LoaferUser.builder()
+                    .userId(userVO.getId())
+                    .username(userVO.getUsername())
                     .password("")
-                    .authorities("ROLE_USER", "ROLE_ADMIN")
+                    .roles(roles)
                     .build();
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -46,7 +63,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             // 将userId设置为请求属性
-            request.setAttribute("userId", userId);
+            request.setAttribute("userId", userVO.getId());
         }
 
         chain.doFilter(request, response);

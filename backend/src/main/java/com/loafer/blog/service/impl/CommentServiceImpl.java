@@ -111,10 +111,14 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    public boolean deleteComment(Long id) {
+    public boolean deleteComment(Long id, UserVO userVO) {
         // 获取评论信息
         Comment comment = baseMapper.selectById(id);
         if (comment == null) {
+            return false;
+        }
+
+        if (!userVO.getRoles().contains("ROLE_ADMIN") && !comment.getUserId().equals(userVO.getId())) {
             return false;
         }
         

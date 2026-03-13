@@ -1,10 +1,13 @@
 package com.loafer.blog.controller;
 
 import com.loafer.blog.model.entity.Comment;
+import com.loafer.blog.model.security.LoaferUser;
+import com.loafer.blog.model.vo.UserVO;
 import com.loafer.blog.service.CommentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -46,6 +49,7 @@ public class CommentController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ResponseEntity<Comment> createComment(@RequestBody Comment comment, @RequestAttribute("userId") Long userId) {
         comment.setUserId(userId);
         Comment createdComment = commentService.createComment(comment);
@@ -53,9 +57,10 @@ public class CommentController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long id) {
-        boolean deleted = commentService.deleteComment(id);
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public ResponseEntity<Void> deleteComment(@PathVariable Long id, @AuthenticationPrincipal LoaferUser loaferUser) {
+        UserVO user = new UserVO(loaferUser);
+        boolean deleted = commentService.deleteComment(id, user);
         if (deleted) {
             return ResponseEntity.noContent().build();
         } else {

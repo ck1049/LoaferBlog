@@ -3,11 +3,13 @@ package com.loafer.blog.model.vo;
 import cn.hutool.extra.spring.SpringUtil;
 import com.loafer.blog.config.BusinessRSAKeyManager;
 import com.loafer.blog.model.entity.User;
+import com.loafer.blog.model.security.LoaferUser;
 import com.loafer.blog.utils.FileUploadUtils;
 import com.loafer.blog.utils.RSAUtils;
 import com.loafer.blog.utils.SensitiveInfoUtils;
 import io.micrometer.common.util.StringUtils;
 import lombok.Data;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.security.PrivateKey;
 import java.util.List;
@@ -22,6 +24,9 @@ public class UserVO {
     private String email;
     private List<String> roles;
 
+    public UserVO() {
+    }
+
     public UserVO(User user) {
         this.id = user.getId();
         this.username = user.getUsername();
@@ -31,7 +36,10 @@ public class UserVO {
         this.email = user.getEmail();
     }
     
-    public UserVO() {
+    public UserVO(LoaferUser loaferUser) {
+        this.id = Long.parseLong(loaferUser.getUserId().toString());
+        this.username = loaferUser.getUsername();
+        this.roles = loaferUser.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
     }
 
     public String getEmail() {
