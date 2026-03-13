@@ -67,6 +67,7 @@
       </div>
       <router-view />
     </div>
+    <FriendRequestNotification />
   </div>
 </template>
 
@@ -75,6 +76,7 @@ import { onMounted, ref } from 'vue';
 import { useUserStore } from './stores/user';
 import { useAnnouncementStore } from './stores/announcement';
 import { useMessageStore } from './stores/message';
+import FriendRequestNotification from './components/FriendRequestNotification.vue';
 
 const userStore = useUserStore();
 const announcementStore = useAnnouncementStore();
@@ -437,6 +439,18 @@ body::after {
   .content {
     max-width: 100%;
     padding: 0 1rem 2rem;
+    margin: 0 auto;
+  }
+  
+  .navbar {
+    padding: 0.5rem 0;
+  }
+  
+  .navbar-container {
+    max-width: 100%;
+    padding: 0 1rem;
+    margin: 0 auto;
+    box-sizing: border-box;
   }
   
   .nav-text {
@@ -444,34 +458,29 @@ body::after {
   }
   
   .nav-link {
-    padding: 0.5rem;
-    border-radius: 15px;
-  }
-  
-  .navbar-container {
-    max-width: 100%;
-    padding: 0 0.5rem;
+    padding: 0.4rem;
+    border-radius: 12px;
   }
   
   .nav-links {
-    gap: 0.5rem;
+    gap: 0.3rem;
   }
   
   .auth-nav {
-    gap: 0.5rem;
+    gap: 0.3rem;
   }
   
   .guest-nav {
-    gap: 0.5rem;
+    gap: 0.3rem;
   }
   
   .user-section {
-    padding: 0.2rem 0.3rem;
-    border-radius: 20px;
+    padding: 0.1rem 0.2rem;
+    border-radius: 15px;
   }
   
   .user-btn {
-    padding: 0.2rem 0.4rem;
+    padding: 0.1rem 0.3rem;
   }
   
   .username {
@@ -480,12 +489,12 @@ body::after {
   
   .user-avatar {
     display: block;
-    width: 25px;
-    height: 25px;
+    width: 22px;
+    height: 22px;
   }
   
   .logout-btn {
-    padding: 0.2rem 0.4rem;
+    padding: 0.1rem 0.3rem;
   }
   
   .logout-btn .nav-text {
@@ -494,7 +503,31 @@ body::after {
   
   .logout-btn::after {
     content: '🚪';
-    font-size: 1rem;
+    font-size: 0.9rem;
+  }
+  
+  /* 确保导航栏在移动端居中 */
+  .navbar-container {
+    justify-content: space-between;
+  }
+  
+  .nav-links {
+    flex-shrink: 1;
+  }
+  
+  .logo {
+    font-size: 1.5rem;
+  }
+  
+  /* 修复左右留白平衡 */
+  body {
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* 确保所有元素都使用盒模型 */
+  * {
+    box-sizing: border-box;
   }
 }
 

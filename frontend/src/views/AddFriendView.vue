@@ -101,7 +101,7 @@ const fetchFriends = async () => {
 
 // 搜索用户
 const searchUsers = async () => {
-  if (!searchUsername) return;
+  if (!searchUsername.value) return;
   
   searching.value = true;
   users.value = [];
@@ -112,7 +112,7 @@ const searchUsers = async () => {
     const token = localStorage.getItem('token');
     const response = await axios.get('/api/users/search', {
       params: {
-        username: searchUsername,
+        username: searchUsername.value,
         size: pageSize
       },
       headers: {
@@ -136,7 +136,7 @@ const searchUsers = async () => {
 
 // 加载更多
 const loadMore = async () => {
-  if (!lastId.value || !searchUsername || searching.value) return;
+  if (!lastId.value || !searchUsername.value || searching.value) return;
   
   searching.value = true;
   
@@ -144,7 +144,7 @@ const loadMore = async () => {
     const token = localStorage.getItem('token');
     const response = await axios.get('/api/users/search', {
       params: {
-        username: searchUsername,
+        username: searchUsername.value,
         lastId: lastId.value,
         size: pageSize
       },

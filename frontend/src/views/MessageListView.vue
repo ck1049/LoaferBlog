@@ -13,14 +13,12 @@
           <div class="contact-header">
             <div class="contact-avatar">
               <img :src="contact.user?.avatar || ''" alt="用户头像" />
+              <span v-if="contact.unreadCount && contact.unreadCount > 0" class="unread-badge">{{ contact.unreadCount }}</span>
             </div>
             <div class="contact-info">
               <div class="contact-name-row">
                 <span class="contact-name">{{ contact.user?.nickname || contact.user?.username || '未知用户' }}</span>
-                <div class="contact-time-and-unread">
-                  <span class="contact-time">{{ formatDate(contact.lastMessageTime) }}</span>
-                  <span v-if="contact.unreadCount && contact.unreadCount > 0" class="unread-badge">{{ contact.unreadCount }}</span>
-                </div>
+                <span class="contact-time">{{ formatDate(contact.lastMessageTime) }}</span>
               </div>
               <div class="contact-bio" v-if="contact.user?.bio">
                 {{ contact.user.bio }}
@@ -28,8 +26,8 @@
               <div class="contact-last-message">
                 <span v-if="contact.lastMessage && contact.lastMessage.messageType === 1">{{ contact.lastMessage.filteredContent }}</span>
                 <span v-else-if="contact.lastMessage && contact.lastMessage.messageType === 2">[表情]</span>
-                <span v-else-if="contact.lastMessage && contact.lastMessage.messageType === 3">[图片]</span>
-                <span v-else-if="contact.lastMessage && contact.lastMessage.messageType === 4">[视频]</span>
+                <span v-else-if="contact.lastMessage && contact.lastMessage.messageType === 3">[图片] {{ contact.lastMessage.fileName }}</span>
+                <span v-else-if="contact.lastMessage && contact.lastMessage.messageType === 4">[视频] {{ contact.lastMessage.fileName }}</span>
                 <span v-else-if="contact.lastMessage && contact.lastMessage.messageType === 5">[文件] {{ contact.lastMessage.fileName }}</span>
               </div>
             </div>
@@ -154,12 +152,28 @@ h1 {
   overflow: hidden;
   margin-right: 15px;
   flex-shrink: 0;
+  position: relative;
 }
 
 .contact-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.contact-avatar .unread-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #f44336;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 8px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+  z-index: 10;
 }
 
 .contact-info {
@@ -180,26 +194,9 @@ h1 {
   font-size: 16px;
 }
 
-.contact-time-and-unread {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .contact-time {
   color: #999;
   font-size: 14px;
-}
-
-.unread-badge {
-  background-color: #f44336;
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-  padding: 2px 8px;
-  border-radius: 10px;
-  min-width: 20px;
-  text-align: center;
 }
 
 .contact-bio {

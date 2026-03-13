@@ -1063,4 +1063,72 @@ onMounted(() => {
 .modal-actions button:last-child:hover {
   background-color: #e0e0e0;
 }
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .admin {
+    padding: 10px;
+  }
+  
+  .admin-nav {
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 20px;
+  }
+  
+  .admin-nav button {
+    padding: 8px 12px;
+    font-size: 14px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
+  
+  .admin-content {
+    padding: 15px;
+  }
+  
+  .add-form {
+    padding: 15px;
+  }
+  
+  .item {
+    padding: 15px;
+  }
+  
+  .upload-options {
+    gap: 10px;
+  }
+  
+  .upload-option {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .upload-option label {
+    min-width: auto;
+  }
+  
+  .upload-option input[type="file"] {
+    width: 100%;
+  }
+  
+  .file-url {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .file-url input {
+    width: 100%;
+  }
+  
+  .modal-content {
+    width: 95%;
+    padding: 20px;
+  }
+  
+  .form-group input[type="number"] {
+    width: 100%;
+  }
+}
 </style>
