@@ -11,6 +11,7 @@ import com.loafer.blog.model.entity.User;
 import com.loafer.blog.model.entity.UserRole;
 import com.loafer.blog.model.entity.Role;
 import com.loafer.blog.model.entity.Friend;
+import com.loafer.blog.model.vo.FriendVO;
 import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.model.vo.UserVO;
 import com.loafer.blog.config.BusinessRSAKeyManager;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,16 +46,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private RoleMapper roleMapper;
     @Autowired
     private FriendMapper friendMapper;
-    
+
     // 文件上传路径配置
     @Value("${file.upload.avatar-dir}")
     private String AVATAR_DIR;
-    
+
     @Value("${file.access.prefix}")
     private String ACCESS_PREFIX;
 
     @Autowired
     private BusinessRSAKeyManager businessRSAKeyManager;
+
     @Override
     public ResponseVO<UserVO> getCurrentUser(Long userId) {
         User user = getById(userId);
@@ -75,7 +78,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             }
         }
         userVO.setRoles(roles);
-        
+
         return ResponseVO.success(userVO);
     }
 
@@ -122,7 +125,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             }
         }
         userVO.setRoles(roles);
-        
+
         return ResponseVO.success(userVO);
     }
 
@@ -162,25 +165,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             if (!dir.exists()) {
                 dir.mkdirs();
             }
-            
+
             // 生成唯一文件名
             String originalFilename = avatar.getOriginalFilename();
             String extension = originalFilename != null ? originalFilename.substring(originalFilename.lastIndexOf(".")) : "";
             String fileName = UUID.randomUUID() + extension;
-            
+
             // 保存文件到服务器
             File dest = new File(AVATAR_DIR + File.separator + fileName);
             avatar.transferTo(dest);
-            
+
             // 更新用户头像URL
             String avatarUrl = ACCESS_PREFIX + "/avatars/" + fileName;
             user.setAvatar(avatarUrl);
             user.setUpdateTime(LocalDateTime.now());
             updateById(user);
-            
+
             // 返回更新后的用户信息
             UserVO userVO = new UserVO(user);
-            
+
             // 添加角色信息的查询和设置
             List<String> roles = new ArrayList<>();
             QueryWrapper<UserRole> userRoleWrapper = new QueryWrapper<>();
@@ -193,7 +196,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 }
             }
             userVO.setRoles(roles);
-            
+
             return ResponseVO.success(userVO);
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -223,14 +226,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Friend friendRequest = new Friend();
         friendRequest.setUserId(userId);
         friendRequest.setFriendId(friendId);
-        friendRequest.setStatus(0); // 0-待确认
+        // 0-待确认
+        friendRequest.setStatus(0);
         friendMapper.insert(friendRequest);
 
         return ResponseVO.success();
     }
 
     @Override
-    public ResponseVO<?> getFriendRequests(Long userId) {
+    public ResponseVO<List<FriendVO>> getFriendRequests(Long userId) {
         // 获取收到的好友请求
         QueryWrapper<Friend> wrapper = new QueryWrapper<>();
         wrapper.eq("friend_id", userId)
@@ -239,18 +243,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         List<Friend> friendRequests = friendMapper.selectList(wrapper);
 
         // 转换为包含用户信息的请求列表
-        List<Map<String, Object>> requests = new ArrayList<>();
+        List<FriendVO> requests = new ArrayList<>();
         for (Friend request : friendRequests) {
             User user = getById(request.getUserId());
             if (user != null) {
-                Map<String, Object> requestInfo = new HashMap<>();
-                requestInfo.put("id", request.getId());
-                requestInfo.put("userId", user.getId());
-                requestInfo.put("username", user.getUsername());
-                requestInfo.put("nickname", user.getNickname());
-                requestInfo.put("avatar", user.getAvatar());
-                requestInfo.put("createTime", request.getCreateTime());
-                requests.add(requestInfo);
+                requests.add(new FriendVO()
+                        .setId(request.getId())
+                        .setUserId(user.getId())
+                        .setUsername(user.getUsername())
+                        .setNickname(user.getNickname())
+                        .setAvatar(user.getAvatar())
+                        .setCreateTime(request.getCreateTime()));
             }
         }
 
@@ -309,7 +312,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             User user = getById(friend.getFriendId());
             if (user != null) {
                 UserVO userVO = new UserVO(user);
-                
+
                 // 添加角色信息的查询和设置
                 List<String> roles = new ArrayList<>();
                 QueryWrapper<UserRole> userRoleWrapper = new QueryWrapper<>();
@@ -322,7 +325,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                     }
                 }
                 userVO.setRoles(roles);
-                
+
                 friendList.add(userVO);
             }
         }

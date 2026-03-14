@@ -1,6 +1,7 @@
 package com.loafer.blog.controller;
 
 import com.loafer.blog.model.dto.UserDTO;
+import com.loafer.blog.model.vo.FriendVO;
 import com.loafer.blog.model.vo.ResponseVO;
 import com.loafer.blog.model.vo.UserVO;
 import java.util.List;
@@ -85,7 +86,7 @@ public class UserController {
 
     // 获取好友请求列表
     @GetMapping("/friend-requests")
-    public ResponseVO<?> getFriendRequests(@RequestAttribute("userId") Long userId) {
+    public ResponseVO<List<FriendVO>> getFriendRequests(@RequestAttribute("userId") Long userId) {
         return userService.getFriendRequests(userId);
     }
 
